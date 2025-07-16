@@ -96,6 +96,47 @@ def construir_tabela(
         )
 
 
+def construir_tabela_trabalho(
+    documentos=None,
+    classe_css='table table-striped',
+):
+    try:
+        if not documentos:
+            return '<p class="alert alert-info">Nenhum documento para exibir.</p>'
+
+        headers = ['Matrícula', 'Nome', 'Setor']
+        fields = ['matricula', 'nome', 'setor']
+
+        header_html = ''.join(f'<th>{h}</th>' for h in headers)
+
+        html = f"""
+        <table class="{classe_css}" id="tabela-trabalho">
+            <thead>
+                <tr>
+                    {header_html}
+                </tr>
+            </thead>
+            <tbody>
+        """
+
+        for doc in documentos:
+            linha = '<tr id="row-{}">\n'.format(doc.get('matricula', ''))
+            for field in fields:
+                value = doc.get(field, '')
+                linha += f'<td>{value}</td>\n'
+            linha += '</tr>\n'
+            html += linha
+
+        html += """
+            </tbody>
+        </table>
+        """
+        return html
+    except Exception as e:
+        print(f'Erro ao construir tabela de trabalho: {e}')
+        return f"<p class='alert alert-danger'>Erro ao processar dados da tabela de trabalho: {e}</p>"
+
+
 def resumo_visitas():
     try:
         # Definir o início e fim do dia de hoje

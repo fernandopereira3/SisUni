@@ -18,7 +18,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
-from Funcoes.funcoes import PesquisaForm, construir_tabela, resumo_visitas
+from Funcoes.funcoes import PesquisaForm, construir_tabela, resumo_visitas, construir_tabela_trabalho
 from Data.conexao import conexao
 
 # Criar o blueprint com configuração para templates e static
@@ -29,6 +29,23 @@ rotas_bp = Blueprint('rotas', __name__,
 
 # Conexão com o banco
 db = conexao()
+
+# Context processor para injetar tabela de trabalho
+@rotas_bp.context_processor
+def inject_tabela_trabalho():
+    try:
+        # Buscar documentos da coleção trab
+        documentos = list(db.trab.find({}))
+        print(f"Documentos encontrados: {len(documentos)}")
+        
+        # Gerar tabela HTML
+        tabela_html = construir_tabela_trabalho(documentos)
+        print(f"HTML gerado (primeiros 500 chars): {tabela_html[:500]}")
+        
+        return {'tab_trabalho': tabela_html}
+    except Exception as e:
+        print(f"Erro no context processor: {str(e)}")
+        return {'tab_trabalho': ''}
 
 # DataFrame global
 df_lista_sentenciados = pd.DataFrame(
