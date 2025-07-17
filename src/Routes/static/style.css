@@ -15,7 +15,7 @@ body {
  .bg-nav{
    background-color: #ffffff;
    min-height: 70px;
-   border-bottom: 1px solid #ccc;
+   border-bottom: 1px solid rgb(255, 0, 0);
 }
 
 .bg-main-card{

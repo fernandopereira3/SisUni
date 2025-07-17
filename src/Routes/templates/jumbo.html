@@ -14,48 +14,14 @@
 </head>
 
 <body>
-    <!---HEADER SIMPLIFICADO E FUNCIONAL-->
+      <!---HEADER-->
     <nav class="navbar navbar-expand-lg navbar-light bg-nav">
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="sentenciadosDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-yin-yang"></i> SENTENCIADOS
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="sentenciadosDropdown">
-                        <li><a class="dropdown-item" href="#">Não Implementado</a></li>
-                        <li><a class="dropdown-item" href="#">Não Implementado</a></li>
-                        <li><a class="dropdown-item" href="/pesquisa">Pesquisar</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="#">Não Implementado</a></li>
-                    </ul>
-                </li>
                 <li class="nav-item">
-                    
+                    <a href="/" class="nav-link"><i class="bi bi-arrow-left-circle-fill"></i> VOLTAR</a>
                 </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="visitasDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-users"></i> VISITAS
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="visitasDropdown">
-                        <li><a class="dropdown-item" href="/entrada_saida">Entrada/Saida</a></li>
-                        <li><a class="dropdown-item" href="/jumbo">Jumbo</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="#">Não Implementado</a></li>
-                    </ul>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="visitasDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-person-badge-fill"></i> FUNCIONARIOS
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="visitasDropdown">
-                        <li><a class="dropdown-item" href="#">Não Implementado</a></li>
-                        <li><a class="dropdown-item" href="#">Não Implementado</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="#">Não Implementado</a></li>
-                    </ul>
-                </li>
-            </ul>       
+            </ul>
             <ul>
                 <a href="/"><img src="{{ url_for('static', filename='img/logo3.png') }}" class="rounded" alt="Logo"></a>
             </ul>

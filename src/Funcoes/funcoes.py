@@ -202,3 +202,6 @@ def resumo_visitas():
             'total_visitantes': 0,
             'data_atual': datetime.datetime.now().strftime('%d/%m/%Y'),
         }
+
+
+        

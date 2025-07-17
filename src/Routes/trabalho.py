@@ -6,7 +6,6 @@ db = conexao()
 trabalho_bp = Blueprint('trabalho', __name__, template_folder='templates')
 
 def conf_trabalho(matricula):
-    """Verifica se uma matrícula existe na coleção 'trab'"""
     try:
         # Verificar diretamente no MongoDB
         resultado = db.trab.find_one({'matricula': str(matricula)})
