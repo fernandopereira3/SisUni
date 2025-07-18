@@ -1,5 +1,22 @@
 $ErrorActionPreference = "Stop"
 
+cd C:
+
+Write-Host 'Verificando pasta SisUni' -ForegroundColor Yellow
+if (Test-Path ".\SisUni") {
+    Write-Host 'Atualizando Programa...' -ForegroundColor Yellow
+    cd C:SisUni
+    git pull origin main
+}else {
+    Write-Host 'Clonando repositorio' -ForegroundColor Yellow
+    cd C:
+    git clone git https://github.com/fernandopereira3/SisUni.git
+}
+
+cd C:
+Write-Host 'Entrando na pasta SisUni' -ForegroundColor Yellow
+cd C:SisUni
+
 Write-Host "Inicializando ambiente..." -ForegroundColor Green
 
 try {
@@ -21,8 +38,10 @@ if (Test-Path ".\requirements.txt") {
     pip install -r requirements.txt
 }
 
-Write-Host "Iniciando aplicação..." -ForegroundColor Green
-Start-Process -FilePath "python" -ArgumentList "D:\repositorios-github\novela\src\main.py" -WindowStyle Hidden
+Write-Host "Iniciando aplicacao..." -ForegroundColor Green
+Start-Process -FilePath "python" -ArgumentList "C:SisUni\src\main.py" -WindowStyle Hidden
+Clear-Host
+Write-Host "Aplicao rodando em segundo plano, voce ja pode fechar esta janela." -ForegroundColor Green
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Application exited with code $LASTEXITCODE" -ForegroundColor Red
