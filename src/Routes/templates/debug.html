@@ -36,7 +36,8 @@
                         <div class="list-group">
                             <a href="#" class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#confirmModal"><i class="fas fa-text-height"></i> Normalizar Banco</a>
                             <a href="/debug/trabalho/db" class="list-group-item list-group-item-action"><i class="fas fa-database"></i> Debug Trabalho DB</a>
-                            <a href="/clear" class="list-group-item list-group-item-action text-danger" onclick="return confirm('Tem certeza que deseja limpar as matrículas?')"><i class="fas fa-broom"></i> Limpar Matrículas</a>
+                            <a href="/clear" class="list-group-item list-group-item-action text-danger" onclick="return confirm('Tem certeza que deseja limpar as matrículas?')"><i class="fas fa-broom"></i> Limpar Matrículas Sentenciados</a>
+                            <a href="/clear/trab" class="list-group-item list-group-item-action text-danger" onclick="return confirm('Tem certeza que deseja limpar as matrículas?')"><i class="fas fa-broom"></i> Limpar Matrículas do Trabalho</a>
                             <a href="/test_db" class="list-group-item list-group-item-action" target="_blank"><i class="fas fa-plug"></i> Testar Conexão</a>
                         </div>
                     </div>
@@ -60,6 +61,7 @@
                                     <p class="text-muted">Selecione uma ação para começar.</p>
                                 </div>
                             {% endif %}
+                           
                         </div>
                     </div>
                 </div>

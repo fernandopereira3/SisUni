@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Página Não Encontrada | SisUni - CPPPAC</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/sp.png') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            background-color: #ffffff;
+            color: #333333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Arial', sans-serif;
+        }
+        .error-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .error-content {
+            text-align: center;
+            background: #ffffff;
+            padding: 3rem;
+            border: 1px solid #f2f2f2;
+            border-radius: 10px;
+            box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;            max-width: 800px;
+            width: 100%;
+        }
+        .error-code {
+            font-size: 8rem;
+            font-weight: bold;
+            color: #dc3545;
+            margin-bottom: 1rem;
+            line-height: 1;
+        }
+        .cat-image {
+            max-width: 450px;
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 2rem 0;
+            border: 1px solid #f2f2f2;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        .cat-image:hover {
+            transform: scale(1.02);
+        }
+        .error-title {
+            color: #333333;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        .error-description {
+            color: #6c757d;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        .btn-custom {
+            background-color: #808080;
+            color: #fff;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin: 0.5rem;
+        }
+        .btn-custom:hover {
+            background-color: #ababab;
+            color: #000000;
+            border-radius: 100px;
+        }
+        .icon-container {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+        .feature-icon {
+            background: #a7a5a5;
+            color: #fff;
+            padding: 1rem;
+            border-radius: 5px;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            border: 1px solid #f2f2f2;
+            min-width: 60px;
+            text-align: center;
+        }
+        .feature-icon:hover {
+            background: #808080;
+            transform: translateY(-3px);
+        }
+        @media (max-width: 768px) {
+            .error-code {
+                font-size: 5rem;
+            }
+            .error-title {
+                font-size: 1.5rem;
+            }
+            .error-content {
+                padding: 2rem 1.5rem;
+            }
+            .cat-image {
+                max-width: 350px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header igual ao do projeto -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-nav">
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="sentenciadosDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-yin-yang"></i> SENTENCIADOS
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="sentenciadosDropdown">
+                        <li><a class="dropdown-item" href="#">Não Implementado</a></li>
+                        <li><a class="dropdown-item" href="/trabalho">Trabalho</a></li>
+                        <li><a class="dropdown-item" href="/pesquisa">Pesquisar</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#">Não Implementado</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="visitasDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-users"></i> VISITAS
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="visitasDropdown">
+                        <li><a class="dropdown-item" href="/entrada_saida">Entrada/Saida</a></li>
+                        <li><a class="dropdown-item" href="/jumbo">Jumbo</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#">Não Implementado</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="funcionariosDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-person-badge-fill"></i> FUNCIONARIOS
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="funcionariosDropdown">
+                        <li><a class="dropdown-item" href="#">Não Implementado</a></li>
+                        <li><a class="dropdown-item" href="#">Não Implementado</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#">Não Implementado</a></li>
+                    </ul>
+                </li>
+            </ul>       
+            <ul>
+                <a href="/"><img src="{{ url_for('static', filename='img/logo3.png') }}" class="rounded" alt="Logo"></a>
+            </ul>
+        </div>
+    </nav>
+    
+    <div class="error-container">
+        <div class="error-content">
+            <h1 class="error-code">404</h1>
+            
+            <!-- Imagem do gato HTTP Cat - MAIOR -->
+            <img src="https://http.cat/404" alt="Gato 404 - Página não encontrada" class="cat-image">
+            
+            <h2 class="error-title">
+                <i class="bi bi-exclamation-triangle"></i>
+                Página Não Encontrada
+            </h2>
+            
+            <p class="error-description">
+                Ops! A página que você está procurando não foi encontrada no SisUni.<br>
+                O recurso pode ter sido movido, removido ou você pode ter digitado o endereço incorretamente.
+            </p>
+            
+            <div class="d-flex justify-content-center flex-wrap gap-2">
+                <a href="/" class="btn-custom">
+                    <i class="bi bi-house-door"></i>
+                    Voltar ao Início
+                </a>
+                <a href="/pesquisa" class="btn-custom">
+                    <i class="bi bi-search"></i>
+                    Pesquisar
+                </a>
+                <a href="/entrada_saida" class="btn-custom">
+                    <i class="fas fa-users"></i>
+                    Visitas
+                </a>
+            </div>
+            
+            <div class="icon-container">
+                <div class="feature-icon" title="Dashboard">
+                    <i class="bi bi-speedometer2"></i>
+                </div>
+                <div class="feature-icon" title="Sentenciados">
+                    <i class="bi bi-yin-yang"></i>
+                </div>
+                <div class="feature-icon" title="Visitas">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="feature-icon" title="Trabalho">
+                    <i class="bi bi-briefcase"></i>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <small class="text-muted">
+                    <i class="bi bi-info-circle"></i>
+                    Se você acredita que isso é um erro, entre em contato com o administrador do sistema.
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Adiciona um pouco de interatividade
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animação suave para os ícones
+            const icons = document.querySelectorAll('.feature-icon');
+            icons.forEach((icon, index) => {
+                setTimeout(() => {
+                    icon.style.opacity = '0';
+                    icon.style.transform = 'translateY(20px)';
+                    icon.style.transition = 'all 0.5s ease';
+                    
+                    setTimeout(() => {
+                        icon.style.opacity = '1';
+                        icon.style.transform = 'translateY(0)';
+                    }, 100);
+                }, index * 100);
+            });
+            
+            // Easter egg: clique na imagem do gato
+            const catImage = document.querySelector('.cat-image');
+            let clickCount = 0;
+            
+            catImage.addEventListener('click', function() {
+                clickCount++;
+                if (clickCount === 5) {
+                    alert('🐱 Miau! Você encontrou o easter egg do gato! 🐱');
+                    clickCount = 0;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

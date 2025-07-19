@@ -408,31 +408,6 @@ def remover_visita_hoje(matricula):
         )
 
 
-# LIMPAR MATRICULA COMPLETA SISTEMA DE ADMIN
-@rotas_bp.route('/clear', methods=['GET'])
-def clean_matricula_complete():
-    count = 0
-    for doc in db.sentenciados.find():
-        if 'matricula' in doc and isinstance(doc['matricula'], str):
-            original = doc['matricula']
-
-            clean_matricula = (
-                original.replace(' ', '').replace('.', '').replace('-', '')
-            )
-
-            if len(clean_matricula) > 0:
-                clean_matricula = clean_matricula[:-1]
-
-            if clean_matricula != original:
-                db.sentenciados.update_one(
-                    {'_id': doc['_id']},
-                    {'$set': {'matricula': clean_matricula}},
-                )
-                count += 1
-
-    return f'LIMPO ! FORAM REMOVIDOS ESPACOS, PONTOS E O DIGITO DE {count} MATRICULAS'
-
-
 # BAIXA LISTA ROTA DOWNLOADS
 @rotas_bp.route('/download', methods=['GET'])
 def download_pdf():

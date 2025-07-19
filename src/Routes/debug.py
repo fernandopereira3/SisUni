@@ -483,3 +483,61 @@ def preview_normalizacao():
 
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+# LIMPAR MATRICULA COMPLETA SISTEMA DE ADMIN
+@debug_bp.route('/clear', methods=['GET'])
+def clean_matricula_complete():
+    count = 0
+    for doc in db.sentenciados.find():
+        if 'matricula' in doc and isinstance(doc['matricula'], str):
+            original = doc['matricula']
+
+            clean_matricula = (
+                original.replace(' ', '').replace('.', '').replace('-', '')
+            )
+
+            if len(clean_matricula) > 0:
+                clean_matricula = clean_matricula[:-1]
+
+            if clean_matricula != original:
+                db.sentenciados.update_one(
+                    {'_id': doc['_id']},
+                    {'$set': {'matricula': clean_matricula}},
+                )
+                count += 1
+
+    return render_template('debug.html', debug_content=f"""
+        <div class="alert alert-success">
+            <h4>Limpeza de Matrículas Concluída</h4>
+            <p>Total de matrículas atualizadas: {count}</p>
+        </div>
+    """)
+
+@debug_bp.route('/clear/trab', methods=['GET'])
+def clean_trab():
+    count = 0
+    for doc in db.trab.find():
+        if 'matricula' in doc and isinstance(doc['matricula'], str):
+            original = doc['matricula']
+
+            clean_matricula = (
+                original.replace(' ', '').replace('.', '').replace('-', '')
+            )
+
+            if len(clean_matricula) > 0:
+                clean_matricula = clean_matricula[:-1]
+
+            if clean_matricula != original:
+                db.trab.update_one(
+                    {'_id': doc['_id']},
+                    {'$set': {'matricula': clean_matricula}},
+                )
+                count += 1
+
+    return render_template('debug.html', debug_content=f"""
+        <div class="alert alert-success">
+            <h4>Limpeza de Matrículas Concluída</h4>
+            <p>Total de matrículas atualizadas: {count}</p>
+        </div>
+    """)
