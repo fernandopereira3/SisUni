@@ -34,11 +34,61 @@
                     </div>
                     <div class="card-body">
                         <div class="list-group">
-                            <a href="#" class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#confirmModal"><i class="fas fa-text-height"></i> Normalizar Banco</a>
-                            <a href="/debug/trabalho/db" class="list-group-item list-group-item-action"><i class="fas fa-database"></i> Debug Trabalho DB</a>
-                            <a href="/clear" class="list-group-item list-group-item-action text-danger" onclick="return confirm('Tem certeza que deseja limpar as matrículas?')"><i class="fas fa-broom"></i> Limpar Matrículas Sentenciados</a>
-                            <a href="/clear/trab" class="list-group-item list-group-item-action text-danger" onclick="return confirm('Tem certeza que deseja limpar as matrículas?')"><i class="fas fa-broom"></i> Limpar Matrículas do Trabalho</a>
-                            <a href="/test_db" class="list-group-item list-group-item-action" target="_blank"><i class="fas fa-plug"></i> Testar Conexão</a>
+                            <a href="/normalizar_banco" class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#confirmModal"><i class="fas fa-text-height"></i> Normalizar Banco</a>
+                            <div class="dropdown">
+                                <button class="list-group-item list-group-item-action text-danger dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-broom"></i> Limpar Matrículas (Cuidado !)
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item text-danger" href="/clear" onclick="return confirm('Tem certeza que deseja limpar as matrículas dos sentenciados?')">
+                                            <i class="fas fa-user-minus"></i> Limpar Matrículas Sentenciados
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" href="/clear/trab" onclick="return confirm('Tem certeza que deseja limpar as matrículas do trabalho?')">
+                                            <i class="fas fa-briefcase"></i> Limpar Matrículas do Trabalho
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" href="/clear/aux" onclick="return confirm('Tem certeza que deseja limpar as matrículas das atividades?')">
+                                            <i class="fas fa-tasks"></i> Limpar Auxiliar
+                                        </a>
+                                </ul>
+                            </div>
+                            <div class="dropdown">
+                                <button class="list-group-item list-group-item-action dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-database"></i> Exportar / Importar Banco
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a href="/debug/banco/export" class="list-group-item list-group-item-action"><i class="fas fa-upload"></i> Exportar Banco</a>
+                                    </li>
+                                    <li>
+                                        <a href="/debug/banco/import" class="list-group-item list-group-item-action"><i class="fas fa-download"></i> Importar Banco</a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="dropdown">
+                                <button class="list-group-item list-group-item-action dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-eye"></i> Visualizacao dos Bancos
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" href="/debug/trabalho/db">
+                                            <i class="fas fa-user-minus"></i> Visualizar Trab 
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="/debug/visitas/db">
+                                            <i class="fas fa-briefcase"></i> Visualizar Aux
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="/debug/sentenciados/db">
+                                            <i class="fas fa-tasks"></i> Visualizar sentenciados                                        </a>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -48,7 +98,7 @@
             <div class="col-md-8">
                 <div class="card shadow-sm">
                     <div class="card-header bg-secondary text-white">
-                        <h5 class="mb-0"><i class="fas fa-terminal"></i> Resultados</h5>
+                        <h5 class="mb-0"><i class="fas fa-terminal"></i></h5>
                     </div>
                     <div class="card-body" style="min-height: 500px; max-height: 70vh; overflow-y: auto;">
                         <div id="debug-content" class="p-2">
@@ -57,7 +107,7 @@
                             {% else %}
                                 <div class="text-center mt-5">
                                     <i class="fas fa-code fa-3x text-muted mb-3"></i>
-                                    <h4 class="text-muted">Painel de Debug</h4>
+                                    <h4 class="text-muted">Painel de Admin</h4>
                                     <p class="text-muted">Selecione uma ação para começar.</p>
                                 </div>
                             {% endif %}
@@ -69,27 +119,59 @@
         </div>
     </div>
 
-    <!-- Modal de Confirmação -->
-    <div class="modal fade" id="confirmModal" tabindex="-1">
+    <!-- Modal for file upload and data update -->
+    <div class="modal fade" id="updateModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header bg-warning text-dark">
-                    <h5 class="modal-title"><i class="fas fa-exclamation-triangle"></i> Confirmar Normalização</h5>
+                    <h5 class="modal-title"><i class="fas fa-upload"></i> Upload de Arquivo</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Esta ação irá normalizar dados em todo o banco. <strong>A operação não pode ser desfeita.</strong></p>
-                    <p>Deseja continuar?</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <a href="/normalizar_banco" class="btn btn-warning">Normalizar</a>
+                    <form id="uploadForm" method="POST" enctype="multipart/form-data" action="/upload-file">
+                        <div class="mb-3">
+                            <label for="uploaded_file" class="form-label">Selecione o arquivo (JSON/CSV)</label>
+                            <input type="file" class="form-control" id="uploaded_file" name="uploaded_file" accept=".json,.csv" required>
+                        </div>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Atenção:</strong> Esta ação irá atualizar os dados do sistema. Certifique-se de fazer backup antes de prosseguir.
+                        </div>
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-upload"></i> Upload e Atualizar
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
-
-
+    <!-- Modal de Confirmação -->
+    <div class="modal fade" id="confirmModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title">Confirmar Ação</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <span>Tem certeza que deseja normalizar o banco de dados?</span>
+                        <p class="mt-2 mb-0"><small>Esta ação não pode ser desfeita.</small></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <a href="/normalizar_banco" class="btn btn-warning">
+                        <i class="fas fa-check me-1"></i>Confirmar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -1,287 +1,189 @@
 import pandas as pd
 from flask import jsonify, request, render_template, Blueprint
 import json
-from bson import json_util
 from Data.conexao import conexao
+
 db = conexao()
 
-debug_bp = Blueprint('debug', __name__)
+debug_bp = Blueprint("debug", __name__)
 
-@debug_bp.route('/debug', methods=['GET'])
+
+## Pagina inicial de debug ###
+@debug_bp.route("/debug", methods=["GET"])
 def debug_trabalho():
-    """Rota de debug para visualizar detalhes do DataFrame df_trabalho"""
+    return render_template("debug.html")
+
+
+######### Estatistica das colecoes ############
+@debug_bp.route("/debug/sentenciados/db", methods=["GET"])
+def debug_sentenciados_db():
+    """Debug route to view sentenciados collection data"""
     try:
-        # Importação local para evitar importação circular
-        from rotas import df_lista_sentenciados
+        count = db.sentenciados.count_documents({})
+        documentos = list(db.sentenciados.find({}).limit(100))
+        primeiro_doc = db.sentenciados.find_one({})
 
-        # [código existente para coletar informações]
+        df_temp = pd.DataFrame(documentos)
+        if "_id" in df_temp.columns:
+            df_temp = df_temp.drop(columns=["_id"])
 
-        # Gerar HTML para o template em vez de retornar JSON
-        html_output = f"""
-        <div class="container debug-container">
-            <h2>Debug DataFrame df_lista_sentenciados</h2>
-            <div class="card">
-                <div class="card-header bg-info text-white">
-                    Informações Básicas
-                </div>
-                <div class="card-body">
-                    <p><strong>Dimensões:</strong> {df_lista_sentenciados.shape[0]} linhas x {df_lista_sentenciados.shape[1]} colunas</p>
-                    <p><strong>Colunas:</strong> {', '.join(df_lista_sentenciados.columns)}</p>
-                    <p><strong>Tipos de dados:</strong></p>
-                    <ul>
-                        {''.join([f'<li>{col}: {dtype}</li>' for col, dtype in df_lista_sentenciados.dtypes.items()])}
-                    </ul>
-                </div>
-            </div>
-            
-            <h3 class="mt-4">Conteúdo do DataFrame</h3>
-            <div class="table-responsive">
-                {df_lista_sentenciados.to_html(classes='table table-striped table-sm', index=True)}
-            </div>
-        </div>
-        """
+        estrutura = (
+            {k: type(v).__name__ for k, v in primeiro_doc.items() if k != "_id"}
+            if primeiro_doc
+            else {}
+        )
 
-        return render_template('debug.html', debug_content=html_output)
-
+        html_output = generate_collection_debug_html(
+            "Sentenciados", count, estrutura, df_temp
+        )
+        return render_template("debug.html", debug_content=html_output)
     except Exception as e:
-        error_html = f"""
-        <div class="alert alert-danger">
-            <h4>Erro ao acessar DataFrame</h4>
-            <p>{str(e)}</p>
-        </div>
-        """
-        return render_template('debug.html', debug_content=error_html)
+        return render_template("debug.html", debug_content=generate_error_html(str(e)))
 
 
-@debug_bp.route('/debug/trabalho/db', methods=['GET'])
+@debug_bp.route("/debug/trabalho/db", methods=["GET"])
 def debug_trabalho_db():
-    """Rota de debug para visualizar dados diretamente do banco de dados"""
+    """Debug route to view trabalho collection data"""
     try:
-        # Verifica se a coleção existe
-        colecoes = db.list_collection_names()
-        trab = 'trab' in colecoes
+        count = db.trab.count_documents({})
+        documentos = list(db.trab.find({}).limit(100))
+        primeiro_doc = db.trab.find_one({})
 
-        # Informações sobre o banco de dados
-        db_info = {
-            'database_name': db.name,
-            'collections': colecoes,
-            'trabalho_collection_exists': trab,
-        }
+        df_temp = pd.DataFrame(documentos)
+        if "_id" in df_temp.columns:
+            df_temp = df_temp.drop(columns=["_id"])
 
-        # Se a coleção existir, recupera seus dados e estatísticas
-        if trab:
-            # Conta documentos
-            count = db.trab.count_documents({})
+        estrutura = (
+            {k: type(v).__name__ for k, v in primeiro_doc.items() if k != "_id"}
+            if primeiro_doc
+            else {}
+        )
 
-            # Obtém amostra de documentos (limita a 100 para evitar sobrecarga)
-            documentos = list(db.trab.find({}).limit(150))
-
-            # Pega o primeiro documento para analisar a estrutura (se houver)
-            primeiro_doc = db.trab.find_one({})
-            estrutura = {}
-
-            if primeiro_doc:
-                for campo, valor in primeiro_doc.items():
-                    if campo != '_id':  # Ignora o campo _id do MongoDB
-                        estrutura[campo] = type(valor).__name__
-
-            # Converte dados do MongoDB para DataFrame para análise
-            df_temp = pd.DataFrame(documentos)
-            if '_id' in df_temp.columns:
-                df_temp = df_temp.drop(columns=['_id'])
-
-            # Saída para o console
-            print('\n===== DEBUG MONGODB TRABALHO =====')
-            print(f'Banco de dados: {db.name}')
-            print(f'Coleções: {colecoes}')
-            print(f"Documentos na coleção 'trabalho': {count}")
-            print('\nEstrutura do documento:')
-            for campo, tipo in estrutura.items():
-                print(f'  - {campo}: {tipo}')
-            print('\nPrimeiros 5 documentos:')
-            if not df_temp.empty:
-                print(df_temp.head())
-            print('============================\n')
-
-            # HTML para visualização
-            html_output = f"""
-            <div class="container debug-container">
-                <h2>Debug MongoDB - Coleção 'trabalho'</h2>
-                
-                <div class="card mb-4">
-                    <div class="card-body bg-primary text-white">
-                        Informações do Banco de Dados
-                    </div>
-                    <div class="card-body">
-                        <p><strong>Banco de dados:</strong> {db.name}</p>
-                        <p><strong>Coleções disponíveis:</strong> {', '.join(colecoes)}</p>
-                        <p><strong>Total de documentos na coleção 'trabalho':</strong> {count}</p>
-                    </div>
-                </div>
-                
-                <div class="card mb-4">
-                    <div class="card-header bg-info text-white">
-                        Estrutura dos Documentos
-                    </div>
-                    <div class="card-body">
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th>Campo</th>
-                                    <th>Tipo</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {''.join([f'<tr><td>{campo}</td><td>{tipo}</td></tr>' for campo, tipo in estrutura.items()])}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <h3>Amostra de Dados (até 150 documentos)</h3>
-                <div class="table-responsive">
-                    {df_temp.to_html(classes='table table-striped table-sm', index=False) if not df_temp.empty else '<p>Não há dados na coleção.</p>'}
-                </div>
-                
-                <div class="mt-4">
-                    <h3>Estatísticas Numéricas (se disponível)</h3>
-                    {df_temp.describe().to_html(classes='table table-bordered') if not df_temp.empty and df_temp.select_dtypes(include=['number']).shape[1] > 0 else '<p>Não há dados numéricos para análise estatística.</p>'}
-                </div>
-            </div>
-            """
-
-            return render_template('debug.html', debug_content=html_output)
-
-        else:
-            # Se a coleção não existir
-            html_output = f"""
-            <div class="container debug-container">
-                <div class="alert alert-warning">
-                    <h4>Coleção 'trabalho' não encontrada no banco de dados</h4>
-                    <p>Banco de dados: {db.name}</p>
-                    <p>Coleções disponíveis: {', '.join(colecoes) if colecoes else 'Nenhuma'}</p>
-                </div>
-            </div>
-            """
-            return render_template('debug.html', debug_content=html_output)
-
+        html_output = generate_collection_debug_html(
+            "Trabalho", count, estrutura, df_temp
+        )
+        return render_template("debug.html", debug_content=html_output)
     except Exception as e:
-        # Em caso de erro
-        error_html = f"""
-        <div class="container">
-            <div class="alert alert-danger">
-                <h4>Erro ao acessar o banco de dados</h4>
-                <p>{str(e)}</p>
+        return render_template("debug.html", debug_content=generate_error_html(str(e)))
+
+
+@debug_bp.route("/debug/visitas/db", methods=["GET"])
+def debug_visitas_db():
+    """Debug route to view visitas collection data"""
+    try:
+        count = db.visita.count_documents({})
+        documentos = list(db.visita.find({}).limit(100))
+        primeiro_doc = db.visita.find_one({})
+
+        df_temp = pd.DataFrame(documentos)
+        if "_id" in df_temp.columns:
+            df_temp = df_temp.drop(columns=["_id"])
+
+        estrutura = (
+            {k: type(v).__name__ for k, v in primeiro_doc.items() if k != "_id"}
+            if primeiro_doc
+            else {}
+        )
+
+        html_output = generate_collection_debug_html(
+            "Visitas", count, estrutura, df_temp
+        )
+        return render_template("debug.html", debug_content=html_output)
+    except Exception as e:
+        return render_template("debug.html", debug_content=generate_error_html(str(e)))
+
+
+def generate_collection_debug_html(collection_name, count, estrutura, df):
+    """Helper function to generate debug HTML output"""
+    return f"""
+    <div class="container debug-container">
+        <h2>Debug MongoDB - Coleção '{collection_name}'</h2>
+        
+        <div class="card mb-4">
+            <div class="card-body bg-primary text-white">
+                Informações da Coleção
+            </div>
+            <div class="card-body">
+                <p><strong>Total de documentos:</strong> {count}</p>
             </div>
         </div>
-        """
-        return render_template('debug.html', debug_content=error_html)
+        
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                Estrutura dos Documentos
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Campo</th>
+                            <th>Tipo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {"".join([f"<tr><td>{campo}</td><td>{tipo}</td></tr>" for campo, tipo in estrutura.items()])}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <h3>Amostra de Dados (100 primeiros registros)</h3>
+        <div class="table-responsive">
+            {df.to_html(classes="table table-striped table-sm", index=False) if not df.empty else "<p>Não há dados na coleção.</p>"}
+        </div>
+        
+        <div class="mt-4">
+            <h3>Estatísticas Numéricas</h3>
+            {df.describe().to_html(classes="table table-bordered") if not df.empty and df.select_dtypes(include=["number"]).shape[1] > 0 else "<p>Não há dados numéricos para análise estatística.</p>"}
+        </div>
+    </div>
+    """
 
 
-@debug_bp.route('/api/trabalho/stats', methods=['GET'])
-def api_trabalho_stats():
-    """Rota que fornece estatísticas sobre a coleção trabalho"""
-    try:
-        if 'trabalho' in db.list_collection_names():
-            # Obtém todos os documentos
-            df_temp = pd.DataFrame(list(db.trab.find({}, {'_id': 0})))
-
-            if not df_temp.empty:
-                # Calcular estatísticas básicas
-                stats = {
-                    'count': len(df_temp),
-                    'columns': df_temp.columns.tolist(),
-                    'null_counts': df_temp.isnull().sum().to_dict(),
-                }
-
-                # Adicionar estatísticas numéricas se houver colunas numéricas
-                num_cols = df_temp.select_dtypes(
-                    include=['number']
-                ).columns.tolist()
-                if num_cols:
-                    stats['numeric_stats'] = json.loads(
-                        df_temp[num_cols].describe().to_json()
-                    )
-
-                # Contar valores únicos para colunas categóricas (limitado a 20 valores únicos)
-                for col in df_temp.columns:
-                    if df_temp[col].nunique() < 20:
-                        stats[f'{col}_value_counts'] = (
-                            df_temp[col].value_counts().to_dict()
-                        )
-
-                return jsonify({'status': 'success', 'statistics': stats})
-            else:
-                return jsonify(
-                    {'status': 'success', 'message': 'Coleção vazia'}
-                )
-        else:
-            return jsonify(
-                {
-                    'status': 'error',
-                    'message': "Coleção 'trabalho' não encontrada",
-                }
-            )
-    except Exception as e:
-        print(f'Error in api_trabalho_stats: {str(e)}')
-        return jsonify({'status': 'error', 'message': str(e)}), 500
+def generate_error_html(error_message):
+    """Helper function to generate error HTML"""
+    return f"""
+    <div class="alert alert-danger">
+        <h4>Erro ao acessar o banco de dados</h4>
+        <p>{error_message}</p>
+    </div>
+    """
 
 
-@debug_bp.route('/api/trabalho/raw', methods=['GET'])
-def api_trabalho_raw():
-    """Rota que retorna os dados brutos da coleção trabalho"""
-    try:
-        limit = request.args.get('limit', default=100, type=int)
-        skip = request.args.get('skip', default=0, type=int)
-
-        if 'trab' in db.list_collection_names():
-            documentos = list(db.trab.find({}).skip(skip).limit(limit))
-
-            total = db.trab.count_documents({})
-
-            json_data = json.loads(json_util.dumps(documentos))
-            return jsonify(
-                {
-                    'status': 'success',
-                    'pagination': {
-                        'total_records': total,
-                        'records_per_page': limit,
-                        'current_offset': skip,
-                        'current_page': skip // limit + 1,
-                        'total_pages': -(-total // limit),
-                    },
-                    'data': json_data,
-                }
-            ), {'indent': 2}
-        else:
-            return jsonify(
-                {
-                    'status': 'error',
-                    'message': "Coleção 'trabalho' não encontrada",
-                }
-            ), {'indent': 2}
-
-    except Exception as e:
-        print(f'Error in api_trabalho_raw: {str(e)}')
-        return jsonify({'status': 'error', 'message': str(e)}), 500
+def generate_collection_not_found_html(db_name, colecoes):
+    """Helper function to generate collection not found HTML"""
+    return f"""
+    <div class="container debug-container">
+        <div class="alert alert-warning">
+            <h4>Coleção 'trabalho' não encontrada no banco de dados</h4>
+            <p>Banco de dados: {db_name}</p>
+            <p>Coleções disponíveis: {", ".join(colecoes) if colecoes else "Nenhuma"}</p>
+        </div>
+    </div>
+    """
 
 
-@debug_bp.route('/test_debug')
-def test_debug():
-    return render_template(
-        'debug.html',
-        debug_content='<div class="alert alert-success">Teste funcionando!</div>',
-    )
+def generate_db_error_html(error):
+    """Helper function to generate database error HTML"""
+    return f"""
+    <div class="container">
+        <div class="alert alert-danger">
+            <h4>Erro ao acessar o banco de dados</h4>
+            <p>{str(error)}</p>
+        </div>
+    </div>
+    """
 
 
-@debug_bp.route('/normalizar_banco', methods=['GET', 'POST'])
+######### Fim Estatistica das colecoes ############
+
+
+@debug_bp.route("/normalizar_banco", methods=["GET", "POST"])
 def normalizar_banco():
-    """Rota simplificada para normalizar todos os nomes do banco de dados em maiúsculas"""
-
-    if request.method == 'GET':
+    if request.method == "GET":
         # Retornar página simples de confirmação
         return render_template(
-            'debug.html',
+            "debug.html",
             debug_content="""
             <div class="alert alert-warning">
                 <h4><i class="fas fa-exclamation-triangle"></i> Normalizar Banco de Dados</h4>
@@ -301,102 +203,78 @@ def normalizar_banco():
         erros = []
 
         # 1. NORMALIZAR SENTENCIADOS
-        print('Normalizando sentenciados...')
+        print("Normalizando sentenciados...")
         for doc in db.sentenciados.find():
             try:
                 updates = {}
 
                 # Nome
-                if 'nome' in doc and doc['nome']:
-                    nome_novo = doc['nome'].upper().strip()
-                    if doc['nome'] != nome_novo:
-                        updates['nome'] = nome_novo
+                if "nome" in doc and doc["nome"]:
+                    nome_novo = doc["nome"].upper().strip()
+                    if doc["nome"] != nome_novo:
+                        updates["nome"] = nome_novo
 
                 # Outros campos texto
-                for campo in ['procedencia', 'artigo', 'observacoes']:
-                    if (
-                        campo in doc
-                        and doc[campo]
-                        and isinstance(doc[campo], str)
-                    ):
+                for campo in ["procedencia", "artigo", "observacoes"]:
+                    if campo in doc and doc[campo] and isinstance(doc[campo], str):
                         valor_novo = doc[campo].upper().strip()
                         if doc[campo] != valor_novo:
                             updates[campo] = valor_novo
 
                 if updates:
-                    db.sentenciados.update_one(
-                        {'_id': doc['_id']}, {'$set': updates}
-                    )
+                    db.sentenciados.update_one({"_id": doc["_id"]}, {"$set": updates})
                     total_atualizados += 1
 
             except Exception as e:
-                erros.append(
-                    f'Sentenciado {doc.get("matricula", "N/A")}: {str(e)}'
-                )
+                erros.append(f"Sentenciado {doc.get('matricula', 'N/A')}: {str(e)}")
 
         # 2. NORMALIZAR VISITAS
-        print('Normalizando visitas...')
-        if 'visita' in db.list_collection_names():
+        print("Normalizando visitas...")
+        if "visita" in db.list_collection_names():
             for doc in db.visita.find():
                 try:
                     updates = {}
 
-                    for campo in ['nome', 'visitante', 'parentesco']:
+                    for campo in ["nome", "visitante", "parentesco"]:
                         if campo in doc and doc[campo]:
                             valor_novo = doc[campo].upper().strip()
                             if doc[campo] != valor_novo:
                                 updates[campo] = valor_novo
 
                     if updates:
-                        db.visita.update_one(
-                            {'_id': doc['_id']}, {'$set': updates}
-                        )
+                        db.visita.update_one({"_id": doc["_id"]}, {"$set": updates})
                         total_atualizados += 1
 
                 except Exception as e:
-                    erros.append(
-                        f'Visita {doc.get("matricula", "N/A")}: {str(e)}'
-                    )
+                    erros.append(f"Visita {doc.get('matricula', 'N/A')}: {str(e)}")
 
         # 3. NORMALIZAR TRABALHO
-        print('Normalizando trabalho...')
-        if 'trab' in db.list_collection_names():
+        print("Normalizando trabalho...")
+        if "trab" in db.list_collection_names():
             for doc in db.trab.find():
                 try:
                     updates = {}
 
-                    for campo in ['nome', 'setor', 'funcao']:
-                        if (
-                            campo in doc
-                            and doc[campo]
-                            and isinstance(doc[campo], str)
-                        ):
+                    for campo in ["nome", "setor", "funcao"]:
+                        if campo in doc and doc[campo] and isinstance(doc[campo], str):
                             valor_novo = doc[campo].upper().strip()
                             if doc[campo] != valor_novo:
                                 updates[campo] = valor_novo
 
                     if updates:
-                        db.trab.update_one(
-                            {'_id': doc['_id']}, {'$set': updates}
-                        )
+                        db.trab.update_one({"_id": doc["_id"]}, {"$set": updates})
                         total_atualizados += 1
 
                 except Exception as e:
-                    erros.append(
-                        f'Trabalho {doc.get("matricula", "N/A")}: {str(e)}'
-                    )
+                    erros.append(f"Trabalho {doc.get('matricula', 'N/A')}: {str(e)}")
 
         # RESULTADO SIMPLES
         resultado_html = f"""
         <div class="alert alert-success">
             <h4><i class="fas fa-check-circle"></i> Normalização Concluída!</h4>
-            <p><strong>Total de registros atualizados:</strong> {
-            total_atualizados
-        }</p>
+            <p><strong>Total de registros atualizados:</strong> {total_atualizados}</p>
             {
-            f'<p><strong>Erros encontrados:</strong> {len(erros)}</p>'
-            if erros
-            else ''
+            f"<p><strong>Erros encontrados:</strong> {len(erros)}</p>" if erros else ""
         }
         </div>
         
@@ -405,13 +283,13 @@ def normalizar_banco():
         <div class="alert alert-warning">
             <h5>Erros:</h5>
             <ul>
-                {''.join([f'<li>{erro}</li>' for erro in erros[:10]])}
-                {f'<li>... e mais {len(erros) - 10} erros</li>' if len(erros) > 10 else ''}
+                {"".join([f"<li>{erro}</li>" for erro in erros[:10]])}
+                {f"<li>... e mais {len(erros) - 10} erros</li>" if len(erros) > 10 else ""}
             </ul>
         </div>
         '''
             if erros
-            else ''
+            else ""
         }
         
         <div class="mt-3">
@@ -424,7 +302,7 @@ def normalizar_banco():
         </div>
         """
 
-        return render_template('debug.html', debug_content=resultado_html)
+        return render_template("debug.html", debug_content=resultado_html)
 
     except Exception as e:
         erro_html = f"""
@@ -436,65 +314,65 @@ def normalizar_banco():
             </div>
         </div>
         """
-        return render_template('debug.html', debug_content=erro_html)
+        return render_template("debug.html", debug_content=erro_html)
 
 
-@debug_bp.route('/api/normalizar_preview', methods=['GET'])
+@debug_bp.route("/api/normalizar_preview", methods=["GET"])
 def preview_normalizacao():
     """Preview simplificado da normalização"""
     try:
-        contadores = {'sentenciados': 0, 'visitas': 0, 'trabalho': 0}
+        contadores = {"sentenciados": 0, "visitas": 0, "trabalho": 0}
 
         # Contar sentenciados que precisam normalização
         for doc in db.sentenciados.find().limit(100):
             if (
-                'nome' in doc
-                and doc['nome']
-                and doc['nome'] != doc['nome'].upper().strip()
+                "nome" in doc
+                and doc["nome"]
+                and doc["nome"] != doc["nome"].upper().strip()
             ):
-                contadores['sentenciados'] += 1
+                contadores["sentenciados"] += 1
 
         # Contar visitas que precisam normalização
-        if 'visita' in db.list_collection_names():
+        if "visita" in db.list_collection_names():
             for doc in db.visita.find().limit(100):
-                for campo in ['nome', 'visitante', 'parentesco']:
+                for campo in ["nome", "visitante", "parentesco"]:
                     if (
                         campo in doc
                         and doc[campo]
                         and doc[campo] != doc[campo].upper().strip()
                     ):
-                        contadores['visitas'] += 1
+                        contadores["visitas"] += 1
                         break
 
         # Contar trabalho que precisa normalização
-        if 'trab' in db.list_collection_names():
+        if "trab" in db.list_collection_names():
             for doc in db.trab.find().limit(100):
-                for campo in ['nome', 'setor']:
+                for campo in ["nome", "setor"]:
                     if (
                         campo in doc
                         and doc[campo]
                         and isinstance(doc[campo], str)
                         and doc[campo] != doc[campo].upper().strip()
                     ):
-                        contadores['trabalho'] += 1
+                        contadores["trabalho"] += 1
                         break
 
-        return jsonify({'status': 'success', 'preview': contadores})
+        return jsonify({"status": "success", "preview": contadores})
 
     except Exception as e:
-        return jsonify({'status': 'error', 'message': str(e)}), 500
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 
 # LIMPAR MATRICULA COMPLETA SISTEMA DE ADMIN
-@debug_bp.route('/clear', methods=['GET'])
+@debug_bp.route("/clear", methods=["GET"])
 def clean_matricula_complete():
     count = 0
     for doc in db.sentenciados.find():
-        if 'matricula' in doc and isinstance(doc['matricula'], str):
-            original = doc['matricula']
+        if "matricula" in doc and isinstance(doc["matricula"], str):
+            original = doc["matricula"]
 
             clean_matricula = (
-                original.replace(' ', '').replace('.', '').replace('-', '')
+                original.replace(" ", "").replace(".", "").replace("-", "")
             )
 
             if len(clean_matricula) > 0:
@@ -502,27 +380,31 @@ def clean_matricula_complete():
 
             if clean_matricula != original:
                 db.sentenciados.update_one(
-                    {'_id': doc['_id']},
-                    {'$set': {'matricula': clean_matricula}},
+                    {"_id": doc["_id"]},
+                    {"$set": {"matricula": clean_matricula}},
                 )
                 count += 1
 
-    return render_template('debug.html', debug_content=f"""
+    return render_template(
+        "debug.html",
+        debug_content=f"""
         <div class="alert alert-success">
             <h4>Limpeza de Matrículas Concluída</h4>
             <p>Total de matrículas atualizadas: {count}</p>
         </div>
-    """)
+    """,
+    )
 
-@debug_bp.route('/clear/trab', methods=['GET'])
+
+@debug_bp.route("/clear/trab", methods=["GET"])
 def clean_trab():
     count = 0
     for doc in db.trab.find():
-        if 'matricula' in doc and isinstance(doc['matricula'], str):
-            original = doc['matricula']
+        if "matricula" in doc and isinstance(doc["matricula"], str):
+            original = doc["matricula"]
 
             clean_matricula = (
-                original.replace(' ', '').replace('.', '').replace('-', '')
+                original.replace(" ", "").replace(".", "").replace("-", "")
             )
 
             if len(clean_matricula) > 0:
@@ -530,14 +412,210 @@ def clean_trab():
 
             if clean_matricula != original:
                 db.trab.update_one(
-                    {'_id': doc['_id']},
-                    {'$set': {'matricula': clean_matricula}},
+                    {"_id": doc["_id"]},
+                    {"$set": {"matricula": clean_matricula}},
                 )
                 count += 1
 
-    return render_template('debug.html', debug_content=f"""
+    return render_template(
+        "debug.html",
+        debug_content=f"""
         <div class="alert alert-success">
             <h4>Limpeza de Matrículas Concluída</h4>
             <p>Total de matrículas atualizadas: {count}</p>
         </div>
-    """)
+    """,
+    )
+
+
+@debug_bp.route("/clear/aux", methods=["GET"])
+def clean_banco_aux():
+    count = 0
+    for doc in db.aux.find():
+        if "matricula" in doc and isinstance(doc["matricula"], str):
+            original = doc["matricula"]
+
+            clean_matricula = (
+                original.replace(" ", "").replace(".", "").replace("-", "")
+            )
+
+            if len(clean_matricula) > 0:
+                clean_matricula = clean_matricula[:-1]
+
+            if clean_matricula != original:
+                db.aux.update_one(
+                    {"_id": doc["_id"]},
+                    {"$set": {"matricula": clean_matricula}},
+                )
+                count += 1
+
+    return render_template(
+        "debug.html",
+        debug_content=f"""
+        <div class="alert alert-success">
+            <h4>Limpeza de Matrículas Concluída</h4>
+            <p>Total de matrículas atualizadas: {count}</p>
+        </div>
+    """,
+    )
+
+
+@debug_bp.route("/debug/banco/export", methods=["GET", "POST"])
+def export_aux():
+    import os
+
+    """Route to export aux collection to JSON file"""
+    if request.method == "GET":
+        return render_template(
+            "debug.html",
+            debug_content="""
+            <div class="container">
+                <h3>Export Database</h3>
+                <form method="POST">
+                    <div class="form-group">
+                        <label>Export Directory Path:</label>
+                        <input type="text" name="export_path" class="form-control" 
+                               placeholder="Enter directory path" required>
+                    </div>
+                    <div class="form-group mt-3">
+                        <label>Filename:</label>
+                        <input type="text" name="filename" class="form-control" 
+                               value="aux_export.json" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-3">
+                        Export Database
+                    </button>
+                </form>
+            </div>
+        """,
+        )
+
+    # Handle POST request
+    export_path = request.form.get("export_path", ".")
+    filename = request.form.get("filename", "aux_export.json")
+
+    # Export aux collection to JSON
+    aux_docs = list(db.aux.find({}, {"_id": 0}))  # Exclude _id field
+
+    if not aux_docs:
+        return render_template(
+            "debug.html",
+            debug_content='<div class="alert alert-warning">No documents found in aux collection</div>',
+        )
+
+    try:
+        full_path = os.path.join(export_path, filename)
+
+        # Create directory if it doesn't exist
+        os.makedirs(export_path, exist_ok=True)
+
+        # Save to JSON file in specified path
+        with open(full_path, "w", encoding="utf-8") as f:
+            json.dump(aux_docs, f, ensure_ascii=False, indent=2)
+
+        return render_template(
+            "debug.html",
+            debug_content=f"""
+            <div class="container">
+                <div class="alert alert-success">
+                    <h4>Export Completed</h4>
+                    <p>File has been saved to: {full_path}</p>
+                </div>
+                <div class="mt-3">
+                    <a href="/debug/banco/export" class="btn btn-primary">Export Another File</a>
+                    <a href="/debug/banco/import" class="btn btn-secondary">Go to Import Page</a>
+                </div>
+            </div>
+        """,
+        )
+    except Exception as e:
+        return render_template(
+            "debug.html",
+            debug_content=f"""
+            <div class="alert alert-danger">
+                <h4>Export Failed</h4>
+                <p>Error: {str(e)}</p>
+                <a href="/debug/banco/export" class="btn btn-primary mt-2">Try Again</a>
+            </div>
+        """,
+        )
+
+
+@debug_bp.route("/debug/banco/import", methods=["GET", "POST"])
+def import_sentenciados():
+    """Route to import JSON file to sentenciados collection"""
+    if request.method == "GET":
+        return render_template(
+            "debug.html",
+            debug_content="""
+            <div class="container">
+                <h3>Import to Sentenciados</h3>
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label>JSON File:</label>
+                        <input type="file" name="file" class="form-control" accept=".json">
+                    </div>
+                    <p></p>
+                    <button type="submit" class="btn btn-primary">Import to Sentenciados</button>
+                </form>
+            </div>
+        """,
+        )
+
+    # Process uploaded file
+    file = request.files.get("file")
+    if not file or file.filename == "":
+        return render_template(
+            "debug.html",
+            debug_content='<div class="alert alert-danger">No file selected</div>',
+        )
+
+    if not file.filename.endswith(".json"):
+        return render_template(
+            "debug.html",
+            debug_content='<div class="alert alert-danger">Invalid format. Use JSON file.</div>',
+        )
+
+    # Read JSON file
+    try:
+        records = json.load(file)
+    except Exception as e:
+        return render_template(
+            "debug.html",
+            debug_content=f'<div class="alert alert-danger">Error reading JSON: {str(e)}</div>',
+        )
+
+    # Insert records into sentenciados collection
+    inserted = duplicates = errors = 0
+    error_msgs = []
+
+    for record in records:
+        try:
+            # Check if matricula exists
+            if "matricula" in record:
+                existing = db.sentenciados.find_one({"matricula": record["matricula"]})
+                if existing:
+                    duplicates += 1
+                    continue
+
+                db.sentenciados.insert_one(record)
+                inserted += 1
+            else:
+                errors += 1
+                error_msgs.append("Record missing matricula field")
+        except Exception as e:
+            errors += 1
+            error_msgs.append(str(e))
+
+    return render_template(
+        "debug.html",
+        debug_content=f"""
+        <div class="alert alert-info">
+            <h4>Import Results</h4>
+            <p>Records inserted: {inserted}</p>
+            <p>Duplicates skipped: {duplicates}</p>
+            <p>Errors: {errors}</p>
+            {f"<p>Error messages:</p><ul>{''.join([f'<li>{msg}</li>' for msg in error_msgs[:5]])}</ul>" if error_msgs else ""}
+        </div>
+    """,
+    )
