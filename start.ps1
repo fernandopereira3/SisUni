@@ -10,7 +10,7 @@ if (Test-Path ".\SisUni") {
 }else {
     Write-Host 'Clonando repositorio' -ForegroundColor Yellow
     cd C:
-    git clone git https://github.com/fernandopereira3/SisUni.git
+    git clone https://github.com/fernandopereira3/SisUni.git
 }
 
 cd C:
