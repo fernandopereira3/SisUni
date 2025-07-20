@@ -22,19 +22,19 @@ Write-Host "Inicializando ambiente..." -ForegroundColor Green
 try {
     python --version | Out-Null
 } catch {
-    Write-Host "Python não instalado ou não está no PATH." -ForegroundColor Red
+    Write-Host "Python nao instalado ou nao está no PATH." -ForegroundColor Red
     exit 1
 }
 
 if (-not (Test-Path ".\Lib")) {
-    Write-Host "Criando venv..." -ForegroundColor Yellow
+    Write-Host "Criando venv" -ForegroundColor Yellow
     python -m venv .venv
 }
 
 & .\.venv\Scripts\Activate.ps1
 
 if (Test-Path ".\requirements.txt") {
-    Write-Host "Instalando dependências..." -ForegroundColor Yellow
+    Write-Host "Instalando dependencias..." -ForegroundColor Yellow
     pip install -r requirements.txt
 }
 
@@ -44,7 +44,7 @@ Clear-Host
 Write-Host "Aplicao rodando em segundo plano, voce ja pode fechar esta janela." -ForegroundColor Green
 
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "Application exited with code $LASTEXITCODE" -ForegroundColor Red
-    Write-Host "Press any key to exit..."
+    Write-Host "Application com erro $LASTEXITCODE" -ForegroundColor Red
+    Write-Host "Aperte qualquer botao para sair" -ForegroundColor Red
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 }
