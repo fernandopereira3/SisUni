@@ -98,30 +98,6 @@ def login():
 ## LOGIN ##
 
 
-@rotas_bp.route("/pesquisa", methods=["GET", "POST"])
-def pesquisa():
-    form = PesquisaForm()
-    tabela_html = ""  # Tabela vazia inicialmente
-
-    if form.validate_on_submit():
-        matricula = form.matricula.data.strip()
-        nome = form.nome.data.strip()
-        query = {}
-
-        if matricula:
-            query["matricula"] = {
-                "$regex": f"^\\s*{re.escape(matricula)}\\s*",
-                "$options": "i",
-            }
-        if nome:
-            query["nome"] = {"$regex": nome, "$options": "i"}
-
-        # Só gera tabela quando há pesquisa
-        tabela_html = construir_tabela(query=query, incluir_acoes=True)
-
-    return render_template("pesquisa.html", form=form, tabela_html=tabela_html)
-
-
 @rotas_bp.route("/sentenciado_detalhes/<matricula>", methods=["GET"])
 def sentenciado_detalhes(matricula):
     try:
