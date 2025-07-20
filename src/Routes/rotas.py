@@ -72,7 +72,7 @@ def login():
     if request.method == "POST":
         login_time = datetime.datetime.now()
         username = request.form["username"].lower().replace(" ", "")
-        turno = request.form.get("Turno")
+        turno = request.form.get("turno")
 
         print(f"Username: {username}, Turno: {turno}, Hora: {login_time}")
         user = db.usuarios.find_one({"username": username})
