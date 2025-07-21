@@ -172,3 +172,4 @@ db.csv
 
 .DS_Store
 *.json
+.vercel
