@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <!-- Font Awesome (já estava carregado) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" type="text/css" href="../static/style.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
@@ -45,10 +45,10 @@
                     </ul>
                 </li>
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="visitasDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle" href="#" id="funcionariosDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-person-bounding-box"></i> FUNCIONÁRIOS
                     </a>
-                    <ul class="dropdown-menu" aria-labelledby="visitasDropdown">
+                    <ul class="dropdown-menu" aria-labelledby="funcionariosDropdown">
                         <li><a class="dropdown-item" href="#">Não Implementado</a></li>
                         <li><a class="dropdown-item" href="#">Não Implementado</a></li>
                         <li><hr class="dropdown-divider"></li>
@@ -56,14 +56,14 @@
                     </ul>
                 </li>
             </ul>             
-            <ul>
+            <div class="navbar-brand">
                 <a href="/"><img src="{{ url_for('static', filename='img/logo3.png') }}" class="rounded" alt="Logo"></a>
-            </ul>
+            </div>
         </div>
     </nav>
     <!----FIM DO HEADER-->
     <p></p>
-    <div class="card totals-card" style="display: inline-block; width: 90%; border: 0cap; position: relative; margin-top: 10px; margin-left: 100px;">
+    <div class="card totals-card" style="display: inline-block; width: 90%; border: none; position: relative; margin-top: 10px; margin-left: 100px;">
         <div class="row">
             <!-- Coluna 1 - Alojamentos -->
             <div class="col-md-4">
@@ -263,7 +263,7 @@
 <footer class="py-3 my-4">
     <ul class="nav justify-content-center border-bottom pb-3 mb-3">
     </ul>
-    <div class="text-center">
+    <div class="text-center" data-authorized="{% if session.user in ['fernandopereira', 'admin'] %}true{% else %}false{% endif %}">
         <a href="/debug" class="nav-link px-2 text-muted" onclick="return promptPassword()">
             &copy; 2025 Fernando Pereira | Versão: 1.2 Flask
             {% if session.user %}
@@ -273,11 +273,12 @@
     </div>
     <script>
         function promptPassword() {
-            // Check if user is fernando
-            {% if session.user in ['fernandopereira', 'admin'] %}
+            var isAuthorized = document.querySelector('[data-authorized]').getAttribute('data-authorized') === 'true';
+            
+            if (isAuthorized) {
                 window.location.href = "/debug";
                 return false;
-            {% else %}
+            } else {
                 var password = prompt("Por favor, digite a senha de acesso:");
                 if (password === atob("MDIwMjMwOTE=")) {
                     window.location.href = "/debug";
@@ -286,7 +287,7 @@
                     alert("Senha inválida. Tente novamente.");
                     return false;
                 }
-            {% endif %}
+            }
         }
     </script>
 </footer>
@@ -321,5 +322,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+<!-- Bootstrap JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

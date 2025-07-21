@@ -242,7 +242,7 @@ def generate_rg():
 
 
 def generate_matricula():
-    return str(random.randint(1000, 1500000))
+    return str(random.randint(10000, 1500000))
 
 
 def generate_nome():

@@ -470,12 +470,13 @@ def export_aux():
             "debug.html",
             debug_content="""
             <div class="container">
-                <h3>Export Database</h3>
+                <h3>Exportar Coleção Auxiliar</h3>
+                <p>Exporte a coleção auxiliar para um arquivo JSON. Depois importe para sentenciados, ele vai importar e somente os novos registros</p>
                 <form method="POST">
                     <div class="form-group">
                         <label>Export Directory Path:</label>
                         <input type="text" name="export_path" class="form-control" 
-                               placeholder="Enter directory path" required>
+                               placeholder="Diretorio onde salvar" required>
                     </div>
                     <div class="form-group mt-3">
                         <label>Filename:</label>

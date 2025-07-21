@@ -171,3 +171,4 @@ cython_debug/
 db.csv
 
 .DS_Store
+*.json
