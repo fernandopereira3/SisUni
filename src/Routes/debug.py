@@ -460,6 +460,38 @@ def clean_banco_aux():
     )
 
 
+@debug_bp.route("/clear/excluidos", methods=["GET"])
+def clean_excluidos():
+    count = 0
+    for doc in db.excluidos.find():
+        if "matricula" in doc and isinstance(doc["matricula"], str):
+            original = doc["matricula"]
+
+            clean_matricula = (
+                original.replace(" ", "").replace(".", "").replace("-", "")
+            )
+
+            if len(clean_matricula) > 0:
+                clean_matricula = clean_matricula[:-1]
+
+            if clean_matricula != original:
+                db.excluidos.update_one(
+                    {"_id": doc["_id"]},
+                    {"$set": {"matricula": clean_matricula}},
+                )
+                count += 1
+
+    return render_template(
+        "debug.html",
+        debug_content=f"""
+        <div class="alert alert-success">
+            <h4>Limpeza de Matrículas Concluída</h4>
+            <p>Total de matrículas atualizadas: {count}</p>
+        </div>
+    """,
+    )
+
+
 @debug_bp.route("/debug/banco/export", methods=["GET", "POST"])
 def export_aux():
     import os
@@ -542,7 +574,57 @@ def export_aux():
         )
 
 
-@debug_bp.route("/debug/banco/import", methods=["GET", "POST"])
+@debug_bp.route("/debug/banco/import", methods=["GET"])
+def import_banco():
+    """Main import page with options for different import operations"""
+    return render_template(
+        "debug.html",
+        debug_content="""
+        <div class="container">
+            <h3>Importar / Gerenciar Banco de Dados</h3>
+            <p>Escolha uma das opções abaixo para importar ou gerenciar dados do banco:</p>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5><i class="fas fa-upload"></i> Importar Sentenciados</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Importe dados para a coleção de sentenciados a partir de um arquivo JSON.</p>
+                            <a href="/debug/banco/import/sentenciados" class="btn btn-primary">
+                                <i class="fas fa-file-import"></i> Importar Sentenciados
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-danger text-white">
+                            <h5><i class="fas fa-trash"></i> Excluir Sentenciados</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Exclua sentenciados baseado nas matrículas da coleção excluídos.</p>
+                            <a href="/debug/banco/import/excluidos" class="btn btn-danger">
+                                <i class="fas fa-user-minus"></i> Excluir Sentenciados
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <a href="/debug" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar ao Debug
+                </a>
+            </div>
+        </div>
+    """,
+    )
+
+
+@debug_bp.route("/debug/banco/import/sentenciados", methods=["GET", "POST"])
 def import_sentenciados():
     """Route to import JSON file to sentenciados collection"""
     if request.method == "GET":
@@ -559,6 +641,11 @@ def import_sentenciados():
                     <p></p>
                     <button type="submit" class="btn btn-primary">Import to Sentenciados</button>
                 </form>
+                <div class="mt-3">
+                    <a href="/debug/banco/import" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Voltar às Opções de Import
+                    </a>
+                </div>
             </div>
         """,
         )
@@ -618,5 +705,90 @@ def import_sentenciados():
             <p>Errors: {errors}</p>
             {f"<p>Error messages:</p><ul>{''.join([f'<li>{msg}</li>' for msg in error_msgs[:5]])}</ul>" if error_msgs else ""}
         </div>
+        <div class="mt-3">
+            <a href="/debug/banco/import/sentenciados" class="btn btn-primary">Importar Novamente</a>
+            <a href="/debug/banco/import" class="btn btn-secondary">Voltar às Opções de Import</a>
+        </div>
     """,
     )
+
+
+@debug_bp.route("/debug/banco/import/excluidos", methods=["GET", "POST"])
+def import_excluidos():
+    """Route to exclude records from sentenciados based on excluidos collection"""
+    if request.method == "GET":
+        return render_template(
+            "debug.html",
+            debug_content="""
+            <div class="container">
+                <h3>Excluir Sentenciados</h3>
+                <p>Esta operação irá excluir da coleção 'sentenciados' todas as matrículas que constam na coleção 'excluidos'.</p>
+                <div class="alert alert-warning">
+                    <strong>Atenção:</strong> Esta operação não pode ser desfeita. Certifique-se de que deseja prosseguir.
+                </div>
+                <form method="POST">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Excluir Sentenciados
+                    </button>
+                    <a href="/debug" class="btn btn-secondary">Cancelar</a>
+                </form>
+            </div>
+        """,
+        )
+
+    # Handle POST request - perform exclusion
+    try:
+        # Get all matriculas from excluidos collection
+        excluidos_docs = list(db.excluidos.find({}, {"matricula": 1, "_id": 0}))
+
+        if not excluidos_docs:
+            return render_template(
+                "debug.html",
+                debug_content='<div class="alert alert-warning">Nenhuma matrícula encontrada na coleção excluidos</div>',
+            )
+
+        # Extract matriculas from excluidos collection
+        matriculas_excluir = [
+            doc.get("matricula") for doc in excluidos_docs if doc.get("matricula")
+        ]
+
+        if not matriculas_excluir:
+            return render_template(
+                "debug.html",
+                debug_content='<div class="alert alert-warning">Nenhuma matrícula válida encontrada na coleção excluidos</div>',
+            )
+
+        # Delete records from sentenciados collection
+        result = db.sentenciados.delete_many({"matricula": {"$in": matriculas_excluir}})
+
+        deleted_count = result.deleted_count
+        total_matriculas = len(matriculas_excluir)
+
+        return render_template(
+            "debug.html",
+            debug_content=f"""
+            <div class="alert alert-success">
+                <h4>Exclusão Concluída</h4>
+                <p>Total de matrículas na coleção excluidos: {total_matriculas}</p>
+                <p>Registros excluídos da coleção sentenciados: {deleted_count}</p>
+                <p>Registros não encontrados: {total_matriculas - deleted_count}</p>
+            </div>
+            <div class="mt-3">
+                <a href="/debug/banco/import/excluidos" class="btn btn-primary">Executar Novamente</a>
+                <a href="/debug/banco/import" class="btn btn-secondary">Voltar às Opções de Import</a>
+            </div>
+        """,
+        )
+
+    except Exception as e:
+        return render_template(
+            "debug.html",
+            debug_content=f"""
+            <div class="alert alert-danger">
+                <h4>Erro na Exclusão</h4>
+                <p>Erro: {str(e)}</p>
+                <a href="/debug/banco/import/excluidos" class="btn btn-primary mt-2">Tentar Novamente</a>
+                <a href="/debug/banco/import" class="btn btn-secondary mt-2">Voltar às Opções de Import</a>
+            </div>
+        """,
+        )

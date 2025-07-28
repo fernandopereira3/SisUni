@@ -128,6 +128,36 @@ def sentenciado_detalhes(matricula):
         return jsonify({"erro": f"Erro interno: {str(e)}"}), 500
 
 
+@rotas_bp.route("/excluido_detalhes/<matricula>", methods=["GET"])
+def excluido_detalhes(matricula):
+    try:
+        excluidos_collection = db.excluidos
+
+        # Buscar o excluido
+        excluido = excluidos_collection.find_one({"matricula": matricula})
+
+        if not excluido:
+            return jsonify({"erro": "Excluído não encontrado"}), 404
+
+        # Converter ObjectId para string se existir
+        if "_id" in excluido:
+            excluido["_id"] = str(excluido["_id"])
+
+        # Garantir que matricula seja string
+        excluido["matricula"] = str(excluido["matricula"])
+
+        # Retornar dados usando json_util para lidar com tipos MongoDB
+        return (
+            json_util.dumps(excluido),
+            200,
+            {"Content-Type": "application/json"},
+        )
+
+    except Exception as e:
+        print(f"Erro na rota excluido_detalhes: {str(e)}")  # Debug
+        return jsonify({"erro": f"Erro interno: {str(e)}"}), 500
+
+
 @rotas_bp.route("/entrada_saida", methods=["GET", "POST"])
 def entrada_saida():
     form = PesquisaForm()

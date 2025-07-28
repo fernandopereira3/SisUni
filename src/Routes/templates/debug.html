@@ -52,8 +52,14 @@
                                     </li>
                                     <li>
                                         <a class="dropdown-item text-danger" href="/clear/aux" onclick="return confirm('Tem certeza que deseja limpar as matrículas das atividades?')">
-                                            <i class="fas fa-tasks"></i> Limpar Auxiliar
+                                            <i class="bi bi-radioactive"></i> Limpar Auxiliar
                                         </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" href="/clear/excluidos" onclick="return confirm('Tem certeza que deseja limpar as matrículas dos excluídos?')">
+                                            <i class="fas fa-user-times"></i> Limpar Matrículas Excluídos
+                                        </a>
+                                    </li>
                                 </ul>
                             </div>
                             <div class="dropdown">
@@ -62,10 +68,10 @@
                                 </button>
                                 <ul class="dropdown-menu">
                                     <li>
-                                        <a href="/debug/banco/export" class="list-group-item list-group-item-action"><i class="fas fa-upload"></i> Exportar Banco</a>
+                                        <a href="/debug/banco/export" class="dropdown-item"><i class="fas fa-upload"></i> Exportar Banco</a>
                                     </li>
                                     <li>
-                                        <a href="/debug/banco/import" class="list-group-item list-group-item-action"><i class="fas fa-download"></i> Importar Banco</a>
+                                        <a href="/debug/banco/import" class="dropdown-item"><i class="fas fa-download"></i> Importar Banco</a>
                                     </li>
                                 </ul>
                             </div>
@@ -76,17 +82,19 @@
                                 <ul class="dropdown-menu">
                                     <li>
                                         <a class="dropdown-item" href="/debug/trabalho/db">
-                                            <i class="fas fa-user-minus"></i> Visualizar Trab 
+                                            <i class="fas fa-briefcase"></i> Visualizar Trabalho
                                         </a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item" href="/debug/visitas/db">
-                                            <i class="fas fa-briefcase"></i> Visualizar Aux
+                                            <i class="fas fa-eye"></i> Visualizar Visitas
                                         </a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item" href="/debug/sentenciados/db">
-                                            <i class="fas fa-tasks"></i> Visualizar sentenciados                                        </a>
+                                            <i class="fas fa-users"></i> Visualizar Sentenciados
+                                        </a>
+                                    </li>
                                 </ul>
                             </div>
                         </div>

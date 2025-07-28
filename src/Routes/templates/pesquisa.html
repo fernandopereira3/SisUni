@@ -38,9 +38,23 @@
                     <input type="text" class="form-control" id="nome" placeholder="Nome" name="nome" style="width: 80%;"> 
                 </div>
                 <hr>            
-                <p>
+                <div class="d-flex align-items-center gap-3">
                     <button type="submit" class="btn btn-primary">Pesquisar</button>
-                </p>
+                    <div class="text-dark">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="colecao" id="sentenciados" value="sentenciados" checked>
+                            <label class="form-check-label" for="sentenciados">
+                                <i class="bi bi-people-fill"></i> Sentenciados
+                            </label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="colecao" id="excluidos" value="excluidos">
+                            <label class="form-check-label" for="excluidos">
+                                <i class="bi bi-person-x-fill"></i> Excluídos
+                            </label>
+                        </div>
+                    </div>
+                </div>
             </form>
         </div>
         <div class="col">
@@ -63,7 +77,11 @@
                     });
                 
                     function adicionarBotoesDetalhes() {
-                        const tabela = document.getElementById('tabela-sentenciados');
+                        // Procurar por tabelas de sentenciados ou excluidos
+                        const tabelaSentenciados = document.getElementById('tabela-sentenciados');
+                        const tabelaExcluidos = document.getElementById('tabela-excluidos');
+                        const tabela = tabelaSentenciados || tabelaExcluidos;
+                        
                         if (!tabela) return;
                     
                         tabela.querySelectorAll('tbody tr').forEach(linha => {
@@ -74,7 +92,10 @@
                                 const botao = document.createElement('button');
                                 botao.className = 'btn btn-sm btn-info ms-1';
                                 botao.innerHTML = 'Detalhes';
-                                botao.onclick = () => carregarDetalhes(matricula);
+                                
+                                // Determinar qual rota usar baseado no ID da tabela
+                                const isExcluidos = tabela.id === 'tabela-excluidos';
+                                botao.onclick = () => carregarDetalhes(matricula, isExcluidos);
 
                                 colunaAcoes.appendChild(botao);
                             }
@@ -180,15 +201,23 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     // Função para carregar os detalhes do sentenciado via AJAX
-    function carregarDetalhes(matricula) {
-    console.log('Iniciando carregamento para matricula:', matricula);
+    function carregarDetalhes(matricula, isExcluidos = false) {
+    console.log('Iniciando carregamento para matricula:', matricula, 'isExcluidos:', isExcluidos);
     
     // Mostrar a modal
     var myModal = new bootstrap.Modal(document.getElementById('detalhesSentenciadoModal'));
+    
+    // Atualizar o título da modal baseado no tipo
+    const modalTitle = document.getElementById('detalhesSentenciadoModalLabel');
+    modalTitle.textContent = isExcluidos ? 'Detalhes do Excluído' : 'Detalhes do Sentenciado';
+    
     myModal.show();
     
+    // Determinar a rota baseada no tipo
+    const rota = isExcluidos ? `/excluido_detalhes/${matricula}` : `/sentenciado_detalhes/${matricula}`;
+    
     // Fazer a requisição AJAX para obter os detalhes
-    fetch(`/sentenciado_detalhes/${matricula}`)
+    fetch(rota)
         .then(response => {
             console.log('Status da resposta:', response.status);
             console.log('Response OK:', response.ok);
@@ -213,7 +242,7 @@
             }
             
             // Preencher a modal com os detalhes
-            const conteudo = criarConteudoDetalhes(data);
+            const conteudo = criarConteudoDetalhes(data, isExcluidos);
             document.getElementById('detalhesSentenciadoConteudo').innerHTML = conteudo;
         })
         .catch(error => {
@@ -229,8 +258,26 @@
 
     
     // Função para criar o HTML dos detalhes
-    function criarConteudoDetalhes(sentenciado) {
+    function criarConteudoDetalhes(sentenciado, isExcluidos = false) {
+        // Seção de destaque para data de exclusão
+        const dataExclusaoDestaque = isExcluidos && sentenciado.exclusao ? `
+            <div class="alert alert-danger border-danger mb-4" style="border-width: 3px !important;">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <i class="fas fa-exclamation-triangle fa-2x text-danger"></i>
+                    </div>
+                    <div class="col">
+                        <h5 class="alert-heading mb-1 text-danger">REGISTRO EXCLUÍDO</h5>
+                        <p class="mb-1"><strong>Data de Exclusão:</strong> <span class="badge bg-danger fs-6">${sentenciado.exclusao}</span></p>
+                        ${sentenciado.motivo_exclusao ? `<p class="mb-0"><strong>Motivo:</strong> ${sentenciado.motivo_exclusao}</p>` : ''}
+                        ${sentenciado.destino ? `<p class="mb-0"><strong>Destino:</strong> ${sentenciado.destino}</p>` : ''}
+                    </div>
+                </div>
+            </div>
+        ` : '';
+        
         return `
+            ${dataExclusaoDestaque}
             <div class="row">
                 <div class="col-md-6">
                     <h4 class="border-bottom pb-2">Informações Pessoais</h4>

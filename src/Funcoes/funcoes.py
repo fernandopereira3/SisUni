@@ -21,6 +21,7 @@ def construir_tabela(
     query=None,
     incluir_acoes=True,
     classe_css="table table-striped",
+    colecao="sentenciados",
 ):
     try:
         # Se não foram passados documentos, buscar no banco
@@ -29,19 +30,42 @@ def construir_tabela(
                 # Query padrão - todos os documentos
                 query = {}
 
-            documentos = list(db.sentenciados.find(query, {"_id": 0}).sort("nome", 1))
+            # Selecionar a coleção apropriada
+            if colecao == "excluidos":
+                documentos = list(db.excluidos.find(query, {"_id": 0}).sort("nome", 1))
+            else:
+                documentos = list(
+                    db.sentenciados.find(query, {"_id": 0}).sort("nome", 1)
+                )
 
         if documentos:
             # Colunas básicas
             acoes_header = "<th>Ações</th>" if incluir_acoes else ""
+            table_id = f"tabela-{colecao}"
+
+            # Definir cores e badges baseados na coleção
+            if colecao == "excluidos":
+                table_class = f"{classe_css} table-danger"
+                badge_class = "badge bg-danger"
+                badge_text = "EXCLUÍDO"
+                header_class = "table-danger"
+            else:
+                table_class = f"{classe_css} table-success"
+                badge_class = "badge bg-success"
+                badge_text = "ATIVO"
+                header_class = "table-success"
 
             html = f"""
-            <table class="{classe_css}" id="tabela-sentenciados">
-                <thead>
+            <div class="mb-3">
+                <h5><span class="{badge_class}">{badge_text.upper()}</span></h5>
+            </div>
+            <table class="{table_class}" id="{table_id}">
+                <thead class="{header_class}">
                     <tr>
                         <th>Matrícula</th>
                         <th>Nome</th>
                         <th>Alojamento</th>
+                        <th>Status</th>
                         {acoes_header}
                     </tr>
                 </thead>
@@ -53,6 +77,17 @@ def construir_tabela(
                 matricula = doc.get("matricula", "")
                 nome = doc.get("nome", "")
                 alojamento = doc.get("pavilhao", "") or doc.get("alojamento", "")
+
+                # Badge de status baseado na coleção
+                if colecao == "excluidos":
+                    status_badge = '<span class="badge bg-danger">EXCLUÍDO</span>'
+                    motivo_exclusao = doc.get("motivo_exclusao", "")
+                    if motivo_exclusao:
+                        status_badge += (
+                            f'<br><small class="text-muted">{motivo_exclusao}</small>'
+                        )
+                else:
+                    status_badge = '<span class="badge bg-success">ATIVO</span>'
 
                 # Coluna de ações (se solicitada)
                 acoes_cell = ""
@@ -68,6 +103,7 @@ def construir_tabela(
                         <td>{matricula}</td>
                         <td>{nome}</td>
                         <td>{alojamento}</td>
+                        <td>{status_badge}</td>
                         {acoes_cell}
                     </tr>
                 """

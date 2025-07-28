@@ -103,6 +103,9 @@ def pesquisa_sentenciados():
     if form.validate_on_submit():
         matricula = form.matricula.data.strip()
         nome = form.nome.data.strip()
+        colecao = request.form.get(
+            "colecao", "sentenciados"
+        )  # Default para sentenciados
         query = {}
 
         if matricula:
@@ -114,6 +117,6 @@ def pesquisa_sentenciados():
             query["nome"] = {"$regex": nome, "$options": "i"}
 
         # Só gera tabela quando há pesquisa
-        tabela_html = construir_tabela(query=query, incluir_acoes=True)
+        tabela_html = construir_tabela(query=query, incluir_acoes=True, colecao=colecao)
 
     return render_template("pesquisa.html", form=form, tabela_html=tabela_html)
