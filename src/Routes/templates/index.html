@@ -63,16 +63,17 @@
     </nav>
     <!----FIM DO HEADER-->
     <p></p>
-    <div class="card totals-card" style="display: inline-block; width: 90%; border: none; position: relative; margin-top: 10px; margin-left: 100px;">
+    <div class="container-fluid mt-4">
+        <div class="card totals-card border-0">
         <div class="row">
             <!-- Coluna 1 - Alojamentos -->
             <div class="col-md-4">
                 <!-- Card Alojamentos -->
-                <div class="card">
-                    <div class="card-body box-shadow" style="border: 1px solid #ccc; border-radius: 10px;">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">ALOJAMENTOS </h5>
-                        </div>
+                <div class="card box-shadow" style="border: 1px solid #ccc; border-radius: 10px;">
+                    <div class="card-header">
+                        <h5 class="mb-0">ALOJAMENTOS</h5>
+                    </div>
+                    <div class="card-body">
 
                         <!-- Alojamento 1 -->
                         <div class="row">
@@ -172,11 +173,11 @@
             <!-- Coluna 2 - Presos Trabalhando e Visitas -->
             <div class="col-md-8">
                 <!-- Presos Trabalhando -->
-                <div class="card mb-4">
-                    <div class="card-body box-shadow" style="border: 1px solid #ccc; border-radius: 10px;">    
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">Presos aptos a trabalhar (NÃO SIGNIFICA QUE ESTÃO TRABALHANDO HOJE!)</h5>
-                        </div>
+                <div class="card mb-4 box-shadow" style="border: 1px solid #ccc; border-radius: 10px;">
+                    <div class="card-header">
+                        <h5 class="mb-0">Presos aptos a trabalhar (NÃO SIGNIFICA QUE ESTÃO TRABALHANDO HOJE!)</h5>
+                    </div>
+                    <div class="card-body">
                         <div class="table-overflow">
                             {{ tab_trabalho|safe }}
                             <style>
@@ -186,15 +187,15 @@
                                 }
                             </style>
                         </div>
-                    </div>   
+                    </div>
                 </div>
 
                 <!-- Card Visitas -->
-                <div class="card mb-4">
-                    <div class="card-body box-shadow" style="border: 1px solid #ccc; border-radius: 10px;">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">Visitantes</h5>
-                        </div>
+                <div class="card mb-4 box-shadow" style="border: 1px solid #ccc; border-radius: 10px;">
+                    <div class="card-header">
+                        <h5 class="mb-0">Visitantes</h5>
+                    </div>
+                    <div class="card-body">
                         <div class="row">
                             <div class="col">
                                 <div class="card text-center">
@@ -244,6 +245,7 @@
                 </div>
             </div>
         </div>
+        </div>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -265,7 +267,7 @@
     </ul>
     <div class="text-center" data-authorized="{% if session.user in ['fernandopereira', 'admin'] %}true{% else %}false{% endif %}">
         <a href="/debug" class="nav-link px-2 text-muted" onclick="return promptPassword()">
-            &copy; 2025 Fernando Pereira | Versão: 1.2 Flask
+            &copy; 2025 Fernando Pereira | Versão: 1.5 Flask
             {% if session.user %}
                 | Usuario: {{ session.user }}
             {% endif %}
