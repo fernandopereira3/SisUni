@@ -34,9 +34,9 @@
                 <form method="POST" class="form-row box-shadow">
                 {{ form.csrf_token }}
                 <div class="d-flex gap-2">
-                    <input type="text" class="form-control" id="matricula" placeholder="Matricula" name="matricula" style="width: 20%;">
+                    <input type="text" class="form-control" id="matricula" placeholder="Matricula" name="matricula" style="width: 30%;">
                     <div class="d-flex align-items-center"><label>|</label></div>
-                    <input type="text" class="form-control" id="nome" placeholder="Nome" name="nome" style="width: 80%;"> 
+                    <input type="text" class="form-control" id="nome" placeholder="Nome" name="nome" style="width: 70%;"> 
                 </div>
                 <hr>            
                 <div class="d-flex align-items-center gap-3">
@@ -57,6 +57,52 @@
                     </div>
                 </div>
                 </form>
+                
+                <!-- Cards informativos abaixo do formulário -->
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <div class="card text-center mb-3">
+                            <div class="card-header bg-info text-dark">
+                                <i class="fas fa-info-circle"></i> Instruções de Pesquisa
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text mb-2">
+                                    <strong>Dicas:</strong> Digite a matrícula ou nome para pesquisar. 
+                                    Use o filtro para alternar entre sentenciados ativos e excluídos.
+                                </p>
+                                <small class="text-muted">
+                                    <i class="fas fa-lightbulb"></i> Clique em "Detalhes" nos resultados para ver informações completas
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Estatísticas rápidas -->
+                <div class="row">
+                    <div class="col-6">
+                        <div class="card text-center">
+                            <div class="card-header">
+                                <i class="fas fa-users"></i> Total de Registros
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title" id="total-registros">-</h5>
+                                <small class="text-muted">Na pesquisa atual</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card text-center">
+                            <div class="card-header">
+                                <i class="fas fa-search"></i> Última Pesquisa
+                            </div>
+                            <div class="card-body">
+                                <h6 class="card-title" id="ultima-pesquisa">-</h6>
+                                <small class="text-muted">Horário</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="col-lg-8 col-md-6">
                 <div class="table-overflow">
@@ -75,6 +121,7 @@
                     // Adiciona botões de detalhes na tabela quando carrega
                     document.addEventListener('DOMContentLoaded', function() {
                         adicionarBotoesDetalhes();
+                        atualizarEstatisticas();
                     });
                 
                     function adicionarBotoesDetalhes() {
@@ -101,6 +148,28 @@
                                 colunaAcoes.appendChild(botao);
                             }
                         });
+                    }
+                    
+                    // Função para atualizar estatísticas
+                    function atualizarEstatisticas() {
+                        const tabelaSentenciados = document.getElementById('tabela-sentenciados');
+                        const tabelaExcluidos = document.getElementById('tabela-excluidos');
+                        const tabela = tabelaSentenciados || tabelaExcluidos;
+                        
+                        if (tabela) {
+                            const totalLinhas = tabela.querySelectorAll('tbody tr').length;
+                            document.getElementById('total-registros').textContent = totalLinhas;
+                        } else {
+                            document.getElementById('total-registros').textContent = '0';
+                        }
+                        
+                        // Atualizar horário da última pesquisa
+                        const agora = new Date();
+                        const horario = agora.toLocaleTimeString('pt-BR', { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                        });
+                        document.getElementById('ultima-pesquisa').textContent = horario;
                     }
                 </script>
                 </div>

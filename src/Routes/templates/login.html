@@ -33,7 +33,7 @@
         <div class="row justify-content-center">
             <div class="col-8">
         <form method="POST" class="form-row box-shadow" style="width: 100%; border: 1px solid #ccc; padding: 30px; border-radius: 10px;">
-            <div class="card-header mb-3" style="background-color: #a7a5a5; color: #fff; border: 1px solid #f2f2f2; border-radius: 5px; padding: 10px;">
+            <div class="card-header mb-3" style="background-color: #a7a5a5; color: #000; border: 1px solid #f2f2f2; border-radius: 5px; padding: 10px;">
                 Bem vindo, quem vai usar o sistema?
             </div>
             <div class="d-flex flex-column gap-3">
@@ -71,5 +71,94 @@
     </div>
     <!--FIM DO FORM--->
 
+    <script>
+        // Corrigir comportamento dos form-floating labels
+        document.addEventListener('DOMContentLoaded', function() {
+            const floatingInputs = document.querySelectorAll('.form-floating input, .form-floating select');
+            
+            floatingInputs.forEach(input => {
+                // Função para verificar se o input tem valor e ajustar o label
+                function checkFloatingLabel() {
+                    const parent = input.closest('.form-floating');
+                    const label = parent.querySelector('label');
+                    
+                    if (input.value && input.value.trim() !== '' && input.value !== '0') {
+                        parent.classList.add('has-value');
+                        // Forçar o label para cima
+                        if (label) {
+                            label.style.transform = 'scale(0.85) translateY(-0.5rem) translateX(0.15rem)';
+                            label.style.opacity = '0.65';
+                        }
+                    } else {
+                        parent.classList.remove('has-value');
+                        // Resetar o label
+                        if (label && input.value === '') {
+                            label.style.transform = '';
+                            label.style.opacity = '';
+                        }
+                    }
+                }
+                
+                // Verificar no carregamento da página
+                checkFloatingLabel();
+                
+                // Verificar quando o usuário digita
+                input.addEventListener('input', checkFloatingLabel);
+                input.addEventListener('focus', function() {
+                    const parent = input.closest('.form-floating');
+                    const label = parent.querySelector('label');
+                    if (label) {
+                        label.style.transform = 'scale(0.85) translateY(-0.5rem) translateX(0.15rem)';
+                        label.style.opacity = '0.65';
+                    }
+                });
+                input.addEventListener('blur', checkFloatingLabel);
+                input.addEventListener('change', checkFloatingLabel);
+            });
+        });
+    </script>
+    
+    <style>
+        /* Forçar labels para cima quando há valor */
+        .form-floating.has-value > label,
+        .form-floating > input:focus ~ label,
+        .form-floating > select:focus ~ label,
+        .form-floating > input:not(:placeholder-shown) ~ label,
+        .form-floating > input[value]:not([value=""]) ~ label {
+            opacity: 0.65;
+            transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem) !important;
+        }
+        
+        /* Garantir que labels sempre se movam quando há texto */
+        .form-floating > input:not(:placeholder-shown) ~ label {
+            transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem) !important;
+            opacity: 0.65 !important;
+        }
+        
+        .form-floating > input,
+        .form-floating > select {
+            padding-top: 1.625rem !important;
+            padding-bottom: 0.625rem !important;
+        }
+        
+        .form-floating > label {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            padding: 1rem 0.75rem;
+            pointer-events: none;
+            border: 1px solid transparent;
+            transform-origin: 0 0;
+            transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
+            z-index: 2;
+        }
+        
+        /* Forçar comportamento quando input tem qualquer conteúdo */
+        .form-floating input:not(:placeholder-shown) + label {
+            transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem) !important;
+            opacity: 0.65 !important;
+        }
+    </style>
 </body>
 </html>

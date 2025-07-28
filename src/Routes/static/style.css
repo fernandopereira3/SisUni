@@ -40,7 +40,7 @@ body {
 
 /* Navegação modernizada */
 .bg-nav {
-   background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+   background: linear-gradient(90deg, #000000, #ffffff);
    color: var(--text-nav);
    min-height: 70px;
    border-bottom: 2px solid var(--primary-color);
@@ -144,19 +144,36 @@ body {
    color: white;
 }
 
-/* Cards modernizados */
+/* Cards modernizados - Estilo inspirado no CodePen */
 .card {
-   border: 1px solid var(--border-color);
-   border-radius: var(--border-radius);
-   background-color: var(--card-bg);
-   box-shadow: var(--shadow-sm);
-   transition: var(--transition);
-   overflow: hidden;
+     border: none;
+     border-radius: 15px;
+     background: linear-gradient(145deg, #ffffff, #f0f0f0);
+     box-shadow: 8px 8px 20px rgba(0,0,0,0.1), -2px -2px 10px rgba(255,255,255,0.8);
+     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+     overflow: hidden;
+     position: relative;
 }
 
 .card:hover {
-   box-shadow: var(--shadow-md);
-   transform: translateY(-2px);
+     box-shadow: 12px 12px 25px rgba(0,0,0,0.15), -3px -3px 12px rgba(255,255,255,0.9);
+     transform: translateY(-5px) scale(1.01);
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.card:hover::before {
+    opacity: 1;
 }
 
 .bg-card {
@@ -167,22 +184,88 @@ body {
 }
 
 .card-header {
-    background-color: #f8f9fa;
-    color: var(--text-primary);
-    border-bottom: 1px solid var(--border-color);
-    font-weight: 600;
-    padding: 1rem;
-    margin-bottom: 0;
+     background-color: #c6c6c6;
+     color: var(--text-primary);
+     border-bottom: 1px solid rgba(0,0,0,0.08);
+     font-weight: 600;
+     padding: 1.5rem 2rem;
+     margin-bottom: 0;
+     position: relative;
+     z-index: 2;
+}
+
+.card-header h5 {
+     margin: 0;
+     font-size: 1.1rem;
+     font-weight: 600;
+     letter-spacing: 0.5px;
+     text-transform: uppercase;
+}
+
+.card-header i {
+     margin-right: 0.5rem;
+     color: var(--primary-color);
 }
 
 .card-body {
-   padding: 1.5rem;
+    padding: 2rem;
+    background: transparent;
+    position: relative;
+    z-index: 1;
+}
+
+.card-body h3 {
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    font-size: 2.5rem;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.card-body .card-text {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    line-height: 1.6;
 }
 
 .card-title {
-   color: var(--text-primary);
-   font-weight: 600;
-   margin-bottom: 1rem;
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+/* Estilos específicos para cards pequenos (alojamentos) */
+ .card.text-center {
+     border-radius: 12px;
+     margin-bottom: 1rem;
+     background: linear-gradient(145deg, #ffffff, #f5f5f5);
+     box-shadow: 4px 4px 12px rgba(0,0,0,0.08), -1px -1px 6px rgba(255,255,255,0.7);
+     transition: all 0.2s ease;
+ }
+ 
+ .card.text-center:hover {
+     transform: translateY(-2px);
+     box-shadow: 6px 6px 15px rgba(0,0,0,0.12), -2px -2px 8px rgba(255,255,255,0.8);
+ }
+
+.card.text-center .card-header {
+    padding: 0.8rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    background-color: #c6c6c6;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.card.text-center .card-body {
+    padding: 1.2rem 1rem;
+}
+
+.card.text-center .card-body h3 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    margin: 0;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
 }
 
 /* Navegação responsiva */
@@ -217,19 +300,40 @@ body {
 
 /* Layout responsivo */
 .container-fluid {
-   padding: 0 1rem;
+    padding: 0 1rem;
 }
 
 @media (min-width: 768px) {
-   .container-fluid {
-      padding: 0 2rem;
-   }
+    .container-fluid {
+        padding: 0 2rem;
+    }
 }
 
 @media (min-width: 1200px) {
-   .container-fluid {
-      padding: 0 3rem;
-   }
+    .container-fluid {
+        padding: 0 3rem;
+    }
+}
+
+/* Melhorias no layout dos cards */
+.row {
+    margin-bottom: 2rem;
+}
+
+.col, .col-md-4, .col-md-8 {
+    padding: 0.75rem;
+}
+
+/* Card principal com espaçamento melhorado */
+.card.box-shadow {
+    margin-bottom: 2rem;
+    background: linear-gradient(145deg, #ffffff, #f8f9fa);
+    box-shadow: 8px 8px 25px rgba(0,0,0,0.1), -3px -3px 15px rgba(255,255,255,0.8);
+    border-radius: 20px;
+}
+
+.card.box-shadow:hover {
+    box-shadow: 12px 12px 30px rgba(0,0,0,0.15), -4px -4px 18px rgba(255,255,255,0.9);
 }
 
 
@@ -292,7 +396,6 @@ body {
    border: 1px solid var(--border-color);
    border-radius: var(--border-radius);
    padding: 0.75rem;
-   transition: var(--transition);
    font-size: 1rem;
 }
 
@@ -305,7 +408,6 @@ body {
 .form-select {
    border: 1px solid var(--border-color);
    border-radius: var(--border-radius);
-   transition: var(--transition);
 }
 
 .form-select:focus {
@@ -340,7 +442,6 @@ body {
 
 .table-bordered tbody tr:hover {
    background-color: var(--light-bg);
-   transition: var(--transition);
 }
 
 .sort-btn {
@@ -348,12 +449,10 @@ body {
     border: none;
     color: var(--text-primary);
     padding: 0 5px;
-    transition: var(--transition);
 }
 
 .sort-btn:hover {
     color: var(--primary-color);
-    transform: scale(1.1);
 }
 
 th {
@@ -363,7 +462,6 @@ th {
 /* Box shadow modernizado */
 .box-shadow {
    box-shadow: var(--shadow-lg);
-   transition: var(--transition);
 }
 
 .box-shadow:hover {
@@ -386,7 +484,6 @@ th {
    color: var(--text-primary);
    font-size: 0.85rem;
    padding: 0.4rem 1rem;
-   transition: var(--transition);
    font-weight: 500;
    border: none;
    background: none;
@@ -395,7 +492,6 @@ th {
 .dropdown-item:hover {
    background-color: var(--primary-color);
    color: white;
-   transform: translateX(4px);
 }
 
 .dropdown-item:focus {
@@ -417,20 +513,23 @@ th {
    outline-offset: 2px;
 }
 
-/* Animações suaves */
-@keyframes fadeIn {
-   from {
-      opacity: 0;
-      transform: translateY(-10px);
-   }
-   to {
-      opacity: 1;
-      transform: translateY(0);
-   }
+/* Animações removidas - Forçar remoção completa */
+* {
+   animation: none !important;
+   transition: none !important;
+   transform: none !important;
 }
 
-.dropdown-menu.show {
-   animation: fadeIn 0.2s ease-out;
+.card, .card * {
+   animation: none !important;
+   transition: none !important;
+   transform: none !important;
+}
+
+.dropdown-item, .dropdown-menu {
+   animation: none !important;
+   transition: none !important;
+   transform: none !important;
 }
 
 /* Responsividade para dispositivos móveis */
@@ -555,21 +654,7 @@ th {
    border: 0;
 }
 
-/* Animação de entrada para cards */
-.card {
-   animation: slideInUp 0.3s ease-out;
-}
-
-@keyframes slideInUp {
-   from {
-      opacity: 0;
-      transform: translateY(20px);
-   }
-   to {
-      opacity: 1;
-      transform: translateY(0);
-   }
-}
+/* Animação de entrada para cards removida */
 
 /* Melhorias para impressão */
 @media print {

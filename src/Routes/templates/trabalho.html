@@ -216,16 +216,9 @@
             alert(`Detalhes do trabalhador com matrícula: ${matricula}\n\nEsta funcionalidade será implementada em breve.`);
         }
 
-        // Inicializar dropdowns do Bootstrap
+        // Carregar dados ao inicializar a página
         document.addEventListener('DOMContentLoaded', function() {
-            // Carregar dados ao inicializar a página
             carregarDados();
-            
-            // Inicializar dropdowns
-            var dropdowns = document.querySelectorAll('.dropdown-toggle');
-            dropdowns.forEach(function(dropdown) {
-                new bootstrap.Dropdown(dropdown);
-            });
         });
     </script>
 </body>

@@ -47,8 +47,8 @@
                         <form method="POST" id="search-form">
                             {{ form.csrf_token }}
                             <div class="d-flex gap-2">
-                                <input type="text" class="form-control" id="matricula" placeholder="Matrícula" name="matricula" style="width: 20%;">
-                                <input type="text" class="form-control" id="nome" placeholder="Nome" name="nome" style="width: 80%;">
+                                <input type="text" class="form-control" id="matricula" placeholder="Matrícula" name="matricula" style="width: 30%;">
+                                <input type="text" class="form-control" id="nome" placeholder="Nome" name="nome" style="width: 70%;">
                             </div>
                             <p></p>
                             <div>
@@ -63,7 +63,7 @@
 
             <!-- Coluna de Adicionar Visita -->
             <div class="col-md-6">
-                <div class="card box-shadow" style="border: 1px solid #ccc; border-radius: 10px;">
+                <div class="card mb-4 box-shadow" style="border: 1px solid #ccc; border-radius: 10px;">
                     <div class="card-header">
                         <h5 class="mb-0">2 - Registrar Visita</h5>
                     </div>
@@ -72,25 +72,25 @@
                             <div class="row g-3">
                                 <div class="col-12">
                                     <div class="form-floating">
-                                        <input type="number" class="form-control" id="garrafas" name="garrafas" placeholder="PETs" value="0">
+                                        <input type="number" class="form-control" id="garrafas" name="garrafas" placeholder=" ">
                                         <label for="garrafas">PETs</label>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-floating">
-                                        <input type="number" class="form-control" id="homens" name="homens" placeholder="Homens" value="0">
+                                        <input type="number" class="form-control" id="homens" name="homens" placeholder=" ">
                                         <label for="homens">Homens</label>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-floating">
-                                        <input type="number" class="form-control" id="mulheres" name="mulheres" placeholder="Mulheres" value="0">
+                                        <input type="number" class="form-control" id="mulheres" name="mulheres" placeholder=" ">
                                         <label for="mulheres">Mulheres</label>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-floating">
-                                        <input type="number" class="form-control" id="criancas" name="criancas" placeholder="Crianças" value="0">
+                                        <input type="number" class="form-control" id="criancas" name="criancas" placeholder=" ">
                                         <label for="criancas">Crianças</label>
                                     </div>
                                 </div>
@@ -205,10 +205,10 @@
                     atualizarResumo();
                     
                     // Limpar os campos do formulário
-                    document.getElementById('garrafas').value = '';
-                    document.getElementById('homens').value = '';
-                    document.getElementById('mulheres').value = '';
-                    document.getElementById('criancas').value = '';
+                    document.getElementById('garrafas').value = '0';
+                    document.getElementById('homens').value = '0';
+                    document.getElementById('mulheres').value = '0';
+                    document.getElementById('criancas').value = '0';
                     
                     // Opcional: recarregar a página após um pequeno atraso se necessário
                     // setTimeout(function() {
@@ -230,6 +230,92 @@
 
         // Atualizar resumo automaticamente a cada 30 segundos
         setInterval(atualizarResumo, 30000);
+        
+        // Corrigir comportamento dos form-floating labels
+        document.addEventListener('DOMContentLoaded', function() {
+            const floatingInputs = document.querySelectorAll('.form-floating input');
+            
+            floatingInputs.forEach(input => {
+                // Função para verificar se o input tem valor e ajustar o label
+                function checkFloatingLabel() {
+                    const parent = input.closest('.form-floating');
+                    const label = parent.querySelector('label');
+                    
+                    if (input.value && input.value.trim() !== '' && input.value !== '0') {
+                        parent.classList.add('has-value');
+                        // Forçar o label para cima
+                        if (label) {
+                            label.style.transform = 'scale(0.85) translateY(-0.5rem) translateX(0.15rem)';
+                            label.style.opacity = '0.65';
+                        }
+                    } else {
+                        parent.classList.remove('has-value');
+                        // Resetar o label
+                        if (label && input.value === '') {
+                            label.style.transform = '';
+                            label.style.opacity = '';
+                        }
+                    }
+                }
+                
+                // Verificar no carregamento da página
+                checkFloatingLabel();
+                
+                // Verificar quando o usuário digita
+                input.addEventListener('input', checkFloatingLabel);
+                input.addEventListener('focus', function() {
+                    const parent = input.closest('.form-floating');
+                    const label = parent.querySelector('label');
+                    if (label) {
+                        label.style.transform = 'scale(0.85) translateY(-0.5rem) translateX(0.15rem)';
+                        label.style.opacity = '0.65';
+                    }
+                });
+                input.addEventListener('blur', checkFloatingLabel);
+                input.addEventListener('change', checkFloatingLabel);
+            });
+        });
     </script>
+    
+    <style>
+        /* Forçar labels para cima quando há valor */
+        .form-floating.has-value > label,
+        .form-floating > input:focus ~ label,
+        .form-floating > input:not(:placeholder-shown) ~ label,
+        .form-floating > input[value]:not([value=""]) ~ label {
+            opacity: 0.65;
+            transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem) !important;
+        }
+        
+        /* Garantir que labels sempre se movam quando há texto */
+        .form-floating > input:not(:placeholder-shown) ~ label {
+            transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem) !important;
+            opacity: 0.65 !important;
+        }
+        
+        .form-floating > input {
+            padding-top: 1.625rem !important;
+            padding-bottom: 0.625rem !important;
+        }
+        
+        .form-floating > label {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            padding: 1rem 0.75rem;
+            pointer-events: none;
+            border: 1px solid transparent;
+            transform-origin: 0 0;
+            transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
+            z-index: 2;
+        }
+        
+        /* Forçar comportamento quando input tem qualquer conteúdo */
+        .form-floating input:not(:placeholder-shown) + label {
+            transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem) !important;
+            opacity: 0.65 !important;
+        }
+    </style>
 </body>
 </html>
