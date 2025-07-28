@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SisUni - CPPPAC - Agendamento de Folgas</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/sp.png') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+    <!---HEADER--->
+    <nav class="navbar navbar-expand-lg navbar-light bg-nav">
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a href="/funcionarios" class="nav-link"><i class="bi bi-arrow-left-circle-fill"></i> VOLTAR</a>
+                </li>
+            </ul>
+            <ul>
+                <a href="/"><img src="{{ url_for('static', filename='img/logo3.png') }}" class="rounded" alt="Logo"></a>
+            </ul>
+        </div>
+    </nav>
+    <!----FIM DO HEADER---->
+    
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <!-- Coluna do Calendário -->
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-calendar-alt"></i> Calendário de Folgas</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <button class="btn btn-outline-primary btn-sm" onclick="previousMonth()">
+                                    <i class="fas fa-chevron-left"></i> Anterior
+                                </button>
+                                <h5 id="currentMonth" class="mb-0"></h5>
+                                <button class="btn btn-outline-primary btn-sm" onclick="nextMonth()">
+                                    Próximo <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-sm">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th class="text-center">Dom</th>
+                                            <th class="text-center">Seg</th>
+                                            <th class="text-center">Ter</th>
+                                            <th class="text-center">Qua</th>
+                                            <th class="text-center">Qui</th>
+                                            <th class="text-center">Sex</th>
+                                            <th class="text-center">Sáb</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="calendar-days">
+                                        <!-- Os dias serão gerados dinamicamente pelo JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Coluna de Informações -->
+            <div class="col-md-4">
+                <!-- Card de Agendamento -->
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0"><i class="fas fa-plus"></i> Agendar Folga</h6>
+                    </div>
+                    <div class="card-body">
+                        <form id="formFolga">
+                            <div class="mb-3">
+                                <label for="dataFolga" class="form-label">Data:</label>
+                                <input type="date" class="form-control" id="dataFolga" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="motivoFolga" class="form-label">Motivo (opcional):</label>
+                                <textarea class="form-control" id="motivoFolga" rows="3" placeholder="Descreva o motivo da folga..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-calendar-plus"></i> Agendar Folga
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Card de Folgas Agendadas -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0"><i class="fas fa-list"></i> Minhas Folgas</h6>
+                    </div>
+                    <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                        <div id="listaFolgas">
+                            {% if folgas %}
+                                {% for folga in folgas %}
+                                <div class="card mb-2 folga-item" data-id="{{ folga._id }}">
+                                    <div class="card-body p-2">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <strong>{{ folga.data.strftime('%d/%m/%Y') }}</strong>
+                                                {% if folga.motivo %}
+                                                    <br><small class="text-muted">{{ folga.motivo }}</small>
+                                                {% endif %}
+                                                <br><span class="badge 
+                                                    {% if folga.status == 'pendente' %}bg-warning
+                                                    {% elif folga.status == 'aprovada' %}bg-success
+                                                    {% else %}bg-danger{% endif %}">{{ folga.status|title }}</span>
+                                            </div>
+                                            {% if folga.status != 'aprovada' %}
+                                            <button class="btn btn-sm btn-outline-danger" onclick="cancelarFolga('{{ folga._id }}')"
+                                                    title="Cancelar folga">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="text-center text-muted">
+                                    <i class="fas fa-calendar-times fa-2x mb-2"></i>
+                                    <p>Nenhuma folga agendada</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script id="folgas-data" type="application/json">{{ folgas|tojson|safe }}</script>
+    <script>
+        let currentDate = new Date();
+        let selectedDate = null;
+        let folgasData = JSON.parse(document.getElementById('folgas-data').textContent || '[]');
+        
+        // Inicializar calendário
+        document.addEventListener('DOMContentLoaded', function() {
+            renderCalendar();
+            
+            // Event listener para o formulário
+            document.getElementById('formFolga').addEventListener('submit', function(e) {
+                e.preventDefault();
+                agendarFolga();
+            });
+        });
+        
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            // Atualizar título do mês
+            const monthNames = [
+                'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+            ];
+            document.getElementById('currentMonth').textContent = `${monthNames[month]} ${year}`;
+            
+            // Primeiro dia do mês e último dia
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+            
+            const calendarDays = document.getElementById('calendar-days');
+            calendarDays.innerHTML = '';
+            
+            // Gerar semanas (máximo 6 semanas)
+            for (let week = 0; week < 6; week++) {
+                const weekRow = document.createElement('tr');
+                
+                for (let day = 0; day < 7; day++) {
+                    const date = new Date(startDate);
+                    date.setDate(startDate.getDate() + (week * 7) + day);
+                    
+                    const dayCell = document.createElement('td');
+                    dayCell.className = 'text-center p-2';
+                    dayCell.style.cursor = 'pointer';
+                    dayCell.style.height = '60px';
+                    dayCell.onclick = () => selectDate(date);
+                    
+                    // Verificar se é do mês atual
+                    if (date.getMonth() !== month) {
+                        dayCell.classList.add('text-muted', 'bg-light');
+                    }
+                    
+                    // Verificar se tem folga agendada
+                    const dateStr = date.toISOString().split('T')[0];
+                    const folga = folgasData.find(folga => {
+                        const folgaDate = new Date(folga.data);
+                        return folgaDate.toISOString().split('T')[0] === dateStr;
+                    });
+                    
+                    if (folga) {
+                        if (folga.status === 'aprovada') {
+                            dayCell.classList.add('bg-success', 'text-white');
+                        } else if (folga.status === 'pendente') {
+                            dayCell.classList.add('bg-warning', 'text-dark');
+                        } else {
+                            dayCell.classList.add('bg-danger', 'text-white');
+                        }
+                    }
+                    
+                    dayCell.innerHTML = `
+                        <div class="fw-bold">${date.getDate()}</div>
+                        ${folga ? `<small class="d-block">${folga.status}</small>` : ''}
+                    `;
+                    
+                    weekRow.appendChild(dayCell);
+                }
+                
+                calendarDays.appendChild(weekRow);
+                
+                // Parar se já passou do mês atual
+                if (week > 0 && new Date(startDate.getTime() + (week * 7 + 6) * 24 * 60 * 60 * 1000).getMonth() !== month) {
+                    break;
+                }
+            }
+        }
+        
+        function selectDate(date) {
+            // Remover seleção anterior
+            document.querySelectorAll('td.table-primary').forEach(el => {
+                el.classList.remove('table-primary');
+            });
+            
+            // Selecionar nova data
+            event.target.closest('td').classList.add('table-primary');
+            selectedDate = date;
+            
+            // Atualizar campo de data
+            const dateStr = date.toISOString().split('T')[0];
+            document.getElementById('dataFolga').value = dateStr;
+        }
+        
+        function previousMonth() {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        }
+        
+        function nextMonth() {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        }
+        
+        function agendarFolga() {
+            const data = document.getElementById('dataFolga').value;
+            const motivo = document.getElementById('motivoFolga').value;
+            
+            if (!data) {
+                alert('Por favor, selecione uma data.');
+                return;
+            }
+            
+            // Verificar se a data não é no passado
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            const dataFolga = new Date(data);
+            
+            if (dataFolga < hoje) {
+                alert('Não é possível agendar folga para datas passadas.');
+                return;
+            }
+            
+            const dados = {
+                data: data,
+                motivo: motivo
+            };
+            
+            fetch('/api/agendar_folga', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(dados)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Folga agendada com sucesso!');
+                    location.reload(); // Recarregar página para atualizar a lista
+                } else {
+                    alert('Erro: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Erro de conexão: ' + error.message);
+            });
+        }
+        
+        function cancelarFolga(folgaId) {
+            if (!confirm('Tem certeza que deseja cancelar esta folga?')) {
+                return;
+            }
+            
+            fetch('/api/cancelar_folga', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({id: folgaId})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Folga cancelada com sucesso!');
+                    location.reload(); // Recarregar página para atualizar a lista
+                } else {
+                    alert('Erro: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Erro de conexão: ' + error.message);
+            });
+        }
+    </script>
+</body>
+</html>

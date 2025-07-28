@@ -5,6 +5,7 @@ from Routes.rotas import rotas_bp as BProtas
 from Routes.debug import debug_bp as BPdebug
 from Routes.trabalho import trabalho_bp as BPtrabalho
 from Routes.pesquisas import pesquisas_bp as BPpesquisas
+from Routes.funcionarios import funcionarios_bp as BPfuncionarios
 from Tests.test import bp_test
 from Data.conexao import conexao
 
@@ -16,6 +17,7 @@ app = Flask(
     instance_relative_config=True,
     static_folder="Routes/static",
     static_url_path="/static",
+    template_folder="Routes/templates",
 )
 secret_key = os.urandom(24)
 app.config["SECRET_KEY"] = secret_key
@@ -26,6 +28,7 @@ app.register_blueprint(BProtas)
 app.register_blueprint(BPdebug)
 app.register_blueprint(BPtrabalho)
 app.register_blueprint(BPpesquisas)
+app.register_blueprint(BPfuncionarios)
 app.register_blueprint(bp_test)
 
 if __name__ == "__main__":

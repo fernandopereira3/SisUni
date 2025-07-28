@@ -16,6 +16,11 @@ class PesquisaForm(FlaskForm):
     pesquisar = SubmitField("PESQUISAR")
 
 
+class PesquisaFuncionarios(FlaskForm):
+    nome = StringField("Nome")
+    pesquisar = SubmitField("PESQUISAR")
+
+
 def construir_tabela(
     documentos=None,
     query=None,
