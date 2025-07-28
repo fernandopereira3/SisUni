@@ -8,179 +8,263 @@ from flask import (
     jsonify,
 )
 import datetime
-import re
+from functools import wraps
+from bson import ObjectId
 from Data.conexao import conexao
-from Funcoes.funcoes import PesquisaForm, construir_tabela
 
 # Criar o blueprint
 funcionarios_bp = Blueprint("funcionarios", __name__)
 db = conexao()
 
 
+# Decorador para verificar autenticação e autorização
+def require_turno1(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Verificar se o usuário está logado
+        if "user" not in session:
+            if request.is_json:
+                return jsonify({"status": "error", "message": "Usuário não logado"})
+            return redirect(url_for("rotas.login"))
+
+        # Buscar o usuário na coleção usuarios
+        username = session["user"]
+        user = db.usuarios.find_one({"username": username})
+
+        # Verificar se o usuário existe e tem turno 1
+        if not user or user.get("turno") != "1":
+            if request.is_json:
+                return jsonify({"status": "error", "message": "Acesso negado"})
+            return render_template(
+                "acesso_negado.html", message="Acesso restrito ao turno 1"
+            )
+
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
 @funcionarios_bp.route("/funcionarios", methods=["GET"])
+@require_turno1
 def funcionarios():
-    # Verificar se o usuário está logado
-    if "user" not in session:
-        return redirect(url_for("rotas.login"))
-
-    # Buscar o usuário na coleção usuarios
-    username = session["user"]
-    user = db.usuarios.find_one({"username": username})
-
-    # Verificar se o usuário existe e tem turno 1
-    if not user or user.get("turno") != "1":
-        return render_template(
-            "acesso_negado.html", message="Acesso restrito ao turno 1"
-        )
-
     return render_template("funcionarios.html")
 
 
-@funcionarios_bp.route("/api/pesquisar_funcionarios", methods=["POST"])
-def pesquisar_funcionarios():
-    # Verificar se o usuário está logado e tem turno 1
-    if "user" not in session:
-        return jsonify({"status": "error", "message": "Usuário não logado"})
-
+@funcionarios_bp.route("/funcionarios/folgas", methods=["GET"])
+@require_turno1
+def folgas():
+    """Página de gerenciamento de folgas"""
     username = session["user"]
-    user = db.usuarios.find_one({"username": username})
-
-    if not user or user.get("turno") != "1":
-        return jsonify({"status": "error", "message": "Acesso negado"})
 
     try:
-        data = request.get_json()
-        nome = data.get("nome", "").strip()
-        departamento = data.get("departamento", "").strip()
-        status = data.get("status", "").strip()
-        turno_pesquisa = data.get("turno", "").strip()
+        # Buscar usuário e suas folgas
+        usuario = db.usuarios.find_one({"username": username})
+        folgas_agendadas = []
 
-        # Construir query para pesquisa na coleção usuarios
-        query = {}
+        if usuario:
+            # Garantir que o usuário tem o campo folgas inicializado
+            if "folgas" not in usuario:
+                db.usuarios.update_one({"username": username}, {"$set": {"folgas": []}})
+                folgas_agendadas = []
+            else:
+                folgas_agendadas = usuario["folgas"]
 
-        # Filtrar por nome se fornecido
-        if nome:
-            query["username"] = {"$regex": nome, "$options": "i"}
+                # Converter datas datetime para strings para serialização JSON
+                for folga in folgas_agendadas:
+                    if isinstance(folga.get("data"), datetime.datetime):
+                        folga["data"] = folga["data"].strftime("%Y-%m-%d")
+                    if isinstance(folga.get("data_criacao"), datetime.datetime):
+                        folga["data_criacao"] = folga["data_criacao"].strftime(
+                            "%Y-%m-%d %H:%M:%S"
+                        )
+                    if isinstance(folga.get("data_aprovacao"), datetime.datetime):
+                        folga["data_aprovacao"] = folga["data_aprovacao"].strftime(
+                            "%Y-%m-%d %H:%M:%S"
+                        )
 
-        # Filtrar por turno se fornecido
-        if turno_pesquisa:
-            query["turno"] = turno_pesquisa
+                # Ordenar por data (agora como strings)
+                folgas_agendadas.sort(key=lambda x: x.get("data", "1900-01-01"))
 
-        # Buscar funcionários na coleção usuarios
-        funcionarios = list(db.usuarios.find(query).sort("username", 1))
+        return render_template("folgas.html", folgas=folgas_agendadas, usuario=usuario)
+    except Exception as e:
+        return f"Erro ao carregar folgas: {str(e)}"
 
-        # Construir HTML da tabela de resultados
-        html_tabela = construir_tabela_funcionarios(funcionarios)
 
-        return jsonify(
-            {"status": "success", "html": html_tabela, "total": len(funcionarios)}
+@funcionarios_bp.route("/api/folgas_mes", methods=["GET"])
+@require_turno1
+def folgas_mes():
+    """Buscar todas as folgas de um mês específico"""
+    try:
+        # Obter parâmetros de ano e mês da query string
+        ano = request.args.get("ano", type=int)
+        mes = request.args.get("mes", type=int)
+
+        if not ano or not mes:
+            # Se não especificado, usar mês atual
+            hoje = datetime.datetime.now()
+            ano = hoje.year
+            mes = hoje.month
+
+        # Calcular primeiro e último dia do mês
+        primeiro_dia = datetime.datetime(ano, mes, 1)
+        if mes == 12:
+            ultimo_dia = datetime.datetime(ano + 1, 1, 1) - datetime.timedelta(days=1)
+        else:
+            ultimo_dia = datetime.datetime(ano, mes + 1, 1) - datetime.timedelta(days=1)
+
+        # Buscar todos os usuários que têm folgas no mês
+        usuarios = list(
+            db.usuarios.find(
+                {
+                    "folgas": {
+                        "$elemMatch": {
+                            "data": {"$gte": primeiro_dia, "$lte": ultimo_dia},
+                            "status": {"$in": ["pendente", "aprovada"]},
+                        }
+                    }
+                }
+            )
         )
+
+        # Extrair folgas do mês de cada usuário
+        folgas_com_nomes = []
+        for usuario in usuarios:
+            folgas_usuario = usuario.get("folgas", [])
+            for folga in folgas_usuario:
+                # Verificar se a folga está no período desejado
+                if (
+                    folga.get("data")
+                    and primeiro_dia <= folga["data"] <= ultimo_dia
+                    and folga.get("status") in ["pendente", "aprovada"]
+                ):
+                    folga_info = {
+                        "data": folga["data"].strftime("%Y-%m-%d"),
+                        "username": usuario["username"],
+                        "nome_completo": usuario.get(
+                            "nome_completo", usuario["username"]
+                        ),
+                        "status": folga["status"],
+                    }
+                    folgas_com_nomes.append(folga_info)
+
+        # Ordenar por data
+        folgas_com_nomes.sort(key=lambda x: x["data"])
+
+        return jsonify({"status": "success", "folgas": folgas_com_nomes})
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 
 
-def construir_tabela_funcionarios(funcionarios):
-    if not funcionarios:
-        return '<div class="alert alert-info">Nenhum funcionário encontrado.</div>'
+@funcionarios_bp.route("/api/aprovar_folga", methods=["POST"])
+@require_turno1
+def aprovar_folga():
+    """Aprovar uma folga"""
+    try:
+        # Verificar se o usuário tem permissão (star = true)
+        username_aprovador = session["user"]
+        user_aprovador = db.usuarios.find_one({"username": username_aprovador})
 
-    html = """
-    <div class="table-responsive">
-        <table class="table table-striped table-hover">
-            <thead class="table-dark">
-                <tr>
-                    <th>Nome de Usuário</th>
-                    <th>Turno</th>
-                    <th>Último Login</th>
-                    <th>Total de Logins</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-    """
+        if not user_aprovador or not user_aprovador.get("star", False):
+            return jsonify({"status": "error", "message": "Acesso negado"})
 
-    for funcionario in funcionarios:
-        username = funcionario.get("username", "N/A")
-        turno = funcionario.get("turno", "N/A")
-        login_times = funcionario.get("login_times", [])
+        data = request.get_json()
+        username = data.get("username")
+        data_folga = data.get("data")
 
-        # Último login
-        ultimo_login = "Nunca"
-        if login_times:
-            ultimo_login = (
-                login_times[-1].strftime("%d/%m/%Y %H:%M")
-                if isinstance(login_times[-1], datetime.datetime)
-                else str(login_times[-1])
+        if not username or not data_folga:
+            return jsonify(
+                {"status": "error", "message": "Username e data são obrigatórios"}
             )
 
-        # Total de logins
-        total_logins = len(login_times)
+        # Converter string para datetime
+        data_obj = datetime.datetime.strptime(data_folga, "%Y-%m-%d")
 
-        html += f"""
-            <tr>
-                <td>{username}</td>
-                <td><span class="badge bg-primary">Turno {turno}</span></td>
-                <td>{ultimo_login}</td>
-                <td>{total_logins}</td>
-                <td>
-                    <button class="btn btn-sm btn-outline-primary" onclick="verDetalhes('{username}')">
-                        <i class="fas fa-eye"></i> Ver
-                    </button>
-                    <button class="btn btn-sm btn-outline-warning" onclick="editarFuncionario('{username}')">
-                        <i class="fas fa-edit"></i> Editar
-                    </button>
-                </td>
-            </tr>
-        """
+        # Atualizar status da folga para aprovada
+        resultado = db.usuarios.update_one(
+            {
+                "username": username,
+                "folgas.data": data_obj,
+                "folgas.status": "pendente",
+            },
+            {
+                "$set": {
+                    "folgas.$.status": "aprovada",
+                    "folgas.$.aprovado_por": username_aprovador,
+                    "folgas.$.data_aprovacao": datetime.datetime.now(),
+                }
+            },
+        )
 
-    html += """
-            </tbody>
-        </table>
-    </div>
-    """
+        if resultado.modified_count > 0:
+            return jsonify(
+                {"status": "success", "message": "Folga aprovada com sucesso"}
+            )
+        else:
+            return jsonify(
+                {"status": "error", "message": "Folga não encontrada ou já aprovada"}
+            )
 
-    return html
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
 
 
-@funcionarios_bp.route("/funcionarios/folgas", methods=["GET"])
-def folgas():
-    # Verificar se o usuário está logado
-    if "user" not in session:
-        return redirect(url_for("rotas.login"))
-
-    # Buscar o usuário na coleção usuarios
-    username = session["user"]
-    user = db.usuarios.find_one({"username": username})
-
-    # Verificar se o usuário existe
-    if not user:
-        return render_template("acesso_negado.html", message="Usuário não encontrado")
-
+@funcionarios_bp.route("/api/folgas_pendentes", methods=["GET"])
+@require_turno1
+def folgas_pendentes():
+    """Buscar todas as folgas pendentes de aprovação"""
     try:
-        # Buscar folgas já agendadas do usuário
-        folgas_agendadas = list(db.folgas.find({"username": username}).sort("data", 1))
+        # Verificar se o usuário tem permissão (star = true)
+        username = session["user"]
+        print(f"DEBUG: Username da sessão: {username}")
+        user = db.usuarios.find_one({"username": username})
+        print(f"DEBUG: Usuário encontrado: {user}")
 
-        # Converter ObjectId para string para evitar erro de serialização JSON
-        for folga in folgas_agendadas:
-            if "_id" in folga:
+        if not user or not user.get("star", False):
+            print(
+                f"DEBUG: Acesso negado - star: {user.get('star', False) if user else 'usuário não encontrado'}"
+            )
+            return jsonify({"status": "error", "message": "Acesso negado"})
+
+        # Buscar todas as folgas pendentes
+        pipeline = [
+            {"$unwind": "$folgas"},
+            {"$match": {"folgas.status": "pendente"}},
+            {
+                "$project": {
+                    "username": 1,
+                    "nome_completo": 1,
+                    "data": "$folgas.data",
+                    "motivo": "$folgas.motivo",
+                    "status": "$folgas.status",
+                }
+            },
+            {"$sort": {"data": 1}},
+        ]
+
+        folgas_pendentes = list(db.usuarios.aggregate(pipeline))
+
+        # Converter ObjectIds e datas para string
+        for folga in folgas_pendentes:
+            # Converter ObjectId para string
+            if "_id" in folga and isinstance(folga["_id"], ObjectId):
                 folga["_id"] = str(folga["_id"])
 
-        return render_template("folgas.html", folgas=folgas_agendadas)
+            # Converter datas para string
+            if isinstance(folga["data"], datetime.datetime):
+                folga["data"] = folga["data"].strftime("%Y-%m-%d")
+
+        return jsonify({"status": "success", "folgas": folgas_pendentes})
+
     except Exception as e:
-        return f"Erro ao carregar folgas: {str(e)}"
+        return jsonify({"status": "error", "message": str(e)})
 
 
 @funcionarios_bp.route("/api/agendar_folga", methods=["POST"])
+@require_turno1
 def agendar_folga():
-    # Verificar se o usuário está logado
-    if "user" not in session:
-        return jsonify({"status": "error", "message": "Usuário não logado"})
-
+    """Agendar folga para um funcionário"""
     username = session["user"]
-    user = db.usuarios.find_one({"username": username})
-
-    if not user:
-        return jsonify({"status": "error", "message": "Usuário não encontrado"})
 
     try:
         data = request.get_json()
@@ -193,20 +277,29 @@ def agendar_folga():
         # Converter string para datetime
         data_obj = datetime.datetime.strptime(data_folga, "%Y-%m-%d")
 
-        # Verificar se já existe folga agendada para esta data
-        folga_existente = db.folgas.find_one({"username": username, "data": data_obj})
+        # Buscar o usuário
+        usuario = db.usuarios.find_one({"username": username})
+        if not usuario:
+            return jsonify({"status": "error", "message": "Usuário não encontrado"})
 
-        if folga_existente:
-            return jsonify(
-                {
-                    "status": "error",
-                    "message": "Já existe folga agendada para esta data",
-                }
-            )
+        # Garantir que o usuário tem o campo folgas inicializado
+        if "folgas" not in usuario:
+            db.usuarios.update_one({"username": username}, {"$set": {"folgas": []}})
+            usuario["folgas"] = []
+
+        # Verificar se já existe folga agendada para esta data
+        folgas_usuario = usuario.get("folgas", [])
+        for folga in folgas_usuario:
+            if folga.get("data") == data_obj:
+                return jsonify(
+                    {
+                        "status": "error",
+                        "message": "Já existe folga agendada para esta data",
+                    }
+                )
 
         # Criar novo agendamento de folga
         nova_folga = {
-            "username": username,
             "data": data_obj,
             "motivo": motivo,
             "status": "pendente",
@@ -215,15 +308,16 @@ def agendar_folga():
             "data_aprovacao": None,
         }
 
-        # Inserir no banco
-        resultado = db.folgas.insert_one(nova_folga)
+        # Adicionar folga ao array do usuário
+        resultado = db.usuarios.update_one(
+            {"username": username}, {"$push": {"folgas": nova_folga}}
+        )
 
-        if resultado.inserted_id:
+        if resultado.modified_count > 0:
             return jsonify(
                 {
                     "status": "success",
                     "message": "Folga agendada com sucesso",
-                    "id": str(resultado.inserted_id),
                 }
             )
         else:
@@ -236,34 +330,41 @@ def agendar_folga():
 
 
 @funcionarios_bp.route("/api/cancelar_folga", methods=["POST"])
+@require_turno1
 def cancelar_folga():
-    # Verificar se o usuário está logado
-    if "user" not in session:
-        return jsonify({"status": "error", "message": "Usuário não logado"})
-
+    """Cancelar folga de um funcionário"""
     username = session["user"]
-    user = db.usuarios.find_one({"username": username})
-
-    if not user:
-        return jsonify({"status": "error", "message": "Usuário não encontrado"})
 
     try:
         data = request.get_json()
-        folga_id = data.get("id")
+        data_folga = data.get("data")
 
-        if not folga_id:
-            return jsonify({"status": "error", "message": "ID da folga é obrigatório"})
+        if not data_folga:
+            return jsonify(
+                {"status": "error", "message": "Data da folga é obrigatória"}
+            )
 
-        from bson import ObjectId
+        # Converter string para datetime
+        data_obj = datetime.datetime.strptime(data_folga, "%Y-%m-%d")
 
-        # Verificar se a folga existe e pertence ao usuário
-        folga = db.folgas.find_one({"_id": ObjectId(folga_id), "username": username})
+        # Buscar o usuário e verificar se a folga existe
+        usuario = db.usuarios.find_one({"username": username})
+        if not usuario:
+            return jsonify({"status": "error", "message": "Usuário não encontrado"})
 
-        if not folga:
+        folgas_usuario = usuario.get("folgas", [])
+        folga_encontrada = None
+
+        for folga in folgas_usuario:
+            if folga.get("data") == data_obj:
+                folga_encontrada = folga
+                break
+
+        if not folga_encontrada:
             return jsonify({"status": "error", "message": "Folga não encontrada"})
 
         # Verificar se a folga ainda pode ser cancelada (não aprovada)
-        if folga.get("status") == "aprovada":
+        if folga_encontrada.get("status") == "aprovada":
             return jsonify(
                 {
                     "status": "error",
@@ -271,10 +372,12 @@ def cancelar_folga():
                 }
             )
 
-        # Remover a folga
-        resultado = db.folgas.delete_one({"_id": ObjectId(folga_id)})
+        # Remover a folga do array
+        resultado = db.usuarios.update_one(
+            {"username": username}, {"$pull": {"folgas": {"data": data_obj}}}
+        )
 
-        if resultado.deleted_count > 0:
+        if resultado.modified_count > 0:
             return jsonify(
                 {"status": "success", "message": "Folga cancelada com sucesso"}
             )

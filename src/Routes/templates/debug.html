@@ -32,7 +32,7 @@
                     <div class="card-header bg-dark text-white">
                         <h5 class="mb-0"><i class="fas fa-tools"></i> Ações de Debug</h5>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body" style="min-height: 600px;">
                         <div class="list-group">
                             <a href="/normalizar_banco" class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#confirmModal"><i class="fas fa-text-height"></i> Normalizar Banco</a>
                             <div class="dropdown">
@@ -41,22 +41,22 @@
                                 </button>
                                 <ul class="dropdown-menu">
                                     <li>
-                                        <a class="dropdown-item text-danger" href="/clear" onclick="return confirm('Tem certeza que deseja limpar as matrículas dos sentenciados?')">
+                                        <a class="dropdown-item" href="/clear" onclick="return confirm('Tem certeza que deseja limpar as matrículas dos sentenciados?')">
                                             <i class="fas fa-user-minus"></i> Limpar Matrículas Sentenciados
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item text-danger" href="/clear/trab" onclick="return confirm('Tem certeza que deseja limpar as matrículas do trabalho?')">
+                                        <a class="dropdown-item" href="/clear/trab" onclick="return confirm('Tem certeza que deseja limpar as matrículas do trabalho?')">
                                             <i class="fas fa-briefcase"></i> Limpar Matrículas do Trabalho
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item text-danger" href="/clear/aux" onclick="return confirm('Tem certeza que deseja limpar as matrículas das atividades?')">
+                                        <a class="dropdown-item" href="/clear/aux" onclick="return confirm('Tem certeza que deseja limpar as matrículas das atividades?')">
                                             <i class="bi bi-radioactive"></i> Limpar Auxiliar
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item text-danger" href="/clear/excluidos" onclick="return confirm('Tem certeza que deseja limpar as matrículas dos excluídos?')">
+                                        <a class="dropdown-item" href="/clear/excluidos" onclick="return confirm('Tem certeza que deseja limpar as matrículas dos excluídos?')">
                                             <i class="fas fa-user-times"></i> Limpar Matrículas Excluídos
                                         </a>
                                     </li>

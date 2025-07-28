@@ -36,6 +36,11 @@
             <div class="card-header mb-3" style="background-color: #a7a5a5; color: #000; border: 1px solid #f2f2f2; border-radius: 5px; padding: 10px;">
                 Bem vindo, quem vai usar o sistema?
             </div>
+            {% if error %}
+            <div class="alert alert-danger" role="alert">
+                <i class="fas fa-exclamation-triangle"></i> {{ error }}
+            </div>
+            {% endif %}
             <div class="d-flex flex-column gap-3">
                  <div class="row">
                      <div class="col-8">

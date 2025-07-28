@@ -71,6 +71,7 @@ df_lista_sentenciados = pd.DataFrame(
 def login():
     if request.method == "POST":
         login_time = datetime.datetime.now()
+        nome_completo = request.form["username"]
         username = request.form["username"].lower().replace(" ", "")
         turno = request.form.get("turno")
 
@@ -79,8 +80,24 @@ def login():
 
         if not user:
             username = username.replace(" ", "")
+
+            # Verificar novamente se o username já existe após limpeza
+            user_existente = db.usuarios.find_one({"username": username})
+            if user_existente:
+                # Username já existe, retornar erro
+                return render_template(
+                    "login.html",
+                    error="Username já existe. Da ultima vez você escreveu de maneira diferente.",
+                )
+
             db.usuarios.insert_one(
-                {"username": username, "turno": turno, "login_times": [login_time]}
+                {
+                    "username": username,
+                    "nome_completo": nome_completo,
+                    "turno": turno,
+                    "login_times": [login_time],
+                    "star": False,
+                }
             )
             session["user"] = username
             return redirect(url_for("rotas.index"))
