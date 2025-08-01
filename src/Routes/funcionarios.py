@@ -35,9 +35,7 @@ def require_turno1(f):
         if not user or user.get("turno") != "1":
             if request.is_json:
                 return jsonify({"status": "error", "message": "Acesso negado"})
-            return render_template(
-                "acesso_negado.html", message="Acesso restrito ao turno 1"
-            )
+            return render_template("401.html", message="Acesso restrito ao turno 1")
 
         return f(*args, **kwargs)
 

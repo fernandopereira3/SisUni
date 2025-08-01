@@ -25,102 +25,101 @@
 
     <!-- CONTEÚDO PRINCIPAL -->
     <div class="container-fluid mt-4">
-        <div class="row">
+        <div class="row g-4">
             <!-- Coluna de Ações -->
-            <div class="col-md-4">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-dark text-white">
+            <div class="col-lg-4 col-md-5">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-secondary text-white">
                         <h5 class="mb-0"><i class="fas fa-tools"></i> Ações de Debug</h5>
                     </div>
-                    <div class="card-body" style="min-height: 600px;">
-                        <div class="list-group">
-                            <a href="/normalizar_banco" class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#confirmModal"><i class="fas fa-text-height"></i> Normalizar Banco</a>
-                            <div class="dropdown">
-                                <button class="list-group-item list-group-item-action text-danger dropdown-toggle" type="button" aria-expanded="false">
-                                    <i class="fas fa-broom"></i> Limpar Matrículas (Cuidado !)
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li>
-                                        <a class="dropdown-item" href="/clear" onclick="return confirm('Tem certeza que deseja limpar as matrículas dos sentenciados?')">
-                                            <i class="fas fa-user-minus"></i> Limpar Matrículas Sentenciados
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="/clear/trab" onclick="return confirm('Tem certeza que deseja limpar as matrículas do trabalho?')">
-                                            <i class="fas fa-briefcase"></i> Limpar Matrículas do Trabalho
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="/clear/aux" onclick="return confirm('Tem certeza que deseja limpar as matrículas das atividades?')">
-                                            <i class="bi bi-radioactive"></i> Limpar Auxiliar
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="/clear/excluidos" onclick="return confirm('Tem certeza que deseja limpar as matrículas dos excluídos?')">
-                                            <i class="fas fa-user-times"></i> Limpar Matrículas Excluídos
-                                        </a>
-                                    </li>
-                                </ul>
+                    <div class="card-body p-0">
+                        <div class="debug-actions">
+                            <!-- Normalizar Banco -->
+                            <div class="action-item border-bottom">
+                                <a href="/normalizar_banco" class="d-block p-3 text-decoration-none text-dark hover-bg" data-bs-toggle="modal" data-bs-target="#confirmModal">
+                                    <i class="fas fa-text-height me-2"></i> Normalizar Banco
+                                </a>
                             </div>
-                            <div class="dropdown">
-                                <button class="list-group-item list-group-item-action dropdown-toggle" type="button" aria-expanded="false">
-                                    <i class="fas fa-database"></i> Exportar / Importar Banco
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li>
-                                        <a href="/debug/banco/export" class="dropdown-item"><i class="fas fa-upload"></i> Exportar Banco</a>
-                                    </li>
-                                    <li>
-                                        <a href="/debug/banco/import" class="dropdown-item"><i class="fas fa-download"></i> Importar Banco</a>
-                                    </li>
-                                </ul>
+                            
+                            <!-- Limpar Matrículas -->
+                            <div class="action-item dropdown-container border-bottom">
+                                <div class="dropdown-header p-3 text-danger cursor-pointer" data-dropdown="clear">
+                                    <i class="fas fa-broom me-2"></i> Limpar Matrículas (Cuidado !)
+                                    <i class="fas fa-chevron-down float-end mt-1"></i>
+                                </div>
+                                <div class="dropdown-content" id="clear-dropdown">
+                                    <a href="/clear" class="dropdown-link p-3 d-block text-decoration-none" onclick="return confirm('Tem certeza que deseja limpar as matrículas dos sentenciados?')">
+                                        <i class="fas fa-user-minus me-2"></i> Limpar Matrículas Sentenciados
+                                    </a>
+                                    <a href="/clear/trab" class="dropdown-link p-3 d-block text-decoration-none" onclick="return confirm('Tem certeza que deseja limpar as matrículas do trabalho?')">
+                                        <i class="fas fa-briefcase me-2"></i> Limpar Matrículas do Trabalho
+                                    </a>
+                                    <a href="/clear/aux" class="dropdown-link p-3 d-block text-decoration-none" onclick="return confirm('Tem certeza que deseja limpar as matrículas das atividades?')">
+                                        <i class="bi bi-radioactive me-2"></i> Limpar Auxiliar
+                                    </a>
+                                    <a href="/clear/excluidos" class="dropdown-link p-3 d-block text-decoration-none" onclick="return confirm('Tem certeza que deseja limpar as matrículas dos excluídos?')">
+                                        <i class="fas fa-user-times me-2"></i> Limpar Matrículas Excluídos
+                                    </a>
+                                </div>
                             </div>
-                            <div class="dropdown">
-                                <button class="list-group-item list-group-item-action dropdown-toggle" type="button" aria-expanded="false">
-                                    <i class="bi bi-eye"></i> Visualizacao dos Bancos
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li>
-                                        <a class="dropdown-item" href="/debug/trabalho/db">
-                                            <i class="fas fa-briefcase"></i> Visualizar Trabalho
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="/debug/visitas/db">
-                                            <i class="fas fa-eye"></i> Visualizar Visitas
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="/debug/sentenciados/db">
-                                            <i class="fas fa-users"></i> Visualizar Sentenciados
-                                        </a>
-                                    </li>
-                                </ul>
+                            
+                            <!-- Exportar/Importar -->
+                            <div class="action-item dropdown-container border-bottom">
+                                <div class="dropdown-header p-3 cursor-pointer" data-dropdown="export">
+                                    <i class="fas fa-database me-2"></i> Exportar / Importar Banco
+                                    <i class="fas fa-chevron-down float-end mt-1"></i>
+                                </div>
+                                <div class="dropdown-content" id="export-dropdown">
+                                    <a href="/debug/banco/export" class="dropdown-link p-3 d-block text-decoration-none">
+                                        <i class="fas fa-upload me-2"></i> Exportar Banco
+                                    </a>
+                                    <a href="/debug/banco/import" class="dropdown-link p-3 d-block text-decoration-none">
+                                        <i class="fas fa-download me-2"></i> Importar Banco
+                                    </a>
+                                </div>
                             </div>
-
+                            
+                            <!-- Visualização -->
+                            <div class="action-item dropdown-container">
+                                <div class="dropdown-header p-3 cursor-pointer" data-dropdown="view">
+                                    <i class="bi bi-eye me-2"></i> Visualização dos Bancos
+                                    <i class="fas fa-chevron-down float-end mt-1"></i>
+                                </div>
+                                <div class="dropdown-content" id="view-dropdown">
+                                    <a href="/debug/trabalho/db" class="dropdown-link p-3 d-block text-decoration-none">
+                                        <i class="fas fa-briefcase me-2"></i> Visualizar Trabalho
+                                    </a>
+                                    <a href="/debug/visitas/db" class="dropdown-link p-3 d-block text-decoration-none">
+                                        <i class="fas fa-eye me-2"></i> Visualizar Visitas
+                                    </a>
+                                    <a href="/debug/sentenciados/db" class="dropdown-link p-3 d-block text-decoration-none">
+                                        <i class="fas fa-users me-2"></i> Visualizar Sentenciados
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Coluna de Resultados -->
-            <div class="col-md-8">
-                <div class="card shadow-sm">
+            <div class="col-lg-8 col-md-7">
+                <div class="card shadow-sm h-100">
                     <div class="card-header bg-secondary text-white">
-                        <h5 class="mb-0"><i class="fas fa-terminal"></i></h5>
+                        <h5 class="mb-0"><i class="fas fa-terminal me-2"></i>Terminal de Debug</h5>
                     </div>
-                    <div class="card-body" style="min-height: 500px; max-height: 70vh; overflow-y: auto;">
-                        <div id="debug-content" class="p-2">
+                    <div class="card-body p-0">
+                        <div id="debug-content" class="debug-terminal p-4">
                             {% if debug_content %}
                                 {{ debug_content|safe }}
                             {% else %}
-                                <div class="text-center mt-5">
-                                    <i class="fas fa-code fa-3x text-muted mb-3"></i>
-                                    <h4 class="text-muted">Painel de Admin</h4>
-                                    <p class="text-muted">Selecione uma ação para começar.</p>
+                                <div class="text-center py-5">
+                                    <i class="fas fa-code fa-4x text-muted mb-4"></i>
+                                    <h4 class="text-muted mb-3">Painel de Administração</h4>
+                                    <p class="text-muted mb-0">Selecione uma ação no menu lateral para começar.</p>
+                                    <small class="text-muted">As operações de debug aparecerão nesta área.</small>
                                 </div>
                             {% endif %}
-                           
                         </div>
                     </div>
                 </div>
@@ -183,48 +182,147 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
+    <style>
+        .debug-actions {
+            background: #fff;
+        }
+        
+        .action-item {
+            position: relative;
+        }
+        
+        .hover-bg:hover {
+            background-color: #f8f9fa !important;
+            transition: background-color 0.2s ease;
+        }
+        
+        .dropdown-header {
+            background: #fff;
+            border: none;
+            transition: all 0.2s ease;
+        }
+        
+        .dropdown-header:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .dropdown-header.active {
+            background-color: #e9ecef;
+        }
+        
+        .dropdown-content {
+            display: none;
+            background: #f8f9fa;
+            border-left: 3px solid #007bff;
+        }
+        
+        .dropdown-content.show {
+            display: block;
+            animation: slideDown 0.2s ease;
+        }
+        
+        .dropdown-link {
+            color: #495057;
+            border-bottom: 1px solid #dee2e6;
+            transition: all 0.2s ease;
+        }
+        
+        .dropdown-link:hover {
+            background-color: #e9ecef;
+            color: #007bff;
+            text-decoration: none;
+            padding-left: 1.5rem !important;
+        }
+        
+        .dropdown-link:last-child {
+            border-bottom: none;
+        }
+        
+        .cursor-pointer {
+            cursor: pointer;
+        }
+        
+        .debug-terminal {
+            min-height: 500px;
+            max-height: 70vh;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fas.fa-chevron-down {
+            transition: transform 0.2s ease;
+        }
+        
+        .dropdown-header.active .fa-chevron-down {
+            transform: rotate(180deg);
+        }
+        
+        @media (max-width: 768px) {
+            .debug-terminal {
+                max-height: 50vh;
+            }
+        }
+    </style>
+    
     <script>
-        // Forçar comportamento hover nos dropdowns
-         document.addEventListener('DOMContentLoaded', function() {
-             const dropdowns = document.querySelectorAll('.dropdown');
-             dropdowns.forEach(dropdown => {
-                 const toggle = dropdown.querySelector('.dropdown-toggle');
-                 const menu = dropdown.querySelector('.dropdown-menu');
-                 let timeoutId;
-                 
-                 if (toggle && menu) {
-                     // Remover qualquer evento de click
-                     toggle.removeAttribute('data-bs-toggle');
-                     toggle.addEventListener('click', function(e) {
-                         e.preventDefault();
-                         return false;
-                     });
-                     
-                     // Forçar hover com delay
-                     dropdown.addEventListener('mouseenter', function() {
-                         clearTimeout(timeoutId);
-                         menu.classList.add('show');
-                     });
-                     
-                     dropdown.addEventListener('mouseleave', function() {
-                         timeoutId = setTimeout(function() {
-                             menu.classList.remove('show');
-                         }, 300); // 300ms de delay
-                     });
-                     
-                     // Manter aberto quando mouse está sobre o menu
-                     menu.addEventListener('mouseenter', function() {
-                         clearTimeout(timeoutId);
-                     });
-                     
-                     menu.addEventListener('mouseleave', function() {
-                         timeoutId = setTimeout(function() {
-                             menu.classList.remove('show');
-                         }, 300);
-                     });
-                 }
-             });
-         });
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gerenciar dropdowns customizados
+            const dropdownHeaders = document.querySelectorAll('.dropdown-header');
+            
+            dropdownHeaders.forEach(header => {
+                header.addEventListener('click', function() {
+                    const dropdownId = this.getAttribute('data-dropdown');
+                    const content = document.getElementById(dropdownId + '-dropdown');
+                    const isActive = this.classList.contains('active');
+                    
+                    // Fechar todos os outros dropdowns
+                    dropdownHeaders.forEach(h => {
+                        if (h !== this) {
+                            h.classList.remove('active');
+                            const otherId = h.getAttribute('data-dropdown');
+                            const otherContent = document.getElementById(otherId + '-dropdown');
+                            if (otherContent) {
+                                otherContent.classList.remove('show');
+                            }
+                        }
+                    });
+                    
+                    // Toggle do dropdown atual
+                    if (isActive) {
+                        this.classList.remove('active');
+                        content.classList.remove('show');
+                    } else {
+                        this.classList.add('active');
+                        content.classList.add('show');
+                    }
+                });
+            });
+            
+            // Fechar dropdowns ao clicar fora
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.dropdown-container')) {
+                    dropdownHeaders.forEach(header => {
+                        header.classList.remove('active');
+                        const dropdownId = header.getAttribute('data-dropdown');
+                        const content = document.getElementById(dropdownId + '-dropdown');
+                        if (content) {
+                            content.classList.remove('show');
+                        }
+                    });
+                }
+            });
+        });
     </script>
 </body>
 </html>

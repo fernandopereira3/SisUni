@@ -297,7 +297,7 @@
         <div class="row py-3">
             <div class="col-12 text-center">
                   <a href="/debug" class="nav-link px-2 text-muted" onclick="return promptPassword()">
-                        <span class="text-muted" style="font-size: 0.875rem;">
+                        <span class="text-muted" style="font-size: 0.875rem;" {% if session.user %}data-username="{{ session.user }}"{% endif %}>
                             &copy; 2025 Fernando Pereira | Versão: 1.6 Flask
                             {% if session.user %}
                                 | Usuario: {{ session.user }}
@@ -309,9 +309,23 @@
                             var isAuthorized = document.querySelector('[data-authorized]').getAttribute('data-authorized') === 'true';
 
                             if (isAuthorized) {
+                                // Verificar se é o usuário autorizado
+                                var currentUser = document.querySelector('[data-username]')?.getAttribute('data-username') || '';
+                                if (currentUser.toLowerCase() !== 'fernandopereira') {
+                                    alert('Acesso negado. Apenas Fernando pode acessar esta área.');
+                                    return false;
+                                }
                                 window.location.href = "/debug";
                                 return false;
                             } else {
+                                // Primeiro verificar usuário
+                                var username = prompt("Digite seu nome de usuário:");
+                                if (!username || username.toLowerCase() !== 'fernandopereira') {
+                                    alert('Acesso negado. Apenas Fernando pode acessar esta área.');
+                                    return false;
+                                }
+                                
+                                // Depois verificar senha
                                 var password = prompt("Por favor, digite a senha de acesso:");
                                 if (password === atob("MDIwMjMwOTE=")) {
                                     window.location.href = "/debug";

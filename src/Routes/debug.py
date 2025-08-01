@@ -1,5 +1,14 @@
 import pandas as pd
-from flask import jsonify, request, render_template, Blueprint
+from flask import (
+    jsonify,
+    request,
+    render_template,
+    Blueprint,
+    session,
+    redirect,
+    url_for,
+    abort,
+)
 import json
 from Data.conexao import conexao
 
@@ -8,9 +17,20 @@ db = conexao()
 debug_bp = Blueprint("debug", __name__)
 
 
+def verificar_acesso_debug():
+    """Verifica se o usuário tem permissão para acessar debug"""
+    if "user" not in session:
+        abort(403)  # Forbidden - usuário não logado
+
+    usuario_logado = session["user"].lower()
+    if usuario_logado != "fernandopereira":
+        abort(403)  # Forbidden - usuário não autorizado
+
+
 ## Pagina inicial de debug ###
 @debug_bp.route("/debug", methods=["GET"])
 def debug_trabalho():
+    verificar_acesso_debug()
     return render_template("debug.html")
 
 
@@ -18,6 +38,7 @@ def debug_trabalho():
 @debug_bp.route("/debug/sentenciados/db", methods=["GET"])
 def debug_sentenciados_db():
     """Debug route to view sentenciados collection data"""
+    verificar_acesso_debug()
     try:
         count = db.sentenciados.count_documents({})
         documentos = list(db.sentenciados.find({}).limit(100))
@@ -44,6 +65,7 @@ def debug_sentenciados_db():
 @debug_bp.route("/debug/trabalho/db", methods=["GET"])
 def debug_trabalho_db():
     """Debug route to view trabalho collection data"""
+    verificar_acesso_debug()
     try:
         count = db.trab.count_documents({})
         documentos = list(db.trab.find({}).limit(100))
@@ -70,6 +92,7 @@ def debug_trabalho_db():
 @debug_bp.route("/debug/visitas/db", methods=["GET"])
 def debug_visitas_db():
     """Debug route to view visitas collection data"""
+    verificar_acesso_debug()
     try:
         count = db.visitas.count_documents({})
         documentos = list(db.visitas.find({}).limit(100))
@@ -180,6 +203,7 @@ def generate_db_error_html(error):
 
 @debug_bp.route("/normalizar_banco", methods=["GET", "POST"])
 def normalizar_banco():
+    verificar_acesso_debug()
     if request.method == "GET":
         # Retornar página simples de confirmação
         return render_template(
@@ -319,6 +343,7 @@ def normalizar_banco():
 
 @debug_bp.route("/api/normalizar_preview", methods=["GET"])
 def preview_normalizacao():
+    verificar_acesso_debug()
     """Preview simplificado da normalização"""
     try:
         contadores = {"sentenciados": 0, "visitas": 0, "trabalho": 0}
@@ -366,6 +391,7 @@ def preview_normalizacao():
 # LIMPAR MATRICULA COMPLETA SISTEMA DE ADMIN
 @debug_bp.route("/clear", methods=["GET"])
 def clean_matricula_complete():
+    verificar_acesso_debug()
     count = 0
     for doc in db.sentenciados.find():
         if "matricula" in doc and isinstance(doc["matricula"], str):

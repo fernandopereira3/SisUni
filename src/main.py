@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, render_template
 from flask_wtf.csrf import CSRFProtect
 from Routes.jumbo import jumbo_bp as BPjumbo
 from Routes.rotas import rotas_bp as BProtas
@@ -34,6 +34,23 @@ app.register_blueprint(BPtrabalho)
 app.register_blueprint(BPpesquisas)
 app.register_blueprint(BPfuncionarios)
 app.register_blueprint(bp_test)
+
+
+# Error handlers para páginas personalizadas
+@app.errorhandler(401)
+def unauthorized(error):
+    return render_template("401.html"), 401
+
+
+@app.errorhandler(403)
+def forbidden(error):
+    return render_template("403.html"), 403
+
+
+@app.errorhandler(404)
+def not_found(error):
+    return render_template("404.html"), 404
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

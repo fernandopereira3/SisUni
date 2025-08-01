@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Página Não Encontrada - SisUni</title>
+    <title>Acesso Negado - SisUni</title>
     <link rel="shortcut icon" href="{{ url_for('static', filename='img/sp.png') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
@@ -30,35 +30,35 @@
     <div class="container mt-5">
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-6">
-                <div class="card border-warning">
-                    <div class="card-header bg-warning text-dark text-center">
-                        <h3><i class="fas fa-search me-2"></i>Página Não Encontrada</h3>
+                <div class="card border-danger">
+                    <div class="card-header bg-danger text-white text-center">
+                        <h3><i class="fas fa-ban me-2"></i>Acesso Negado</h3>
                     </div>
                     <div class="card-body text-center">
                         <div class="mb-4">
-                            <i class="fas fa-question-circle text-warning" style="font-size: 4rem;"></i>
+                            <i class="fas fa-shield-alt text-danger" style="font-size: 4rem;"></i>
                         </div>
-                        <h4 class="text-warning mb-3">HTTP 404 - Not Found</h4>
+                        <h4 class="text-danger mb-3">HTTP 403 - Forbidden</h4>
                         <p class="lead mb-4">
-                            A página que você está procurando não foi encontrada.
+                            Você não tem permissão para acessar esta área do sistema.
                         </p>
-                        <div class="alert alert-info" role="alert">
-                            <i class="fas fa-info-circle me-2"></i>
-                            <strong>Possíveis causas:</strong> URL digitada incorretamente, página movida ou removida.
+                        <div class="alert alert-warning" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Área Restrita:</strong> Esta seção é exclusiva para administradores autorizados.
                         </div>
                         <div class="d-grid gap-2 d-md-flex justify-content-md-center">
                             <a href="/" class="btn btn-primary btn-lg me-md-2">
                                 <i class="fas fa-home me-2"></i>Voltar ao Início
                             </a>
-                            <button onclick="history.back()" class="btn btn-outline-secondary btn-lg">
-                                <i class="fas fa-arrow-left me-2"></i>Página Anterior
-                            </button>
+                            <a href="/logout" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-sign-out-alt me-2"></i>Fazer Logout
+                            </a>
                         </div>
                     </div>
                     <div class="card-footer text-muted text-center">
                         <small>
-                            <i class="fas fa-compass me-1"></i>
-                            Verifique a URL ou use a navegação para encontrar o que procura.
+                            <i class="fas fa-info-circle me-1"></i>
+                            Se você acredita que deveria ter acesso, entre em contato com o administrador do sistema.
                         </small>
                     </div>
                 </div>

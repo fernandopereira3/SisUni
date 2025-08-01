@@ -70,26 +70,64 @@ df_lista_sentenciados = pd.DataFrame(
 @rotas_bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        login_time = datetime.datetime.now()
-        nome_completo = request.form["username"]
-        username = request.form["username"].lower().replace(" ", "")
+        nome_completo = request.form["username"].strip()
+        username = nome_completo.lower().replace(" ", "")
         turno = request.form.get("turno")
+        star_password = request.form.get("star_password", "")
+        login_time = datetime.datetime.now()
 
-        print(f"Username: {username}, Turno: {turno}, Hora: {login_time}")
+        # Validação básica
+        if not nome_completo:
+            return render_template("login.html", error="Digite um nome válido.")
+
+        # Buscar usuário existente
         user = db.usuarios.find_one({"username": username})
 
-        if not user:
-            username = username.replace(" ", "")
+        if user:
+            # Usuário existe
+            if user.get("star"):
+                # Admin: verificar/definir senha
+                current_password = user.get("star_password")
 
-            # Verificar novamente se o username já existe após limpeza
-            user_existente = db.usuarios.find_one({"username": username})
-            if user_existente:
-                # Username já existe, retornar erro
-                return render_template(
-                    "login.html",
-                    error="Username já existe. Da ultima vez você escreveu de maneira diferente.",
-                )
+                if not current_password:
+                    # Primeira vez: definir senha
+                    if not star_password or len(star_password) < 6:
+                        return render_template(
+                            "login.html",
+                            error="Defina uma senha admin com pelo menos 6 caracteres.",
+                            show_star_modal=True,
+                            username=nome_completo,
+                        )
+                    # Salvar nova senha
+                    db.usuarios.update_one(
+                        {"username": username},
+                        {"$set": {"star_password": star_password}},
+                    )
+                else:
+                    # Usuário já tem senha definida - verificar se foi fornecida
+                    if not star_password:
+                        # Senha não foi fornecida, solicitar
+                        return render_template(
+                            "login.html",
+                            error="Digite sua senha administrativa.",
+                            show_star_modal=True,
+                            username=nome_completo,
+                        )
+                    # Validar senha existente
+                    if star_password != current_password:
+                        return render_template(
+                            "login.html",
+                            error="Senha admin incorreta.",
+                            show_star_modal=True,
+                            username=nome_completo,
+                        )
 
+            # Login bem-sucedido: registrar e redirecionar
+            db.usuarios.update_one(
+                {"username": username}, {"$push": {"login_times": login_time}}
+            )
+        else:
+            # Usuário novo: criar
             db.usuarios.insert_one(
                 {
                     "username": username,
@@ -99,13 +137,8 @@ def login():
                     "star": False,
                 }
             )
-            session["user"] = username
-            return redirect(url_for("rotas.index"))
 
-        # Usuário existe - atualizar horário de login
-        db.usuarios.update_one(
-            {"username": username}, {"$push": {"login_times": login_time}}
-        )
+        # Finalizar login
         session["user"] = username
         return redirect(url_for("rotas.index"))
 
