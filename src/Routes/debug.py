@@ -71,9 +71,9 @@ def debug_trabalho_db():
 def debug_visitas_db():
     """Debug route to view visitas collection data"""
     try:
-        count = db.visita.count_documents({})
-        documentos = list(db.visita.find({}).limit(100))
-        primeiro_doc = db.visita.find_one({})
+        count = db.visitas.count_documents({})
+        documentos = list(db.visitas.find({}).limit(100))
+        primeiro_doc = db.visitas.find_one({})
 
         df_temp = pd.DataFrame(documentos)
         if "_id" in df_temp.columns:

@@ -69,7 +69,7 @@ def construir_tabela(
                     <tr>
                         <th>Matrícula</th>
                         <th>Nome</th>
-                        <th>Alojamento</th>
+                        <th>Pavilhão</th>
                         <th>Status</th>
                         {acoes_header}
                     </tr>
@@ -81,7 +81,7 @@ def construir_tabela(
             for doc in documentos:
                 matricula = doc.get("matricula", "")
                 nome = doc.get("nome", "")
-                alojamento = doc.get("pavilhao", "") or doc.get("alojamento", "")
+                pavilhao = doc.get("pavilhao", "") or doc.get("pavilhao", "")
 
                 # Badge de status baseado na coleção
                 if colecao == "excluidos":
@@ -107,7 +107,7 @@ def construir_tabela(
                     <tr id="row-{matricula}">
                         <td>{matricula}</td>
                         <td>{nome}</td>
-                        <td>{alojamento}</td>
+                        <td>{pavilhao}</td>
                         <td>{status_badge}</td>
                         {acoes_cell}
                     </tr>

@@ -156,6 +156,191 @@ def folgas_mes():
         return jsonify({"status": "error", "message": str(e)})
 
 
+@funcionarios_bp.route("/api/listar_funcionarios", methods=["GET"])
+@require_turno1
+def listar_funcionarios():
+    """API para listar funcionários baseado nas permissões do usuário"""
+    try:
+        # Verificar se o usuário tem permissão (star = true)
+        username = session.get("user")
+        if not username:
+            return jsonify({"success": False, "message": "Usuário não autenticado"})
+
+        usuario_atual = db.usuarios.find_one({"username": username})
+        if not usuario_atual or not usuario_atual.get("star", False):
+            return jsonify(
+                {
+                    "success": False,
+                    "message": "Acesso negado. Permissões insuficientes.",
+                }
+            )
+
+        # Definir filtro baseado no usuário
+        filtro = {}
+
+        # Se o usuário é fernandopereira, pode ver todos os funcionários
+        if username == "fernandopereira":
+            filtro = {}  # Sem filtro, vê todos
+        else:
+            # Usuários com star = true veem apenas funcionários do mesmo turno
+            turno_usuario = usuario_atual.get("turno")
+            if turno_usuario:
+                filtro = {"turno": turno_usuario}
+            else:
+                # Se não tem turno definido, não vê ninguém
+                filtro = {"turno": "__turno_inexistente__"}
+
+        # Buscar funcionários baseado no filtro
+        funcionarios = list(db.usuarios.find(filtro, {"_id": 0}))
+
+        # Processar dados para melhor visualização
+        for funcionario in funcionarios:
+            # Processar login_times
+            if "login_times" in funcionario and isinstance(
+                funcionario["login_times"], list
+            ):
+                funcionario["total_logins"] = len(funcionario["login_times"])
+                if funcionario["login_times"]:
+                    # Pegar o último login (mais recente)
+                    funcionario["ultimo_login"] = funcionario["login_times"][-1]
+                else:
+                    funcionario["ultimo_login"] = "Nunca"
+                # Remover o array completo para economizar dados
+                del funcionario["login_times"]
+            else:
+                funcionario["total_logins"] = 0
+                funcionario["ultimo_login"] = "Nunca"
+
+            # Processar folgas (opcional, para não sobrecarregar)
+            if "folgas" in funcionario:
+                if isinstance(funcionario["folgas"], list):
+                    funcionario["total_folgas"] = len(funcionario["folgas"])
+                # Remover folgas detalhadas para economizar dados
+                del funcionario["folgas"]
+            else:
+                funcionario["total_folgas"] = 0
+
+        return jsonify(
+            {"success": True, "funcionarios": funcionarios, "total": len(funcionarios)}
+        )
+
+    except Exception as e:
+        print(f"Erro ao listar funcionários: {str(e)}")
+        return jsonify({"success": False, "message": f"Erro interno: {str(e)}"})
+
+
+@funcionarios_bp.route("/api/editar_funcionario/<username>", methods=["PUT"])
+@require_turno1
+def editar_funcionario(username):
+    """API para editar dados de um funcionário"""
+    try:
+        # Verificar se o usuário tem permissão (star = true)
+        username_editor = session.get("user")
+        if not username_editor:
+            return jsonify({"message": "Usuário não autenticado"}), 401
+
+        usuario_editor = db.usuarios.find_one({"username": username_editor})
+        if not usuario_editor or not usuario_editor.get("star", False):
+            return jsonify({"message": "Acesso negado. Permissões insuficientes."}), 403
+
+        # Buscar o funcionário a ser editado
+        funcionario = db.usuarios.find_one({"username": username})
+        if not funcionario:
+            return jsonify({"message": "Funcionário não encontrado"}), 404
+
+        # Verificar se o usuário pode editar este funcionário (mesmo turno, exceto fernandopereira)
+        if username_editor != "fernandopereira":
+            turno_editor = usuario_editor.get("turno")
+            turno_funcionario = funcionario.get("turno")
+            if turno_editor != turno_funcionario:
+                return jsonify(
+                    {"message": "Você só pode editar funcionários do seu turno"}
+                ), 403
+
+        data = request.get_json()
+        nome = data.get("nome", "").strip()
+        turno = data.get("turno", "")
+        star = data.get("star", False)
+
+        # Validação básica
+        if not nome or not turno:
+            return jsonify({"message": "Nome e turno são obrigatórios"}), 400
+
+        # Atualizar dados do funcionário
+        resultado = db.usuarios.update_one(
+            {"username": username},
+            {
+                "$set": {
+                    "nome_completo": nome,
+                    "turno": turno,
+                    "star": star,
+                    "editado_em": datetime.datetime.now(),
+                    "editado_por": username_editor,
+                }
+            },
+        )
+
+        if resultado.modified_count > 0:
+            return jsonify({"message": "Funcionário editado com sucesso"}), 200
+        else:
+            return jsonify({"message": "Nenhuma alteração foi feita"}), 400
+
+    except Exception as e:
+        print(f"Erro ao editar funcionário: {str(e)}")
+        return jsonify({"message": f"Erro interno: {str(e)}"}), 500
+
+
+@funcionarios_bp.route("/api/excluir_funcionario/<username>", methods=["DELETE"])
+@require_turno1
+def excluir_funcionario(username):
+    """API para excluir um funcionário"""
+    try:
+        # Verificar se o usuário tem permissão (star = true)
+        username_editor = session.get("user")
+        if not username_editor:
+            return jsonify({"message": "Usuário não autenticado"}), 401
+
+        usuario_editor = db.usuarios.find_one({"username": username_editor})
+        if not usuario_editor or not usuario_editor.get("star", False):
+            return jsonify({"message": "Acesso negado. Permissões insuficientes."}), 403
+
+        # Buscar o funcionário a ser excluído
+        funcionario = db.usuarios.find_one({"username": username})
+        if not funcionario:
+            return jsonify({"message": "Funcionário não encontrado"}), 404
+
+        # Não permitir auto-exclusão
+        if username == username_editor:
+            return jsonify({"message": "Você não pode excluir sua própria conta"}), 400
+
+        # Verificar se o usuário pode excluir este funcionário (mesmo turno, exceto fernandopereira)
+        if username_editor != "fernandopereira":
+            turno_editor = usuario_editor.get("turno")
+            turno_funcionario = funcionario.get("turno")
+            if turno_editor != turno_funcionario:
+                return jsonify(
+                    {"message": "Você só pode excluir funcionários do seu turno"}
+                ), 403
+
+        nome_funcionario = funcionario.get("nome_completo", username)
+
+        # Excluir funcionário
+        resultado = db.usuarios.delete_one({"username": username})
+
+        if resultado.deleted_count > 0:
+            return jsonify(
+                {"message": f"Funcionário {nome_funcionario} excluído com sucesso"}
+            ), 200
+        else:
+            return jsonify(
+                {"message": "Funcionário não foi encontrado para exclusão"}
+            ), 404
+
+    except Exception as e:
+        print(f"Erro ao excluir funcionário: {str(e)}")
+        return jsonify({"message": f"Erro interno: {str(e)}"}), 500
+
+
 @funcionarios_bp.route("/api/aprovar_folga", methods=["POST"])
 @require_turno1
 def aprovar_folga():
@@ -203,6 +388,205 @@ def aprovar_folga():
         else:
             return jsonify(
                 {"status": "error", "message": "Folga não encontrada ou já aprovada"}
+            )
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+
+
+@funcionarios_bp.route("/api/criar_funcionario", methods=["POST"])
+@require_turno1
+def criar_funcionario():
+    """Criar novo funcionário"""
+    try:
+        # Verificar se o usuário tem permissão (star = true)
+        username_criador = session["user"]
+        user_criador = db.usuarios.find_one({"username": username_criador})
+
+        if not user_criador or not user_criador.get("star", False):
+            return jsonify({"status": "error", "message": "Acesso negado"})
+
+        data = request.get_json()
+        nome_completo = data.get("nome_completo", "").strip()
+        username = data.get("username", "").strip().lower().replace(" ", "")
+        turno = data.get("turno")
+        star = data.get("star", False)
+
+        # Validação
+        if not nome_completo or not username or not turno:
+            return jsonify(
+                {
+                    "status": "error",
+                    "message": "Nome completo, username e turno são obrigatórios",
+                }
+            )
+
+        # Verificar se o username já existe
+        usuario_existente = db.usuarios.find_one({"username": username})
+        if usuario_existente:
+            return jsonify(
+                {"status": "error", "message": f"Username '{username}' já existe"}
+            )
+
+        # Criar novo funcionário
+        novo_funcionario = {
+            "username": username,
+            "nome_completo": nome_completo,
+            "turno": turno,
+            "star": star,
+            "login_times": [datetime.datetime.now()],
+            "folgas": [],
+            "data_criacao": datetime.datetime.now(),
+            "criado_por": username_criador,
+        }
+
+        # Inserir no banco
+        resultado = db.usuarios.insert_one(novo_funcionario)
+
+        if resultado.inserted_id:
+            return jsonify(
+                {
+                    "status": "success",
+                    "message": "Funcionário criado com sucesso",
+                    "username": username,
+                    "nome_completo": nome_completo,
+                    "turno": turno,
+                    "star": star,
+                }
+            )
+        else:
+            return jsonify({"status": "error", "message": "Erro ao criar funcionário"})
+
+    except Exception as e:
+        print(f"Erro ao criar funcionário: {e}")
+        return jsonify({"status": "error", "message": "Erro interno do servidor"})
+
+
+@funcionarios_bp.route("/api/editar_folga", methods=["POST"])
+@require_turno1
+def editar_folgas():
+    """Edita folgas de terceiros"""
+    try:
+        # Verificar se o usuário tem permissão (star = true)
+        username_editor = session["user"]
+        user_editor = db.usuarios.find_one({"username": username_editor})
+
+        if not user_editor or not user_editor.get("star", False):
+            return jsonify({"status": "error", "message": "Acesso negado"})
+
+        data = request.get_json()
+        username = data.get("username")
+        data_folga_antiga = data.get("data_antiga")
+        data_folga_nova = data.get("data_nova")
+        novo_motivo = data.get("motivo")
+        acao = data.get("acao")  # "editar" ou "apagar"
+
+        if not username or not data_folga_antiga:
+            return jsonify(
+                {
+                    "status": "error",
+                    "message": "Username e data antiga são obrigatórios",
+                }
+            )
+
+        # Converter string para datetime
+        data_antiga_obj = datetime.datetime.strptime(data_folga_antiga, "%Y-%m-%d")
+
+        if acao == "apagar":
+            # Apagar a folga
+            resultado = db.usuarios.update_one(
+                {"username": username}, {"$pull": {"folgas": {"data": data_antiga_obj}}}
+            )
+
+            if resultado.modified_count > 0:
+                return jsonify(
+                    {"status": "success", "message": "Folga apagada com sucesso"}
+                )
+            else:
+                return jsonify({"status": "error", "message": "Folga não encontrada"})
+
+        elif acao == "editar":
+            if not data_folga_nova or not novo_motivo:
+                return jsonify(
+                    {
+                        "status": "error",
+                        "message": "Data nova e motivo são obrigatórios para edição",
+                    }
+                )
+
+            data_nova_obj = datetime.datetime.strptime(data_folga_nova, "%Y-%m-%d")
+
+            # Editar a folga existente
+            resultado = db.usuarios.update_one(
+                {"username": username, "folgas.data": data_antiga_obj},
+                {
+                    "$set": {
+                        "folgas.$.data": data_nova_obj,
+                        "folgas.$.motivo": novo_motivo,
+                        "folgas.$.editado_por": username_editor,
+                        "folgas.$.data_edicao": datetime.datetime.now(),
+                    }
+                },
+            )
+
+            if resultado.modified_count > 0:
+                return jsonify(
+                    {"status": "success", "message": "Folga editada com sucesso"}
+                )
+            else:
+                return jsonify({"status": "error", "message": "Folga não encontrada"})
+
+        elif acao == "criar":
+            if not data_folga_nova or not novo_motivo:
+                return jsonify(
+                    {
+                        "status": "error",
+                        "message": "Data e motivo são obrigatórios para criar nova folga",
+                    }
+                )
+
+            data_nova_obj = datetime.datetime.strptime(data_folga_nova, "%Y-%m-%d")
+
+            # Verificar se já existe folga nesta data
+            usuario_existente = db.usuarios.find_one(
+                {"username": username, "folgas.data": data_nova_obj}
+            )
+
+            if usuario_existente:
+                return jsonify(
+                    {
+                        "status": "error",
+                        "message": "Já existe uma folga agendada para esta data",
+                    }
+                )
+
+            # Criar nova folga
+            nova_folga = {
+                "data": data_nova_obj,
+                "motivo": novo_motivo,
+                "status": "pendente",
+                "criado_por": username_editor,
+                "data_criacao": datetime.datetime.now(),
+            }
+
+            resultado = db.usuarios.update_one(
+                {"username": username}, {"$push": {"folgas": nova_folga}}
+            )
+
+            if resultado.modified_count > 0:
+                return jsonify(
+                    {"status": "success", "message": "Nova folga criada com sucesso"}
+                )
+            else:
+                return jsonify(
+                    {"status": "error", "message": "Erro ao criar nova folga"}
+                )
+        else:
+            return jsonify(
+                {
+                    "status": "error",
+                    "message": "Ação inválida. Use 'editar', 'apagar' ou 'criar'",
+                }
             )
 
     except Exception as e:

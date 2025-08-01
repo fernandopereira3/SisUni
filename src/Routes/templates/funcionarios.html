@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>SisUni - CPPPAC - Funcionários</title>
     <link rel="shortcut icon" href="{{ url_for('static', filename='img/sp.png') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -19,9 +20,12 @@
                     <a href="/" class="nav-link"><i class="bi bi-arrow-left-circle-fill"></i> VOLTAR</a>
                 </li>
             </ul>
-            <ul>
+            <div class="d-flex align-items-center">
+                <a href="{{ url_for('rotas.logout') }}" class="btn btn-outline-danger me-3" title="Sair do sistema">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
                 <a href="/"><img src="{{ url_for('static', filename='img/logo3.png') }}" class="rounded" alt="Logo"></a>
-            </ul>
+            </div>
         </div>
     </nav>
     
@@ -33,14 +37,36 @@
                         <h5 class="mb-0"><i class="fas fa-calendar-alt"></i> Funcionarios</h5>
                     </div>
                     <div class="card-body">
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle"></i> As funcionalidades de CRUD de funcionários ainda não estão disponíveis.
-                            Para gerenciar folgas, acesse a seção específica de folgas.
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <button class="btn btn-success" onclick="abrirModalCriarFuncionario()">
+                                    <i class="fas fa-user-plus"></i> Criar Novo Funcionário
+                                </button>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <a href="/funcionarios/folgas" class="btn btn-primary">
+                                    <i class="fas fa-calendar-plus"></i> Acessar Folgas
+                                </a>
+                            </div>
                         </div>
-                        <div class="text-center">
-                            <a href="/funcionarios/folgas" class="btn btn-primary">
-                                <i class="fas fa-calendar-plus"></i> Acessar Folgas
-                            </a>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Nome Completo</th>
+                                        <th>Username</th>
+                                        <th>Turno</th>
+                                        <th>Permissões</th>
+                                        <th>Total Logins</th>
+                                        <th>Último Login</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabelaFuncionarios">
+                                    <!-- Dados serão carregados via JavaScript -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -48,6 +74,371 @@
         </div>
     </div>
 
+    <!-- Modal para Criar Funcionário -->
+    <div class="modal fade" id="criarFuncionarioModal" tabindex="-1" aria-labelledby="criarFuncionarioModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="criarFuncionarioModalLabel">Criar Novo Funcionário</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formCriarFuncionario">
+                        <div class="mb-3">
+                            <label for="nomeCompleto" class="form-label">Nome Completo</label>
+                            <input type="text" class="form-control" id="nomeCompleto" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" required>
+                            <div class="form-text">O username será convertido para minúsculas automaticamente.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="turno" class="form-label">Turno</label>
+                            <select class="form-select" id="turno" required>
+                                <option value="">Selecione o turno</option>
+                                <option value="Turno 1">Turno 1</option>
+                                <option value="Turno 2">Turno 2</option>
+                                <option value="Turno 3">Turno 3</option>
+                                <option value="Turno 4">Turno 4</option>
+                            </select>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="star">
+                            <label class="form-check-label" for="star">
+                                Permissões especiais (star)
+                            </label>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> O funcionário será criado com login automático inicial.
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success" onclick="criarFuncionario()">Criar Funcionário</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Editar Funcionário -->
+    <div class="modal fade" id="editarFuncionarioModal" tabindex="-1" aria-labelledby="editarFuncionarioModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editarFuncionarioModalLabel">Editar Funcionário</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formEditarFuncionario">
+                        <input type="hidden" id="editUsername">
+                        <div class="mb-3">
+                            <label for="editNomeCompleto" class="form-label">Nome Completo</label>
+                            <input type="text" class="form-control" id="editNomeCompleto" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editTurno" class="form-label">Turno</label>
+                            <select class="form-select" id="editTurno" required>
+                                <option value="">Selecione o turno</option>
+                                <option value="Turno 1">Turno 1</option>
+                                <option value="Turno 2">Turno 2</option>
+                                <option value="Turno 3">Turno 3</option>
+                            </select>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="editStar">
+                            <label class="form-check-label" for="editStar">
+                                Permissões especiais (star)
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="salvarEdicaoFuncionario()">Salvar Alterações</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Exclusão -->
+    <div class="modal fade" id="confirmarExclusaoModal" tabindex="-1" aria-labelledby="confirmarExclusaoModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="confirmarExclusaoModalLabel">Confirmar Exclusão</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Atenção!</strong> Esta ação não pode ser desfeita.
+                    </div>
+                    <p>Tem certeza que deseja excluir o funcionário <strong id="nomeExclusao"></strong>?</p>
+                    <input type="hidden" id="usernameExclusao">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmarExclusaoFuncionario()">Excluir Funcionário</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Função para obter o token CSRF
+        function getCSRFToken() {
+            return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        }
+        
+        // Configurar headers padrão para todas as requisições fetch
+        function fetchWithCSRF(url, options = {}) {
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                }
+            };
+            
+            // Merge das opções
+            const mergedOptions = {
+                ...defaultOptions,
+                ...options,
+                headers: {
+                    ...defaultOptions.headers,
+                    ...options.headers
+                }
+            };
+            
+            return fetch(url, mergedOptions);
+        }
+        // Função para abrir o modal de criação de funcionário
+        function abrirModalCriarFuncionario() {
+            const modal = new bootstrap.Modal(document.getElementById('criarFuncionarioModal'));
+            modal.show();
+        }
+
+        // Função para criar funcionário
+        function criarFuncionario() {
+            const nomeCompleto = document.getElementById('nomeCompleto').value.trim();
+            const username = document.getElementById('username').value.trim().toLowerCase();
+            const turno = document.getElementById('turno').value;
+            const star = document.getElementById('star').checked;
+
+            // Validação básica
+            if (!nomeCompleto || !username || !turno) {
+                alert('Por favor, preencha todos os campos obrigatórios.');
+                return;
+            }
+
+            // Dados para envio
+            const dadosFuncionario = {
+                nome_completo: nomeCompleto,
+                username: username,
+                turno: turno,
+                star: star
+            };
+
+            // Enviar requisição
+            fetchWithCSRF('/api/criar_funcionario', {
+                method: 'POST',
+                body: JSON.stringify(dadosFuncionario)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Limpar formulário
+                    document.getElementById('formCriarFuncionario').reset();
+                    
+                    // Fechar modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('criarFuncionarioModal'));
+                    modal.hide();
+                    
+                    // Mostrar mensagem de sucesso
+                    alert(`Funcionário criado com sucesso!\n\nNome: ${data.funcionario.nome_completo}\nUsername: ${data.funcionario.username}\nTurno: ${data.funcionario.turno}\nPermissões especiais: ${data.funcionario.star ? 'Sim' : 'Não'}`);
+                    
+                    // Recarregar lista de funcionários
+                    carregarFuncionarios();
+                } else {
+                    alert('Erro ao criar funcionário: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao criar funcionário. Tente novamente.');
+            });
+        }
+
+        // Função para carregar lista de funcionários
+        function carregarFuncionarios() {
+            fetch('/api/listar_funcionarios')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const tbody = document.getElementById('tabelaFuncionarios');
+                    tbody.innerHTML = '';
+                    
+                    data.funcionarios.forEach(funcionario => {
+                        const row = tbody.insertRow();
+                        row.innerHTML = `
+                            <td>${funcionario.nome_completo || 'N/A'}</td>
+                            <td>${funcionario.username}</td>
+                            <td>${funcionario.turno || 'N/A'}</td>
+                            <td>${funcionario.star ? '<span class="badge bg-warning">Admin</span>' : '<span class="badge bg-secondary">Usuário</span>'}</td>
+                            <td>${funcionario.total_logins || 0}</td>
+                            <td>${funcionario.ultimo_login || 'Nunca'}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" onclick="editarFuncionario('${funcionario.username}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="excluirFuncionario('${funcionario.username}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        `;
+                    });
+                } else {
+                    console.error('Erro ao carregar funcionários:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+            });
+        }
+
+        // Função para editar funcionário
+        function editarFuncionario(username) {
+            // Buscar dados do funcionário
+            fetch('/api/listar_funcionarios')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.funcionarios) {
+                    const funcionario = data.funcionarios.find(f => f.username == username);
+                    if (funcionario) {
+                        // Preencher o modal com os dados do funcionário
+                        document.getElementById('editUsername').value = funcionario.username;
+                        document.getElementById('editNomeCompleto').value = funcionario.nome_completo || '';
+                        document.getElementById('editTurno').value = funcionario.turno || '';
+                        document.getElementById('editStar').checked = funcionario.star || false;
+                        
+                        // Abrir o modal
+                        const modal = new bootstrap.Modal(document.getElementById('editarFuncionarioModal'));
+                        modal.show();
+                    } else {
+                        alert('Funcionário não encontrado');
+                    }
+                } else {
+                    alert('Erro ao carregar dados dos funcionários');
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao buscar dados do funcionário:', error);
+                alert('Erro ao buscar dados do funcionário');
+            });
+        }
+
+        // Função para salvar edição do funcionário
+        function salvarEdicaoFuncionario() {
+            const username = document.getElementById('editUsername').value;
+            const nome = document.getElementById('editNomeCompleto').value;
+            const turno = document.getElementById('editTurno').value;
+            const star = document.getElementById('editStar').checked;
+
+            if (!nome || !turno) {
+                alert('Por favor, preencha todos os campos obrigatórios.');
+                return;
+            }
+
+            const dadosAtualizados = {
+                nome: nome,
+                turno: turno,
+                star: star
+            };
+
+            fetchWithCSRF(`/api/editar_funcionario/${username}`, {
+                method: 'PUT',
+                body: JSON.stringify(dadosAtualizados)
+            })
+            .then(response => {
+                return response.json().then(data => ({ status: response.status, data: data }));
+            })
+            .then(result => {
+                alert(result.data.message);
+                if (result.status === 200) {
+                    // Fechar o modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('editarFuncionarioModal'));
+                    modal.hide();
+                    // Recarregar a lista de funcionários
+                    carregarFuncionarios();
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao editar funcionário:', error);
+                alert('Erro ao editar funcionário');
+            });
+        }
+
+        // Função para excluir funcionário
+        function excluirFuncionario(username) {
+            // Buscar dados do funcionário para mostrar o nome no modal de confirmação
+            fetch('/api/listar_funcionarios')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.funcionarios) {
+                    const funcionario = data.funcionarios.find(f => f.username == username);
+                    if (funcionario) {
+                        document.getElementById('nomeExclusao').textContent = funcionario.nome_completo || funcionario.username;
+                        document.getElementById('usernameExclusao').value = funcionario.username;
+                        
+                        // Abrir o modal de confirmação
+                        const modal = new bootstrap.Modal(document.getElementById('confirmarExclusaoModal'));
+                        modal.show();
+                    } else {
+                        alert('Funcionário não encontrado');
+                    }
+                } else {
+                    alert('Erro ao carregar dados dos funcionários');
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao buscar dados do funcionário:', error);
+                alert('Erro ao buscar dados do funcionário');
+            });
+        }
+
+        // Função para confirmar exclusão do funcionário
+        function confirmarExclusaoFuncionario() {
+            const username = document.getElementById('usernameExclusao').value;
+
+            fetchWithCSRF(`/api/excluir_funcionario/${username}`, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                return response.json().then(data => ({ status: response.status, data: data }));
+            })
+            .then(result => {
+                alert(result.data.message);
+                if (result.status === 200) {
+                    // Fechar o modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('confirmarExclusaoModal'));
+                    modal.hide();
+                    // Recarregar a lista de funcionários
+                    carregarFuncionarios();
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao excluir funcionário:', error);
+                alert('Erro ao excluir funcionário');
+            });
+        }
+
+        // Carregar funcionários ao carregar a página
+        document.addEventListener('DOMContentLoaded', function() {
+            carregarFuncionarios();
+        });
+    </script>
 </body>
 </html>

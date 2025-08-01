@@ -1,5 +1,6 @@
 import os
 from flask import Flask
+from flask_wtf.csrf import CSRFProtect
 from Routes.jumbo import jumbo_bp as BPjumbo
 from Routes.rotas import rotas_bp as BProtas
 from Routes.debug import debug_bp as BPdebug
@@ -21,6 +22,9 @@ app = Flask(
 )
 secret_key = os.urandom(24)
 app.config["SECRET_KEY"] = secret_key
+
+# Configurar proteção CSRF
+csrf = CSRFProtect(app)
 
 # Registrar apenas os blueprints necessários
 app.register_blueprint(BPjumbo)

@@ -116,6 +116,9 @@
                             <button type="button" class="btn btn-warning btn-sm w-100 mt-1" onclick="abrirModalAprovacao()">
                                 <i class="fas fa-check-circle"></i> Aprovar Folgas
                             </button>
+                            <button type="button" class="btn btn-primary btn-sm w-100 mt-1" onclick="abrirModalAgendarFuncionario()">
+                                <i class="fas fa-user-plus"></i> Agendar para Funcionário
+                            </button>
                             {% endif %}
                         </form>
                     </div>
@@ -187,6 +190,61 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de Agendar para Funcionário -->
+    <div class="modal fade" id="modalAgendarFuncionario" tabindex="-1" aria-labelledby="modalAgendarFuncionarioLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalAgendarFuncionarioLabel">
+                        <i class="fas fa-user-plus"></i> Agendar Folga para Funcionário
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formAgendarFuncionario">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="usernameFuncionario" class="form-label">Username do Funcionário:</label>
+                                    <input type="text" class="form-control" id="usernameFuncionario" required placeholder="Digite o username">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="dataFolgaFuncionario" class="form-label">Data da Folga:</label>
+                                    <input type="date" class="form-control" id="dataFolgaFuncionario" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="motivoFolgaFuncionario" class="form-label">Motivo:</label>
+                            <textarea class="form-control" id="motivoFolgaFuncionario" rows="3" required placeholder="Descreva o motivo da folga..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                             <label class="form-label">Ação:</label>
+                             <div class="form-check">
+                                 <input class="form-check-input" type="radio" name="acaoFuncionario" id="acaoCriar" value="criar" checked>
+                                 <label class="form-check-label" for="acaoCriar">
+                                     Criar nova folga
+                                 </label>
+                             </div>
+                             <div class="form-check">
+                                 <input class="form-check-input" type="radio" name="acaoFuncionario" id="acaoRemover" value="apagar">
+                                 <label class="form-check-label" for="acaoRemover">
+                                     Remover folga existente
+                                 </label>
+                             </div>
+                         </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="agendarFolgaFuncionario()">Agendar Folga</button>
                 </div>
             </div>
         </div>
@@ -493,6 +551,72 @@
                     alert('Folga aprovada com sucesso!');
                     carregarFolgasPendentes(); // Recarregar lista
                     carregarFolgasDoMes(); // Atualizar calendário
+                    renderCalendar();
+                } else {
+                    alert('Erro: ' + result.message);
+                }
+            } catch (error) {
+                alert('Erro de conexão: ' + error.message);
+            }
+        }
+        
+        // Função para abrir modal de agendar para funcionário
+        function abrirModalAgendarFuncionario() {
+            const modal = new bootstrap.Modal(document.getElementById('modalAgendarFuncionario'));
+            modal.show();
+        }
+        
+        // Função para agendar folga para funcionário
+         async function agendarFolgaFuncionario() {
+             const username = document.getElementById('usernameFuncionario').value.trim();
+             const dataFolga = document.getElementById('dataFolgaFuncionario').value;
+             const motivo = document.getElementById('motivoFolgaFuncionario').value.trim();
+             const acao = document.querySelector('input[name="acaoFuncionario"]:checked').value;
+             
+             // Validação baseada na ação
+             if (!username || !dataFolga) {
+                 alert('Por favor, preencha o username e a data.');
+                 return;
+             }
+             
+             if (acao === 'criar' && !motivo) {
+                 alert('Por favor, preencha o motivo para criar uma nova folga.');
+                 return;
+             }
+            
+            try {
+                const response = await fetch('/api/editar_folga', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        data_antiga: dataFolga, // Para criar, usamos a mesma data
+                        data_nova: dataFolga,
+                        motivo: motivo,
+                        acao: acao
+                    })
+                });
+                
+                const result = await response.json();
+                 
+                 if (result.status === 'success') {
+                     const mensagem = acao === 'criar' ? 'Folga agendada com sucesso para o funcionário!' : 'Folga removida com sucesso!';
+                     alert(mensagem);
+                     
+                     // Limpar formulário
+                     document.getElementById('usernameFuncionario').value = '';
+                     document.getElementById('dataFolgaFuncionario').value = '';
+                     document.getElementById('motivoFolgaFuncionario').value = '';
+                     document.getElementById('acaoCriar').checked = true;
+                    
+                    // Fechar modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('modalAgendarFuncionario'));
+                    modal.hide();
+                    
+                    // Atualizar calendário
+                    await carregarFolgasDoMes();
                     renderCalendar();
                 } else {
                     alert('Erro: ' + result.message);

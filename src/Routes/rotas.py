@@ -615,6 +615,13 @@ def api_resumo():
     return jsonify(resumo)
 
 
+@rotas_bp.route("/logout")
+def logout():
+    # Limpar a sessão do usuário
+    session.pop("user", None)
+    return redirect(url_for("rotas.login"))
+
+
 @rotas_bp.route("/")
 def index():
     # Verificar se o usuário está logado

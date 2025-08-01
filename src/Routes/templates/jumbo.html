@@ -22,9 +22,12 @@
                     <a href="/" class="nav-link"><i class="bi bi-arrow-left-circle-fill"></i> VOLTAR</a>
                 </li>
             </ul>
-            <ul>
+            <div class="d-flex align-items-center">
+                <a href="{{ url_for('rotas.logout') }}" class="btn btn-outline-danger me-3" title="Sair do sistema">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
                 <a href="/"><img src="{{ url_for('static', filename='img/logo3.png') }}" class="rounded" alt="Logo"></a>
-            </ul>
+            </div>
         </div>
     </nav>
     <!----FIM DO HEADER-->
@@ -122,6 +125,7 @@
             <td>{{ visita.parentesco }}</td>
             <td>
                 <form method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <input type="hidden" name="index" value="{{ loop.index0 }}">
                     <button type="submit" name="remover" class="btn btn-danger btn-sm">
                         <i class="fas fa-trash"></i> Remover

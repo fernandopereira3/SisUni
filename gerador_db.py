@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Gerador de lista com 100.000 registros fictícios
+Gerador de lista com X numero de registros fictícios
 Baseado no formato do arquivo lista.json fornecido
 """
 
@@ -263,10 +263,10 @@ def generate_nome():
 
 def generate_registro():
     nascimento_inicio = datetime(1940, 1, 1)
-    nascimento_fim = datetime(2000, 12, 31)
+    nascimento_fim = datetime(2006, 12, 31)
 
-    inclusao_inicio = datetime(1970, 1, 1)
-    inclusao_fim = datetime(2025, 12, 31)  # Data atual
+    inclusao_inicio = datetime(2001, 1, 1)
+    inclusao_fim = datetime(2025, 12, 31)
 
     return {
         "matricula": generate_matricula(),
