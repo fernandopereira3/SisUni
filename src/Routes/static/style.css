@@ -277,7 +277,7 @@ body {
 .navbar-nav .nav-link {
    color: var(--text-nav);
    font-weight: 500;
-   font-size: 0.9rem;
+   font-size: 1.2rem;
    padding: 0.75rem 1rem;
    transition: var(--transition);
    border-radius: var(--border-radius);
@@ -286,14 +286,14 @@ body {
 
 .navbar-nav .nav-link:hover {
    color: var(--primary-color);
-   background-color: rgba(220, 38, 38, 0.1);
+   background-color: rgba(220, 38, 38, 0);
 }
 
 .rounded {
-   width: 350px; 
-   height: 70px; 
+   width: 250px; 
+   height: 50px; 
    position: absolute; 
-   top: 0; 
+   top: 10px; 
    bottom: 50px; 
    right: -2px;
 }
@@ -339,7 +339,7 @@ body {
 
 /* CORREÇÃO ESPECÍFICA PARA DROPDOWN */
 .navbar .dropdown-menu {
-   font-size: 20px;
+   font-size: 1.2rem;
    position: absolute !important;
    display: none !important;
    z-index: 1000;
@@ -550,11 +550,6 @@ th {
       padding: 1rem;
    }
    
-   .rounded {
-      width: 250px;
-      height: 50px;
-      right: 10px;
-   }
    
    .card-body {
       padding: 1rem;

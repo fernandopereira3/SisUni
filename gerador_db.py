@@ -281,17 +281,16 @@ def generate_registro():
 
 def main():
     """Função principal"""
-    print("Iniciando geração de 100.000 registros...")
-
     lista = []
     start_time = time.time()
+    quantidade = int(input("Digite a quantidade de registros a ser gerada: "))
 
-    for i in range(1000):
+    for i in range(quantidade):
         registro = generate_registro()
         lista.append(registro)
 
         # Mostrar progresso a cada 10.000 registros
-        if (i + 1) % 10000 == 0:
+        if (i + 1) % (quantidade // 10) == 0:
             elapsed = time.time() - start_time
             print(f"Gerados {i + 1:,} registros... ({elapsed:.1f}s)")
 
