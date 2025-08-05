@@ -23,7 +23,7 @@ def require_turno1(f):
     def decorated_function(*args, **kwargs):
         # Verificar se o usuário está logado
         if "user" not in session:
-            if request.is_json:
+            if request.is_json or "/api/" in request.path:
                 return jsonify({"status": "error", "message": "Usuário não logado"})
             return redirect(url_for("rotas.login"))
 
@@ -33,7 +33,7 @@ def require_turno1(f):
 
         # Verificar se o usuário existe e tem turno 1
         if not user or user.get("turno") != "1":
-            if request.is_json:
+            if request.is_json or "/api/" in request.path:
                 return jsonify({"status": "error", "message": "Acesso negado"})
             return render_template("401.html", message="Acesso restrito ao turno 1")
 

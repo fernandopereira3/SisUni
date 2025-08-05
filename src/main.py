@@ -23,7 +23,7 @@ app = Flask(
 secret_key = os.urandom(24)
 app.config["SECRET_KEY"] = secret_key
 
-# Configurar proteção CSRF
+# Configurar proteção CSRF (desabilitado para APIs)
 csrf = CSRFProtect(app)
 
 # Registrar apenas os blueprints necessários
