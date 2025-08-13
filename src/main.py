@@ -20,10 +20,12 @@ app = Flask(
     static_url_path="/static",
     template_folder="Routes/templates",
 )
-secret_key = os.urandom(24)
-app.config["SECRET_KEY"] = secret_key
+# Use a fixed secret key for development to avoid CSRF token invalidation
+app.config["SECRET_KEY"] = "dev-secret-key-for-csrf-tokens"
 
-# Configurar proteção CSRF (desabilitado para APIs)
+# Configurar proteção CSRF com configurações específicas
+app.config["WTF_CSRF_TIME_LIMIT"] = None  # Remove timeout do token CSRF
+app.config["WTF_CSRF_SSL_STRICT"] = False  # Permite CSRF em HTTP
 csrf = CSRFProtect(app)
 
 # Registrar apenas os blueprints necessários

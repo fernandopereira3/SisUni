@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>ADMIN - SisUni - CPPPAC</title>
     <link rel="icon" href="{{ url_for('static', filename='img/sp.png') }}" type="image/png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -48,8 +49,8 @@
                                     <i class="fas fa-chevron-down float-end mt-1"></i>
                                 </div>
                                 <div class="dropdown-content" id="clear-dropdown">
-                                    <a href="/clear" class="dropdown-link p-3 d-block text-decoration-none" onclick="return confirm('Tem certeza que deseja limpar as matrículas dos sentenciados?')">
-                                        <i class="fas fa-user-minus me-2"></i> Limpar Matrículas Sentenciados
+                                    <a href="/clear" class="dropdown-link p-3 d-block text-decoration-none" onclick="return confirm('⚠️ ATENÇÃO: Esta ação irá ALTERAR PERMANENTEMENTE a coleção SENTENCIADOS!\n\nTodas as matrículas da coleção principal serão REMOVIDAS.\n\nEsta operação NÃO PODE SER DESFEITA!\n\nTem ABSOLUTA CERTEZA que deseja continuar?') && confirm('CONFIRMAÇÃO FINAL:\n\nVocê está prestes a MODIFICAR a coleção SENTENCIADOS do banco de dados.\n\nEsta é uma operação IRREVERSÍVEL.\n\nDeseja realmente prosseguir com a alteração da coleção?')">
+                                        <i class="fas fa-user-minus me-2"></i> ⚠️ Limpar Matrículas Sentenciados (ALTERA COLEÇÃO)
                                     </a>
                                     <a href="/clear/trab" class="dropdown-link p-3 d-block text-decoration-none" onclick="return confirm('Tem certeza que deseja limpar as matrículas do trabalho?')">
                                         <i class="fas fa-briefcase me-2"></i> Limpar Matrículas do Trabalho

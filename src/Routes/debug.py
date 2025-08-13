@@ -206,13 +206,17 @@ def normalizar_banco():
     verificar_acesso_debug()
     if request.method == "GET":
         # Retornar página simples de confirmação
+        from flask_wtf.csrf import generate_csrf
+
+        csrf_token = generate_csrf()
         return render_template(
             "debug.html",
-            debug_content="""
+            debug_content=f"""
             <div class="alert alert-warning">
                 <h4><i class="fas fa-exclamation-triangle"></i> Normalizar Banco de Dados</h4>
                 <p>Esta ação irá converter todos os nomes para MAIÚSCULAS.</p>
                 <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{csrf_token}"/>
                     <button type="submit" class="btn btn-warning">
                         <i class="fas fa-check"></i> Confirmar Normalização
                     </button>
@@ -521,16 +525,21 @@ def clean_excluidos():
 @debug_bp.route("/debug/banco/export", methods=["GET", "POST"])
 def export_aux():
     import os
+    from flask_wtf.csrf import CSRFError
 
     """Route to export aux collection to JSON file"""
     if request.method == "GET":
+        from flask_wtf.csrf import generate_csrf
+
+        csrf_token = generate_csrf()
         return render_template(
             "debug.html",
-            debug_content="""
+            debug_content=f"""
             <div class="container">
                 <h3>Exportar Coleção Auxiliar</h3>
                 <p>Exporte a coleção auxiliar para um arquivo JSON. Depois importe para sentenciados, ele vai importar e somente os novos registros</p>
                 <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{csrf_token}"/>
                     <div class="form-group">
                         <label>Export Directory Path:</label>
                         <input type="text" name="export_path" class="form-control" 
@@ -550,8 +559,28 @@ def export_aux():
         )
 
     # Handle POST request
-    export_path = request.form.get("export_path", ".")
-    filename = request.form.get("filename", "aux_export.json")
+    try:
+        # Log CSRF token information for debugging
+        csrf_token_form = request.form.get("csrf_token")
+        csrf_token_header = request.headers.get("X-CSRFToken")
+        print(f"DEBUG CSRF - Form token: {csrf_token_form}")
+        print(f"DEBUG CSRF - Header token: {csrf_token_header}")
+        print(f"DEBUG CSRF - Form data: {dict(request.form)}")
+
+        export_path = request.form.get("export_path", ".")
+        filename = request.form.get("filename", "aux_export.json")
+    except CSRFError as e:
+        print(f"CSRF Error: {e}")
+        return render_template(
+            "debug.html",
+            debug_content=f'<div class="alert alert-danger">CSRF Error: {str(e)}</div>',
+        )
+    except Exception as e:
+        print(f"General Error in POST processing: {e}")
+        return render_template(
+            "debug.html",
+            debug_content=f'<div class="alert alert-danger">Error: {str(e)}</div>',
+        )
 
     # Export aux collection to JSON
     aux_docs = list(db.aux.find({}, {"_id": 0}))  # Exclude _id field
@@ -654,12 +683,16 @@ def import_banco():
 def import_sentenciados():
     """Route to import JSON file to sentenciados collection"""
     if request.method == "GET":
+        from flask_wtf.csrf import generate_csrf
+
+        csrf_token = generate_csrf()
         return render_template(
             "debug.html",
-            debug_content="""
+            debug_content=f"""
             <div class="container">
                 <h3>Import to Sentenciados</h3>
                 <form method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{csrf_token}"/>
                     <div class="form-group">
                         <label>JSON File:</label>
                         <input type="file" name="file" class="form-control" accept=".json">
@@ -743,9 +776,12 @@ def import_sentenciados():
 def import_excluidos():
     """Route to exclude records from sentenciados based on excluidos collection"""
     if request.method == "GET":
+        from flask_wtf.csrf import generate_csrf
+
+        csrf_token = generate_csrf()
         return render_template(
             "debug.html",
-            debug_content="""
+            debug_content=f"""
             <div class="container">
                 <h3>Excluir Sentenciados</h3>
                 <p>Esta operação irá excluir da coleção 'sentenciados' todas as matrículas que constam na coleção 'excluidos'.</p>
@@ -753,6 +789,7 @@ def import_excluidos():
                     <strong>Atenção:</strong> Esta operação não pode ser desfeita. Certifique-se de que deseja prosseguir.
                 </div>
                 <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{csrf_token}"/>
                     <button type="submit" class="btn btn-danger">
                         <i class="fas fa-trash"></i> Excluir Sentenciados
                     </button>
