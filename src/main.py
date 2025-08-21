@@ -28,6 +28,9 @@ app.config["WTF_CSRF_TIME_LIMIT"] = None  # Remove timeout do token CSRF
 app.config["WTF_CSRF_SSL_STRICT"] = False  # Permite CSRF em HTTP
 csrf = CSRFProtect(app)
 
+# Desabilitar CSRF para rotas de debug temporariamente
+csrf.exempt(BPdebug)
+
 # Registrar apenas os blueprints necessários
 app.register_blueprint(BPjumbo)
 app.register_blueprint(BProtas)
