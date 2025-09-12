@@ -39,7 +39,7 @@ if (Test-Path ".\requirements.txt") {
 }
 
 Write-Host "Iniciando aplicacao..." -ForegroundColor Green
-Start-Process -FilePath "python" -ArgumentList "C:SisUni\src\main.py" -WindowStyle Hidden
+Start-Process -FilePath "python" -ArgumentList "C:\SisUni\src\main.py" -WindowStyle Hidden
 Clear-Host
 Write-Host "Aplicao rodando em segundo plano, voce ja pode fechar esta janela." -ForegroundColor Green
 
