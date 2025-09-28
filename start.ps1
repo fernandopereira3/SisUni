@@ -15,7 +15,7 @@ if (Test-Path ".\SisUni") {
 
 cd C:
 Write-Host 'Entrando na pasta SisUni' -ForegroundColor Yellow
-cd C:SisUni
+cd C:\SisUni
 
 Write-Host "Inicializando ambiente..." -ForegroundColor Green
 
@@ -40,6 +40,7 @@ if (Test-Path ".\requirements.txt") {
 
 Write-Host "Iniciando aplicacao..." -ForegroundColor Green
 Start-Process -FilePath "python" -ArgumentList "C:\SisUni\src\main.py" -WindowStyle Hidden
+cd C:
 Clear-Host
 Write-Host "Aplicao rodando em segundo plano, voce ja pode fechar esta janela." -ForegroundColor Green
 
