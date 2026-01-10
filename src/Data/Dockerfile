@@ -1,13 +1,10 @@
-# Use a specific version for reproducibility
-FROM mongo:8.0
-# Set the working directory
-WORKDIR /data/db
-# Copy the CSV and the import script to the initialization directory
-COPY db.csv /docker-entrypoint-initdb.d/
-COPY import.sh /docker-entrypoint-initdb.d/
-# Make the import script executable
-RUN chmod +x /docker-entrypoint-initdb.d/import.sh
-RUN ./docker-entrypoint-initdb.d/import.sh
-# Expose the default MongoDB port
-EXPOSE 27017
+# Usa a versão oficial e estável do MongoDB (baseada no Ubuntu 22.04 para compatibilidade)
+FROM mongo:7.0-jammy
 
+COPY import.sh /docker-initdb.d/init-import.sh
+RUN chmod +x /docker-initdb.d/init-import.sh
+RUN ./docker-initdb.d/init-import.sh
+COPY . /data
+VOLUME /data/db
+EXPOSE 27017
+CMD ["mongod"]

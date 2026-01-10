@@ -1,0 +1,37 @@
+services:
+  web:
+    image: fernandopereira3/sisuni:latest
+    #build: .
+    ports:
+      - "80:5000"
+    networks:
+      - app-network
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/cpppac
+    restart: always
+
+  mongo:
+    image: fernandopereira3/sisuni_db:0.1
+    #build: ./src/Data
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    networks:
+      - app-network
+    volumes:
+      - mongo_data:/data/db
+    restart: always
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongo_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: D:\VOLUME
