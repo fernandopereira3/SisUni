@@ -1,4 +1,4 @@
-# SisUni - Sistema Unificado de Gestão Penitenciária
+# SisUni - Sistema Unificado
 
 ## Descrição
 O SisUni é um sistema web completo desenvolvido especificamente para a gestão de estabelecimentos penitenciários, focado no controle de sentenciados, visitantes e atividades laborais. O sistema oferece uma interface moderna e intuitiva para gerenciar eficientemente o dia a dia de uma unidade prisional, com funcionalidades robustas de pesquisa, controle de visitas e relatórios em tempo real.
@@ -262,8 +262,8 @@ FLASK_DEBUG=1 python main.py
 ```
 
 #### Acesso ao Sistema
-- **URL Local**: http://localhost:5000
-- **URL de Rede**: http://[IP-DO-SERVIDOR]:5000
+- **URL Local**: http://localhost
+- **URL de Rede**: http://[IP-DO-SERVIDOR]
 - **Login**: Qualquer nome de usuário (sistema cria automaticamente)
 
 ### 🏭 Modo Produção
@@ -302,19 +302,60 @@ sudo systemctl start sisuni
 sudo systemctl status sisuni
 ```
 
-#### Linux/Mac - Usando Docker (Alternativo)
+#### Execução via Docker Compose (Recomendado)
 
-```bash
-# Construir imagem
-docker build -t sisuni .
+O projeto foi atualizado para utilizar **Docker Compose**, facilitando a orquestração dos serviços (Aplicação Web + Banco de Dados) e garantindo a persistência dos dados.
 
-# Executar container
-docker run -d \
-  --name sisuni-app \
-  -p 5000:5000 \
-  --link mongodb:mongo \
-  sisuni
-```
+**Pré-requisitos:**
+- Docker Desktop instalado e rodando.
+
+**Como Executar:**
+
+1. **Inicie o ambiente:**
+   ```bash
+   docker-compose up -d --build
+   ```
+   Isso irá:
+   - Construir a imagem da aplicação Python (otimizada com variáveis de ambiente para evitar arquivos `.pyc` e buffering).
+   - Iniciar o container do MongoDB.
+   - Configurar a rede interna entre os serviços.
+
+2. **Acesse a aplicação:**
+   - Abra o navegador em: `http://localhost:80` (ou apenas `http://localhost`).
+
+**Detalhes Técnicos da Configuração Docker:**
+
+- **Persistência de Dados (Bind Mount):**
+  O banco de dados MongoDB utiliza um **volume do tipo Bind**, o que significa que os dados são salvos diretamente em uma pasta do seu computador host, garantindo segurança e facilidade de backup.
+  - *Configuração no `docker-compose.yml`:*
+    ```yaml
+    volumes:
+      mongo_data:
+        driver: local
+        driver_opts:
+          type: none
+          o: bind
+          device: /caminho/no/seu/computador/mongo_data
+    ```
+  - *Nota:* Certifique-se de ajustar o caminho `device` no `docker-compose.yml` para uma pasta válida no seu sistema.
+
+- **Variáveis de Ambiente Dinâmicas:**
+  A conexão com o banco de dados não é mais "chumbada" no código. O arquivo `src/Data/conexao.py` foi atualizado para ler a variável `MONGO_URI` do ambiente, permitindo flexibilidade total.
+  - *No `docker-compose.yml`:*
+    ```yaml
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/cpppac
+    ```
+
+- **Otimizações Python:**
+  O `Dockerfile` inclui variáveis para melhorar a performance em containers:
+  - `PYTHONDONTWRITEBYTECODE=1`: Evita criação de arquivos `.pyc` desnecessários.
+  - `PYTHONUNBUFFERED=1`: Garante que os logs sejam exibidos em tempo real no console do Docker.
+
+3. **Parar o ambiente:**
+   ```bash
+   docker-compose down
+   ```
 
 #### Linux/Mac - Usando PM2 (Node.js)
 
