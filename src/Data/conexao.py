@@ -1,9 +1,11 @@
 from flask import Flask
 from flask_pymongo import PyMongo
+import os
 
 app = Flask(__name__)
 # MongoDB connection via Docker: Flask container talks to MongoDB container named 'mongo'
-app.config["MONGO_URI"] = "mongodb://mongo:27017/cpppac"
+# Tenta pegar da variável de ambiente (definida no docker-compose), senão usa o padrão
+app.config["MONGO_URI"] = os.getenv("MONGO_URI", "mongodb://mongo:27017/cpppac")
 
 
 class MockResult:

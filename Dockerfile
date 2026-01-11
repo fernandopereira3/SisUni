@@ -1,7 +1,7 @@
 # Usa imagem oficial do Python (Slim é mais leve e seguro que Fedora completo)
 FROM python:3.13-slim
 
-# Variáveis de ambiente para otimizar Python
+# Variáveis de ambiente
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
