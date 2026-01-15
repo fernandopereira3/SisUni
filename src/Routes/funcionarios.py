@@ -165,7 +165,7 @@ def listar_funcionarios():
             return jsonify({"success": False, "message": "Usuário não autenticado"})
 
         usuario_atual = db.usuarios.find_one({"username": username})
-        if not usuario_atual or not usuario_atual.get("star", False):
+        if not usuario_atual or not usuario_atual.get("lvl") != 0:
             return jsonify(
                 {
                     "success": False,
@@ -238,7 +238,7 @@ def editar_funcionario(username):
             return jsonify({"message": "Usuário não autenticado"}), 401
 
         usuario_editor = db.usuarios.find_one({"username": username_editor})
-        if not usuario_editor or not usuario_editor.get("star", False):
+        if not usuario_editor or not usuario_editor.get("lvl") != 0:
             return jsonify({"message": "Acesso negado. Permissões insuficientes."}), 403
 
         # Buscar o funcionário a ser editado
@@ -258,7 +258,7 @@ def editar_funcionario(username):
         data = request.get_json()
         nome = data.get("nome", "").strip()
         turno = data.get("turno", "")
-        star = data.get("star", False)
+        lvl = data.get("lvl")
 
         # Validação básica
         if not nome or not turno:
@@ -271,7 +271,7 @@ def editar_funcionario(username):
                 "$set": {
                     "nome_completo": nome,
                     "turno": turno,
-                    "star": star,
+                    "lvl": lvl,
                     "editado_em": datetime.datetime.now(),
                     "editado_por": username_editor,
                 }
@@ -348,7 +348,7 @@ def aprovar_folga():
         username_aprovador = session["user"]
         user_aprovador = db.usuarios.find_one({"username": username_aprovador})
 
-        if not user_aprovador or not user_aprovador.get("star", False):
+        if not user_aprovador or not user_aprovador.get("lvl") != 0:
             return jsonify({"status": "error", "message": "Acesso negado"})
 
         data = request.get_json()
@@ -408,7 +408,8 @@ def criar_funcionario():
         nome_completo = data.get("nome_completo", "").strip()
         username = data.get("username", "").strip().lower().replace(" ", "")
         turno = data.get("turno")
-        star = data.get("star", False)
+        lvl = data.get("lvl")
+        
 
         # Validação
         if not nome_completo or not username or not turno:
@@ -431,7 +432,7 @@ def criar_funcionario():
             "username": username,
             "nome_completo": nome_completo,
             "turno": turno,
-            "star": star,
+            "lvl": lvl,
             "login_times": [datetime.datetime.now()],
             "folgas": [],
             "data_criacao": datetime.datetime.now(),
@@ -449,7 +450,7 @@ def criar_funcionario():
                     "username": username,
                     "nome_completo": nome_completo,
                     "turno": turno,
-                    "star": star,
+                    "lvl": lvl,
                 }
             )
         else:
@@ -469,7 +470,7 @@ def editar_folgas():
         username_editor = session["user"]
         user_editor = db.usuarios.find_one({"username": username_editor})
 
-        if not user_editor or not user_editor.get("star", False):
+        if not user_editor or not user_editor.get("lvl") != 0:
             return jsonify({"status": "error", "message": "Acesso negado"})
 
         data = request.get_json()
