@@ -5,8 +5,6 @@ from flask import (
     render_template,
     Blueprint,
     session,
-    redirect,
-    url_for,
     abort,
 )
 import json
