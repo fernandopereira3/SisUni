@@ -8,7 +8,7 @@ from Routes.trabalho import trabalho_bp as BPtrabalho
 from Routes.pesquisas import pesquisas_bp as BPpesquisas
 from Routes.funcionarios import funcionarios_bp as BPfuncionarios
 from Tests.test import bp_test
-from Data.conexao import conexao, MockDB
+from Data.conexao import conexao
 
 
 db = conexao()
