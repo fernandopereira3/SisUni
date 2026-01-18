@@ -136,8 +136,8 @@ def construir_tabela_trabalho(
         if not documentos:
             return '<p class="alert alert-info">Nenhum documento para exibir.</p>'
 
-        headers = ["Matrícula", "Nome", "Setor"]
-        fields = ["matricula", "nome", "setor"]
+        headers = ["Matrícula", "Nome"]
+        fields = ["matricula", "nome"]
 
         header_html = "".join(f"<th>{h}</th>" for h in headers)
 

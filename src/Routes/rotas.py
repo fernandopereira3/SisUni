@@ -12,6 +12,7 @@ import pandas as pd
 import re
 import datetime
 import io
+import bcrypt
 from bson import json_util
 from reportlab.platypus import Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
@@ -39,7 +40,7 @@ rotas_bp = Blueprint(
 db = conexao()
 
 
-# Context processor para injetar tabela de trabalho
+# Context processor para injetar tabela de trabalho e estatísticas
 @rotas_bp.context_processor
 def inject_tabela_trabalho():
     try:
@@ -47,9 +48,16 @@ def inject_tabela_trabalho():
         documentos = list(db.trab.find({}))
         # Gerar tabela HTML
         tabela_html = construir_tabela_trabalho(documentos)
-        return {"tab_trabalho": tabela_html}
+
+        # Contar por setor
+        setores_count = {}
+        for doc in documentos:
+            setor = doc.get("setor", "Não especificado")
+            setores_count[setor] = setores_count.get(setor, 0) + 1
+
+        return {"tab_trabalho": tabela_html, "trabalho_setores": setores_count}
     except Exception:
-        return {"tab_trabalho": ""}
+        return {"tab_trabalho": "", "trabalho_setores": {}}
 
 
 # DataFrame global
@@ -72,9 +80,13 @@ def login():
     if request.method == "POST":
         nome_completo = request.form["username"].strip()
         username = nome_completo.lower().replace(" ", "")
-        turno = request.form.get("turno")
-        star_password = request.form.get("star_password", "")
+        setor = request.form.get("setor")
+        lvl10_password = request.form.get("lvl10_password", "")
         login_time = datetime.datetime.now()
+
+        print(
+            f"[DEBUG] POST recebido - username: {username}, lvl10_password presente: {bool(lvl10_password)}"
+        )
 
         # Validação básica
         if not nome_completo:
@@ -85,27 +97,46 @@ def login():
 
         if user:
             # Usuário existe
-            if user.get("star"):
+            if user.get("lvl") == "10" or user.get("lvl") == "0":
                 # Admin: verificar/definir senha
-                current_password = user.get("star_password")
+                current_password_hash = user.get("lvl10_password")
 
-                if not current_password:
+                if not current_password_hash:
                     # Primeira vez: definir senha
-                    if not star_password or len(star_password) < 6:
+                    if not lvl10_password:
+                        # Senha não foi fornecida ainda, mostrar modal
                         return render_template(
                             "login.html",
-                            error="Defina uma senha admin com pelo menos 6 caracteres.",
+                            error="Defina uma senha administrativa para continuar.",
                             show_star_modal=True,
                             username=nome_completo,
                         )
-                    # Salvar nova senha
-                    db.usuarios.update_one(
-                        {"username": username},
-                        {"$set": {"star_password": star_password}},
+
+                    # Senha foi fornecida, validar tamanho
+                    if len(lvl10_password) < 6:
+                        return render_template(
+                            "login.html",
+                            error="A senha deve ter pelo menos 6 caracteres.",
+                            show_star_modal=True,
+                            username=nome_completo,
+                        )
+
+                    # Criptografar e salvar nova senha
+                    password_hash = bcrypt.hashpw(
+                        lvl10_password.encode("utf-8"), bcrypt.gensalt()
                     )
+                    print(f"[DEBUG] Salvando senha para usuário: {username}")
+                    print(f"[DEBUG] Hash gerado: {password_hash}")
+
+                    result = db.usuarios.update_one(
+                        {"username": username},
+                        {"$set": {"lvl10_password": password_hash}},
+                    )
+                    print(f"[DEBUG] Documentos modificados: {result.modified_count}")
+                    print(f"[DEBUG] Documentos encontrados: {result.matched_count}")
                 else:
                     # Usuário já tem senha definida - verificar se foi fornecida
-                    if not star_password:
+                    if not lvl10_password:
                         # Senha não foi fornecida, solicitar
                         return render_template(
                             "login.html",
@@ -113,8 +144,10 @@ def login():
                             show_star_modal=True,
                             username=nome_completo,
                         )
-                    # Validar senha existente
-                    if star_password != current_password:
+                    # Validar senha existente usando bcrypt
+                    if not bcrypt.checkpw(
+                        lvl10_password.encode("utf-8"), current_password_hash
+                    ):
                         return render_template(
                             "login.html",
                             error="Senha admin incorreta.",
@@ -132,14 +165,16 @@ def login():
                 {
                     "username": username,
                     "nome_completo": nome_completo,
-                    "turno": turno,
+                    "setor": setor,
                     "login_times": [login_time],
-                    "star": False,
+                    "lvl": "1",
                 }
             )
 
-        # Finalizar login
+        # Finalizar login - buscar dados atualizados do usuário
+        usuario_atualizado = db.usuarios.find_one({"username": username})
         session["user"] = username
+        session["lvl"] = usuario_atualizado.get("lvl")
         return redirect(url_for("rotas.index"))
 
     return render_template("login.html")

@@ -18,7 +18,7 @@ db = conexao()
 
 
 # Decorador para verificar autenticação e autorização
-def require_turno1(f):
+def require(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         # Verificar se o usuário está logado
@@ -31,11 +31,13 @@ def require_turno1(f):
         username = session["user"]
         user = db.usuarios.find_one({"username": username})
 
-        # Verificar se o usuário existe e tem turno 1
-        if not user or user.get("turno") != "1":
+        # Verificar se o usuário existe e tem setor administrativo
+        if not user or user.get("lvl") != "administrativo":
             if request.is_json or "/api/" in request.path:
                 return jsonify({"status": "error", "message": "Acesso negado"})
-            return render_template("401.html", message="Acesso restrito ao turno 1")
+            return render_template(
+                "401.html", message="Acesso restrito ao setor administrativo"
+            )
 
         return f(*args, **kwargs)
 
@@ -43,13 +45,14 @@ def require_turno1(f):
 
 
 @funcionarios_bp.route("/funcionarios", methods=["GET"])
-@require_turno1
 def funcionarios():
-    return render_template("funcionarios.html")
+    # Buscar dados do usuário logado
+    username = session.get("user")
+    usuario = db.usuarios.find_one({"username": username})
+    return render_template("funcionarios.html", usuario=usuario)
 
 
 @funcionarios_bp.route("/funcionarios/folgas", methods=["GET"])
-@require_turno1
 def folgas():
     """Página de gerenciamento de folgas"""
     username = session["user"]
@@ -89,7 +92,6 @@ def folgas():
 
 
 @funcionarios_bp.route("/api/folgas_mes", methods=["GET"])
-@require_turno1
 def folgas_mes():
     """Buscar todas as folgas de um mês específico"""
     try:
@@ -155,7 +157,6 @@ def folgas_mes():
 
 
 @funcionarios_bp.route("/api/listar_funcionarios", methods=["GET"])
-@require_turno1
 def listar_funcionarios():
     """API para listar funcionários baseado nas permissões do usuário"""
     try:
@@ -228,7 +229,6 @@ def listar_funcionarios():
 
 
 @funcionarios_bp.route("/api/editar_funcionario/<username>", methods=["PUT"])
-@require_turno1
 def editar_funcionario(username):
     """API para editar dados de um funcionário"""
     try:
@@ -289,7 +289,6 @@ def editar_funcionario(username):
 
 
 @funcionarios_bp.route("/api/excluir_funcionario/<username>", methods=["DELETE"])
-@require_turno1
 def excluir_funcionario(username):
     """API para excluir um funcionário"""
     try:
@@ -340,7 +339,6 @@ def excluir_funcionario(username):
 
 
 @funcionarios_bp.route("/api/aprovar_folga", methods=["POST"])
-@require_turno1
 def aprovar_folga():
     """Aprovar uma folga"""
     try:
@@ -393,7 +391,6 @@ def aprovar_folga():
 
 
 @funcionarios_bp.route("/api/criar_funcionario", methods=["POST"])
-@require_turno1
 def criar_funcionario():
     """Criar novo funcionário"""
     try:
@@ -409,7 +406,6 @@ def criar_funcionario():
         username = data.get("username", "").strip().lower().replace(" ", "")
         turno = data.get("turno")
         lvl = data.get("lvl")
-        
 
         # Validação
         if not nome_completo or not username or not turno:
@@ -462,7 +458,6 @@ def criar_funcionario():
 
 
 @funcionarios_bp.route("/api/editar_folga", methods=["POST"])
-@require_turno1
 def editar_folgas():
     """Edita folgas de terceiros"""
     try:
@@ -593,7 +588,6 @@ def editar_folgas():
 
 
 @funcionarios_bp.route("/api/folgas_pendentes", methods=["GET"])
-@require_turno1
 def folgas_pendentes():
     """Buscar todas as folgas pendentes de aprovação"""
     try:
@@ -644,7 +638,6 @@ def folgas_pendentes():
 
 
 @funcionarios_bp.route("/api/agendar_folga", methods=["POST"])
-@require_turno1
 def agendar_folga():
     """Agendar folga para um funcionário"""
     username = session["user"]
@@ -713,7 +706,6 @@ def agendar_folga():
 
 
 @funcionarios_bp.route("/api/cancelar_folga", methods=["POST"])
-@require_turno1
 def cancelar_folga():
     """Cancelar folga de um funcionário"""
     username = session["user"]

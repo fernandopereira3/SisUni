@@ -1,0 +1,250 @@
+/* Estilos para Cards de Pavilhões - Paleta Padronizada */
+
+ .dashboard-container {
+            padding: 1.5rem;
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, #1f1f1f 0%, #2d2d2d 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .dashboard-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .dashboard-header p {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+.pavilion-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.pavilion-card {
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pavilion-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Pavilhão 1 - Dourado/Preto */
+.pavilion-card.pav-1a {
+    background: linear-gradient(135deg, rgba(197, 158, 79, 0.1) 0%, rgba(0, 0, 0, 0.05) 100%);
+    border-left: 4px solid #c59e4f;
+}
+
+.pavilion-card.pav-1b {
+    background: linear-gradient(135deg, rgba(197, 158, 79, 0.1) 0%, rgba(0, 0, 0, 0.05) 100%);
+    border-left: 4px solid #a67935;
+}
+
+/* Pavilhão 2 - Vermelho/Cinza */
+.pavilion-card.pav-2a {
+    background: linear-gradient(135deg, rgba(220, 40, 40, 0.1) 0%, rgba(140, 139, 138, 0.05) 100%);
+    border-left: 4px solid #dc2828;
+}
+
+.pavilion-card.pav-2b {
+    background: linear-gradient(135deg, rgba(220, 40, 40, 0.1) 0%, rgba(140, 139, 138, 0.05) 100%);
+    border-left: 4px solid #b91c1c;
+}
+
+/* Pavilhão 3 - Cinza/Preto */
+.pavilion-card.pav-3a {
+    background: linear-gradient(135deg, rgba(140, 139, 138, 0.1) 0%, rgba(0, 0, 0, 0.05) 100%);
+    border-left: 4px solid #8c8b8a;
+}
+
+.pavilion-card.pav-3b {
+    background: linear-gradient(135deg, rgba(140, 139, 138, 0.1) 0%, rgba(0, 0, 0, 0.05) 100%);
+    border-left: 4px solid #6b6a69;
+}
+
+/* Pavilhão 4 - Dourado/Vermelho */
+.pavilion-card.pav-4a {
+    background: linear-gradient(135deg, rgba(197, 158, 79, 0.1) 0%, rgba(220, 40, 40, 0.05) 100%);
+    border-left: 4px solid #c59e4f;
+}
+
+.pavilion-card.pav-4b {
+    background: linear-gradient(135deg, rgba(197, 158, 79, 0.1) 0%, rgba(220, 40, 40, 0.05) 100%);
+    border-left: 4px solid #dc2828;
+}
+
+.pavilion-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #000000;
+    margin-bottom: 0.5rem;
+}
+
+.pavilion-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #000000;
+    line-height: 1;
+}
+
+.pavilion-capacity {
+    font-size: 0.75rem;
+    color: #8c8b8a;
+    margin-top: 0.25rem;
+}
+
+/* Card de Total */
+.total-pavilion {
+    background: linear-gradient(135deg, #c59e4f 0%, #dc2828 100%);
+    color: white;
+    padding: 1.25rem;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.total-pavilion .total-label {
+    font-size: 0.875rem;
+    opacity: 0.95;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.total-pavilion .total-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+/* Gráfico de Barras Verticais */
+.vertical-chart-container {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    height: 300px;
+    padding: 1rem 0.5rem;
+    background: linear-gradient(to top, #f8f9fa 0%, transparent 100%);
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+/* Grid lines de fundo */
+.vertical-chart-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: linear-gradient(to top, #e9ecef 1px, transparent 1px);
+    background-size: 100% 25%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.chart-bar-vertical {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+    max-width: 50px;
+}
+
+.bar-value {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #000000;
+    margin-bottom: 0.5rem;
+    min-height: 20px;
+}
+
+.bar-column {
+    width: 100%;
+    border-radius: 8px 8px 0 0;
+    position: relative;
+    transition: all 0.3s ease;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+    animation: growBar 0.8s ease-out;
+    min-height: 20px;
+}
+
+@keyframes growBar {
+    from {
+        height: 0 !important;
+    }
+}
+
+.bar-column:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Cores das barras - Gradientes verticais com paleta padronizada */
+.bar-column.bar-1a {
+    background: linear-gradient(to top, #c59e4f 0%, #a67935 100%);
+}
+
+.bar-column.bar-1b {
+    background: linear-gradient(to top, #c59e4f 0%, #a67935 100%);
+}
+
+.bar-column.bar-2a {
+    background: linear-gradient(to top, #dc2828 0%, #b91c1c 100%);
+}
+
+.bar-column.bar-2b {
+    background: linear-gradient(to top, #dc2828 0%, #b91c1c 100%);
+}
+
+.bar-column.bar-3a {
+    background: linear-gradient(to top, #8c8b8a 0%, #6b6a69 100%);
+}
+
+.bar-column.bar-3b {
+    background: linear-gradient(to top, #8c8b8a 0%, #6b6a69 100%);
+}
+
+.bar-column.bar-4a {
+    background: linear-gradient(to top, #c59e4f 0%, #dc2828 100%);
+}
+
+.bar-column.bar-4b {
+    background: linear-gradient(to top, #c59e4f 0%, #dc2828 100%);
+}
+
+.bar-label {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #000000;
+    text-align: center;
+}
+
+.bar-percentage {
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.7rem;
+    color: #8c8b8a;
+    white-space: nowrap;
+}

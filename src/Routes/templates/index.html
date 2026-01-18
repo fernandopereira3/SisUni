@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,6 +12,7 @@
     <!-- Font Awesome (já estava carregado) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='analytics.css') }}">
 </head>
 
 <body>
@@ -19,8 +21,9 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="sentenciadosDropdown" role="button" aria-expanded="false">
-                        <i class="bi bi-yin-yang"></i> SENTENCIADOS
+                    <a class="nav-link dropdown-toggle" href="#" id="sentenciadosDropdown" role="button"
+                        aria-expanded="false">
+                        <i class="bi bi-bricks"></i> SENTENCIADOS
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="sentenciadosDropdown">
                         <li><a class="dropdown-item" href="/trabalho">Trabalho</a></li>
@@ -28,10 +31,11 @@
                     </ul>
                 </li>
                 <li class="nav-item">
-                    
+
                 </li>
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="visitasDropdown" role="button" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle" href="#" id="visitasDropdown" role="button"
+                        aria-expanded="false">
                         <i class="fas fa-users"></i> VISITAS
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="visitasDropdown">
@@ -44,188 +48,250 @@
                         <i class="bi bi-person-bounding-box"></i> FUNCIONÁRIOS
                     </a>
                 </li>
-            </ul>             
+            </ul>
             <div class="navbar-brand">
                 <a href="/"><img src="{{ url_for('static', filename='img/logo3.png') }}" class="rounded" alt="Logo"></a>
             </div>
         </div>
     </nav>
     <!----FIM DO HEADER-->
-    <p></p>
-    <div class="container-fluid mt-4">
-        <div class="card totals-card border-0">
-        <div class="row">
-            <!-- Coluna 1 - Alojamentos -->
-            <div class="col-md-4">
-                <!-- Card Alojamentos -->
-                <div class="card box-shadow" style="border: 1px solid #ccc; border-radius: 10px;">
-                    <div class="card-header">
-                        <h5 class="mb-0">ALOJAMENTOS</h5>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1><i class="bi bi-bar-chart-fill me-2"></i>Visão Geral</h1>
+            <p>Métricas do sistema - Atualizado em tempo real -- > VERSAO DEV BANCO E METRICAS FICTICIOS</p>
+        </div>
+        <p></p>
+        <div class="container-fluid mt-4">
+            <div class="card totals-card border-0">
+                <div class="row">
+                    <!-- Coluna 1 - Alojamentos -->
+                    <div class="col-md-4">
+                        <!-- Card Alojamentos -->
+                        <div class="card box-shadow" style="border: 1px solid #ccc; border-radius: 10px;">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="bi bi-building me-2"></i>OCUPAÇÃO POR PAVILHÃO</h5>
+                            </div>
+                            <div class="card-body" style="padding: 1.25rem;">
+                                <!-- Gráfico de Barras Verticais -->
+                                <div class="vertical-chart-container">
+                                    <!-- Pavilhão 1A -->
+                                    <div class="chart-bar-vertical">
+                                        <div class="bar-value">{{ totals.aloj_1a|default(0) }}</div>
+                                        <div class="bar-column bar-1a"
+                                            style="height: {{ totals.aloj_1a|default(0) * 1.5 }}px;"></div>
+                                        <div class="bar-label">1A</div>
+                                    </div>
+
+                                    <!-- Pavilhão 1B -->
+                                    <div class="chart-bar-vertical">
+                                        <div class="bar-value">{{ totals.aloj_1b|default(0) }}</div>
+                                        <div class="bar-column bar-1b"
+                                            style="height: {{ totals.aloj_1b|default(0) * 1.5 }}px;"></div>
+                                        <div class="bar-label">1B</div>
+                                    </div>
+
+                                    <!-- Pavilhão 2A -->
+                                    <div class="chart-bar-vertical">
+                                        <div class="bar-value">{{ totals.aloj_2a|default(0) }}</div>
+                                        <div class="bar-column bar-2a"
+                                            style="height: {{ totals.aloj_2a|default(0) * 1.5 }}px;"></div>
+                                        <div class="bar-label">2A</div>
+                                    </div>
+
+                                    <!-- Pavilhão 2B -->
+                                    <div class="chart-bar-vertical">
+                                        <div class="bar-value">{{ totals.aloj_2b|default(0) }}</div>
+                                        <div class="bar-column bar-2b"
+                                            style="height: {{ totals.aloj_2b|default(0) * 1.5 }}px;"></div>
+                                        <div class="bar-label">2B</div>
+                                    </div>
+
+                                    <!-- Pavilhão 3A -->
+                                    <div class="chart-bar-vertical">
+                                        <div class="bar-value">{{ totals.aloj_3a|default(0) }}</div>
+                                        <div class="bar-column bar-3a"
+                                            style="height: {{ totals.aloj_3a|default(0) * 1.5 }}px;"></div>
+                                        <div class="bar-label">3A</div>
+                                    </div>
+
+                                    <!-- Pavilhão 3B -->
+                                    <div class="chart-bar-vertical">
+                                        <div class="bar-value">{{ totals.aloj_3b|default(0) }}</div>
+                                        <div class="bar-column bar-3b"
+                                            style="height: {{ totals.aloj_3b|default(0) * 1.5 }}px;"></div>
+                                        <div class="bar-label">3B</div>
+                                    </div>
+
+                                    <!-- Pavilhão 4A -->
+                                    <div class="chart-bar-vertical">
+                                        <div class="bar-value">{{ totals.aloj_4a|default(0) }}</div>
+                                        <div class="bar-column bar-4a"
+                                            style="height: {{ totals.aloj_4a|default(0) * 1.5 }}px;"></div>
+                                        <div class="bar-label">4A</div>
+                                    </div>
+
+                                    <!-- Pavilhão 4B -->
+                                    <div class="chart-bar-vertical">
+                                        <div class="bar-value">{{ totals.aloj_4b|default(0) }}</div>
+                                        <div class="bar-column bar-4b"
+                                            style="height: {{ totals.aloj_4b|default(0) * 1.5 }}px;"></div>
+                                        <div class="bar-label">4B</div>
+                                    </div>
+                                </div>
+
+                                <!-- Total -->
+                                <div class="total-pavilion">
+                                    <div class="total-label">TOTAL NA CASA</div>
+                                    <div class="total-value">{{ totals.total|default(0) }}</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body">
 
-                        <!-- Alojamento 1 -->
-                        <div class="row">
-                            <div class="col">
-                                <div class="card text-center">
-                                    <div class="card-header">1A</div>
+                    <!-- Coluna 2 - Presos Trabalhando -->
+                    <div class="col-md-8">
+                        <!-- Row para dividir Presos Trabalhando em 2 -->
+                        <div class="row mb-4">
+                            <!-- Card 1: Tabela de Trabalho -->
+                            <div class="col-md-6">
+                                <div class="card box-shadow h-100" style="border: 1px solid #ccc; border-radius: 10px;">
+                                    <div class="card-header">
+                                        <h5 class="mb-0"><i class="bi bi-briefcase me-2"></i>Aptos ao Trabalho</h5>
+                                    </div>
                                     <div class="card-body">
-                                        <h3>{{ totals.aloj_1a|default(0) }}</h3>
+                                        <div class="table-overflow">
+                                            {{ tab_trabalho|safe }}
+                                            <style>
+                                                .table-overflow {
+                                                    max-height: 300px;
+                                                    overflow-y: auto;
+                                                }
+                                            </style>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col">
-                                <div class="card text-center">
-                                    <div class="card-header">1B</div>
-                                    <div class="card-body">
-                                        <h3>{{ totals.aloj_1b|default(0) }}</h3>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- Alojamento 2 -->
-                        <div class="row">
-                            <div class="col">
-                                <div class="card text-center">
-                                    <div class="card-header">2A</div>
-                                    <div class="card-body">
-                                        <h3>{{ totals.aloj_2a|default(0) }}</h3>
+                            <!-- Card 2: Estatísticas de Trabalho -->
+                            <div class="col-md-6">
+                                <div class="card box-shadow h-100" style="border: 1px solid #ccc; border-radius: 10px;">
+                                    <div class="card-header">
+                                        <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>Distribuição por Setor</h5>
                                     </div>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="card text-center">
-                                    <div class="card-header">2B</div>
                                     <div class="card-body">
-                                        <h3>{{ totals.aloj_2b|default(0) }}</h3>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                                        <!-- Lista de Setores -->
+                                        <div style="padding: 1rem;">
+                                            {% if trabalho_setores %}
+                                            {% set total_trabalho = trabalho_setores.values()|sum %}
+                                            <div style="margin-bottom: 1.5rem; text-align: center;">
+                                                <div style="font-size: 2.5rem; font-weight: 700; color: #000000;">{{
+                                                    total_trabalho }}</div>
+                                                <div style="font-size: 0.875rem; color: #8c8b8a; font-weight: 600;">
+                                                    TOTAL TRABALHANDO</div>
+                                            </div>
 
-                        <!-- Alojamento 3 -->
-                        <div class="row">
-                            <div class="col">
-                                <div class="card text-center">
-                                    <div class="card-header">3A</div>
-                                    <div class="card-body">
-                                        <h3>{{ totals.aloj_3a|default(0) }}</h3>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="card text-center">
-                                    <div class="card-header">3B</div>
-                                    <div class="card-body">
-                                        <h3>{{ totals.aloj_3b|default(0) }}</h3>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Alojamento 4 -->
-                        <div class="row">
-                            <div class="col">
-                                <div class="card text-center">
-                                    <div class="card-header">4A</div>
-                                    <div class="card-body">
-                                        <h3>{{ totals.aloj_4a|default(0) }}</h3>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="card text-center">
-                                    <div class="card-header">4B</div>
-                                    <div class="card-body">
-                                        <h3>{{ totals.aloj_4b|default(0) }}</h3>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- TOTAL -->
-                        <div class="row">
-                            <div class="col">
-                                <div class="card text-center">
-                                    <div class="card-header">TOTAL NA CASA</div>
-                                    <div class="card-body">
-                                        <h3>{{ totals.total|default(0) }}</h3>
+                                            <!-- Lista de setores com barras -->
+                                            <div style="max-height: 200px; overflow-y: auto;">
+                                                {% set cores = ['#c59e4f', '#dc2828', '#8c8b8a', '#000000'] %}
+                                                {% for setor, count in trabalho_setores.items() %}
+                                                {% set percentual = (count / total_trabalho * 100)|round|int %}
+                                                {% set cor = cores[loop.index0 % 4] %}
+                                                <div style="margin-bottom: 1rem;">
+                                                    <div
+                                                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                                                        <div
+                                                            style="font-size: 0.875rem; font-weight: 600; color: #000000;">
+                                                            {{ setor }}</div>
+                                                        <div
+                                                            style="font-size: 0.875rem; font-weight: 700; color: {{ cor }};">
+                                                            {{ count }} ({{ percentual }}%)</div>
+                                                    </div>
+                                                    <!-- Barra de progresso -->
+                                                    <div
+                                                        style="width: 100%; height: 8px; background: #f0f0f0; border-radius: 4px; overflow: hidden;">
+                                                        <div
+                                                            style="width: {{ percentual }}%; height: 100%; background: {{ cor }}; transition: width 0.3s ease;">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                            {% else %}
+                                            <div class="alert alert-info mb-0" role="alert">
+                                                <i class="bi bi-info-circle me-2"></i>
+                                                Nenhum dado de trabalho disponível.
+                                            </div>
+                                            {% endif %}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Coluna 2 - Presos Trabalhando e Visitas -->
-            <div class="col-md-8">
-                <!-- Presos Trabalhando -->
-                <div class="card mb-4 box-shadow" style="border: 1px solid #ccc; border-radius: 10px;">
-                    <div class="card-header">
-                        <h5 class="mb-0">Presos aptos a trabalhar (NÃO SIGNIFICA QUE ESTÃO TRABALHANDO HOJE!)</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-overflow">
-                            {{ tab_trabalho|safe }}
-                            <style>
-                                .table-overflow {
-                                    max-height: 300px;
-                                    overflow-y: auto;
-                                }
-                            </style>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card Visitas -->
-                <div class="card mb-4 box-shadow" style="border: 1px solid #ccc; border-radius: 10px;">
-                    <div class="card-header">
-                        <h5 class="mb-0">Visitantes</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col">
-                                <div class="card text-center">
-                                    <div class="card-header"><i class="fas fa-users"></i> Preso com Visita</div>
-                                    <div class="card-body">
-                                        <h3>{{ resumo.matriculas }}</h3>
-                                    </div>
-                                </div>
+                <!-- Seção Exclusiva - Visitantes -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card mb-4 box-shadow" style="border: 1px solid #ccc; border-radius: 10px;">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="bi bi-people me-2"></i>Visitantes</h5>
                             </div>
-                            <div class="col">
-                                <div class="card text-center">
-                                    <div class="card-header"><i class="fas fa-flask"></i> PET</div>
-                                    <div class="card-body">
-                                        <h3>{{ resumo.garrafas }}</h3>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-2">
+                                        <div class="card text-center">
+                                            <div class="card-header"><i class="fas fa-users"></i> Preso com Visita</div>
+                                            <div class="card-body">
+                                                <h3>{{ resumo.matriculas }}</h3>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Homens, Mulheres e Crianças -->
-                        <div class="row">
-                            <div class="col">
-                                <div class="card text-center">
-                                    <div class="card-header"><i class="fas fa-male"></i> Homens</div>
-                                    <div class="card-body">
-                                        <h3>{{ resumo.homens }}</h3>
+                                    <div class="col-md-2">
+                                        <div class="card text-center">
+                                            <div class="card-header"><i class="fas fa-flask"></i> PET</div>
+                                            <div class="card-body">
+                                                <h3>{{ resumo.garrafas }}</h3>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="card text-center">
-                                    <div class="card-header"><i class="fas fa-female"></i> Mulheres</div>
-                                    <div class="card-body">
-                                        <h3>{{ resumo.mulheres }}</h3>
+                                    <div class="col-md-2">
+                                        <div class="card text-center">
+                                            <div class="card-header"><i class="fas fa-male"></i> Homens</div>
+                                            <div class="card-body">
+                                                <h3>{{ resumo.homens }}</h3>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="card text-center">
-                                    <div class="card-header"><i class="fas fa-child"></i> Crianças</div>
-                                    <div class="card-body">
-                                        <h3>{{ resumo.criancas }}</h3>
+                                    <div class="col-md-2">
+                                        <div class="card text-center">
+                                            <div class="card-header"><i class="fas fa-female"></i> Mulheres</div>
+                                            <div class="card-body">
+                                                <h3>{{ resumo.mulheres }}</h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="card text-center">
+                                            <div class="card-header"><i class="fas fa-child"></i> Crianças</div>
+                                            <div class="card-body">
+                                                <h3>{{ resumo.criancas }}</h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="card text-center"
+                                            style="background: linear-gradient(135deg, #c59e4f 0%, #dc2828 100%); color: white;">
+                                            <div class="card-header"
+                                                style="background: transparent; border-bottom: 1px solid rgba(255,255,255,0.2); color: white;">
+                                                <i class="fas fa-users"></i> Total
+                                            </div>
+                                            <div class="card-body">
+                                                <h3 style="color: white;">{{ resumo.matriculas|default(0) +
+                                                    resumo.homens|default(0) + resumo.mulheres|default(0) +
+                                                    resumo.criancas|default(0) }}</h3>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -234,123 +300,73 @@
                 </div>
             </div>
         </div>
-        </div>
-    </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log("Verificando tabela de trabalho...");
-            const tableElement = document.querySelector('#tabela-trabalho, .table');
-            if (tableElement) {
-                console.log("Tabela encontrada:", tableElement);
-                console.log("Número de linhas na tabela:", tableElement.querySelectorAll('tbody tr').length);
-            } else {
-                console.log("Tabela não encontrada!");
-                console.log("Conteúdo do container:", document.querySelector('.container').innerHTML);
-            }
-            
-            // Forçar comportamento hover nos dropdowns
-            const dropdowns = document.querySelectorAll('.dropdown');
-            dropdowns.forEach(dropdown => {
-                const toggle = dropdown.querySelector('.dropdown-toggle');
-                const menu = dropdown.querySelector('.dropdown-menu');
-                let timeoutId;
-                
-                if (toggle && menu) {
-                    // Remover qualquer evento de click
-                    toggle.removeAttribute('data-bs-toggle');
-                    toggle.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        return false;
-                    });
-                    
-                    // Forçar hover com delay
-                    dropdown.addEventListener('mouseenter', function() {
-                        clearTimeout(timeoutId);
-                        menu.classList.add('show');
-                    });
-                    
-                    dropdown.addEventListener('mouseleave', function() {
-                        timeoutId = setTimeout(function() {
-                            menu.classList.remove('show');
-                        }, 300); // 300ms de delay
-                    });
-                    
-                    // Manter aberto quando mouse está sobre o menu
-                    menu.addEventListener('mouseenter', function() {
-                        clearTimeout(timeoutId);
-                    });
-                    
-                    menu.addEventListener('mouseleave', function() {
-                        timeoutId = setTimeout(function() {
-                            menu.classList.remove('show');
-                        }, 300);
-                    });
-                }
-            });
-        });
-    </script>
+
+        <!-- JavaScript externo -->
+        <script src="{{ url_for('rotas.static', filename='js/index.js') }}"></script>
 
 
-<!-- Footer com Logout -->
-<footer class="bg-light border-top mt-5">
-    <div class="container">
-        <div class="row py-3">
-            <div class="col-12 text-center">
-                  <a href="/debug" class="nav-link px-2 text-muted" onclick="return promptPassword()">
-                        <span class="text-muted" style="font-size: 0.875rem;" {% if session.user %}data-username="{{ session.user }}"{% endif %}>
-                            &copy; 2025 Fernando Pereira | Versão: 1.6 Flask
-                            {% if session.user %}
-                                | Usuario: {{ session.user }}
-                            {% endif %}
-                        </span>        
-                    </a>
-                   <script>
-                        function promptPassword() {
-                            var isAuthorized = document.querySelector('[data-authorized]').getAttribute('data-authorized') === 'true';
+        <!-- Footer com Logout -->
+        <footer class="bg-light border-top mt-5">
+            <div class="container">
+                <div class="row py-3">
+                    <div class="col-12 text-center">
+                        <a href="/debug" class="nav-link px-2 text-muted" onclick="return promptPassword()">
+                            <span class="text-muted" style="font-size: 0.875rem;">
+                                &copy; 2025 Fernando Pereira | Versão: DEV
+                                {% if session.user %}
+                                <br>
+                                Usuário: {{ session.user }} | Setor: {{ session.setor|default('N/A') }}
+                                {% endif %}
+                            </span>
+                        </a>
+                        <script>
+                            function promptPassword() {
+                                var isAuthorized = document.querySelector('[data-authorized]').getAttribute('data-authorized') === 'true';
 
-                            if (isAuthorized) {
-                                // Verificar se é o usuário autorizado
-                                var currentUser = document.querySelector('[data-username]')?.getAttribute('data-username') || '';
-                                if (currentUser.toLowerCase() !== 'fernandopereira') {
-                                    alert('Acesso negado. Apenas Fernando pode acessar esta área.');
-                                    return false;
-                                }
-                                window.location.href = "/debug";
-                                return false;
-                            } else {
-                                // Primeiro verificar usuário
-                                var username = prompt("Digite seu nome de usuário:");
-                                if (!username || username.toLowerCase() !== 'fernandopereira') {
-                                    alert('Acesso negado. Apenas Fernando pode acessar esta área.');
-                                    return false;
-                                }
-                                
-                                // Depois verificar senha
-                                var password = prompt("Por favor, digite a senha de acesso:");
-                                if (password === atob("MDIwMjMwOTE=")) {
+                                if (isAuthorized) {
+                                    // Verificar se é o usuário autorizado
+                                    var currentUser = document.querySelector('[data-username]')?.getAttribute('data-username') || '';
+                                    if (currentUser.toLowerCase() !== 'fernandopereira') {
+                                        alert('Acesso negado. Apenas Fernando pode acessar esta área.');
+                                        return false;
+                                    }
                                     window.location.href = "/debug";
                                     return false;
                                 } else {
-                                    alert("Senha inválida. Tente novamente.");
-                                    return false;
+                                    // Primeiro verificar usuário
+                                    var username = prompt("Digite seu nome de usuário:");
+                                    if (!username || username.toLowerCase() !== 'fernandopereira') {
+                                        alert('Acesso negado. Apenas Fernando pode acessar esta área.');
+                                        return false;
+                                    }
+
+                                    // Depois verificar senha
+                                    var password = prompt("Por favor, digite a senha de acesso:");
+                                    if (password === atob("MDIwMjMwOTE=")) {
+                                        window.location.href = "/debug";
+                                        return false;
+                                    } else {
+                                        alert("Senha inválida. Tente novamente.");
+                                        return false;
+                                    }
                                 }
                             }
-                        }
-                    </script>   
-                <span class="text-muted" style="font-size: 0.875rem;">
-                    SisUni - Sistema Unificado
-                </span>
-                <span class="text-muted mx-2">|</span>
-                <a href="{{ url_for('rotas.logout') }}" class="text-muted text-decoration-none" 
-                   style="font-size: 0.875rem;" title="Sair do sistema">
-                    <i class="fas fa-sign-out-alt me-1"></i>Sair
-                </a>
+                        </script>
+                        <span class="text-muted" style="font-size: 0.875rem;">
+                            SisUni - Sistema Unificado
+                        </span>
+                        <span class="text-muted mx-2">|</span>
+                        <a href="{{ url_for('rotas.logout') }}" class="text-muted text-decoration-none"
+                            style="font-size: 0.875rem;" title="Sair do sistema">
+                            <i class="fas fa-sign-out-alt me-1"></i>Sair
+                        </a>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
-</footer>
+        </footer>
 
-<!-- Bootstrap JavaScript -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Bootstrap JavaScript -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
