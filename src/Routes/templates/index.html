@@ -27,7 +27,7 @@
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="sentenciadosDropdown">
                         <li><a class="dropdown-item" href="/trabalho">Trabalho</a></li>
-                        <li><a class="dropdown-item" href="/pesquisas/sentenciados">Pesquisar</a></li>
+                        <li><a class="dropdown-item" href="/pesquisas/sentenciados">Pesquisa</a></li>
                     </ul>
                 </li>
                 <li class="nav-item">
@@ -312,10 +312,9 @@
                     <div class="col-12 text-center">
                         <a href="/debug" class="nav-link px-2 text-muted" onclick="return promptPassword()">
                             <span class="text-muted" style="font-size: 0.875rem;">
-                                &copy; 2025 Fernando Pereira | Versão: DEV
+                                &copy; 2025 Fernando Pereira | Versão do sistema: DEV
                                 {% if session.user %}
-                                <br>
-                                Usuário: {{ session.user }} | Setor: {{ session.setor|default('N/A') }}
+                                | Usuário: {{ session.user }} - {{ session.setor|default('N/A') }}
                                 {% endif %}
                             </span>
                         </a>
