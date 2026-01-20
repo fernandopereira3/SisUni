@@ -1,34 +1,167 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>SisUni - CPPPAC - Agendamento de Folgas</title>
-    <link rel="shortcut icon" href="{{ url_for('static', filename='img/sp.png') }}">
+    <link rel="shortcut icon" href="{{ url_for('rotas.static', filename='img/sp.png') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
-    
+    <link rel="stylesheet" type="text/css" href="{{ url_for('rotas.static', filename='style.css') }}">
+
     <style>
+        /* Paleta de cores do projeto */
+        :root {
+            --color-black: #000000;
+            --color-gold: #c59e4f;
+            --color-red: #dc2828;
+            --color-gray: #8c8b8a;
+            --color-white: #ffffff;
+        }
+
+        /* Cards minimalistas */
+        .card {
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .card-header {
+            background: var(--color-gray) !important;
+            color: var(--color-white) !important;
+            border-bottom: 2px solid var(--color-gold);
+            font-weight: 600;
+        }
+
+        .card-header i {
+            color: var(--color-white) !important;
+        }
+
+        /* Calendário */
         #calendar-days td {
-            height: 120px;
+            height: 100px;
             vertical-align: top;
             padding: 8px;
             position: relative;
+            border: 1px solid #e0e0e0;
+            transition: all 0.2s ease;
         }
-        
+
+        #calendar-days td:hover {
+            background: #f8f9fa;
+            border-color: var(--color-gold);
+        }
+
         #calendar-days td small {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             line-height: 1.2;
         }
-        
+
         .calendar-day-number {
-            font-weight: bold;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--color-black);
             margin-bottom: 4px;
+        }
+
+        .table thead th {
+            background: var(--color-gray);
+            color: var(--color-white);
+            border: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 0.75rem;
+        }
+
+        /* Botões */
+        .btn-outline-primary {
+            border-color: var(--color-gold);
+            color: var(--color-gold);
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--color-gold);
+            border-color: var(--color-gold);
+            color: var(--color-white);
+        }
+
+        .btn-success {
+            background: var(--color-gold);
+            border-color: var(--color-gold);
+        }
+
+        .btn-success:hover {
+            background: #b08d45;
+            border-color: #b08d45;
+        }
+
+        .btn-warning {
+            background: var(--color-red);
+            border-color: var(--color-red);
+        }
+
+        .btn-warning:hover {
+            background: #c32424;
+            border-color: #c32424;
+        }
+
+        /* Badges minimalistas */
+        .bg-warning {
+            background-color: var(--color-gold) !important;
+        }
+
+        .bg-success {
+            background-color: var(--color-gold) !important;
+        }
+
+        .bg-danger {
+            background-color: var(--color-red) !important;
+        }
+
+        .bg-info {
+            background-color: var(--color-gray) !important;
+        }
+
+        /* Dias com folga */
+        .border-success {
+            border-left: 3px solid var(--color-gold) !important;
+        }
+
+        .text-success {
+            color: var(--color-gold) !important;
+        }
+
+        .text-warning {
+            color: var(--color-red) !important;
+        }
+
+        /* Seleção de dia */
+        .table-primary {
+            background-color: rgba(197, 158, 79, 0.1) !important;
+            border: 2px solid var(--color-gold) !important;
+        }
+
+        /* Header do mês */
+        #currentMonth {
+            color: var(--color-black);
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+
+        /* Folgas list */
+        .folga-item {
+            border-left: 3px solid var(--color-gold);
+        }
+
+        /* Inputs minimalistas */
+        .form-control:focus {
+            border-color: var(--color-gold);
+            box-shadow: 0 0 0 0.2rem rgba(197, 158, 79, 0.25);
         }
     </style>
 
@@ -36,43 +169,44 @@
 
 <body>
     <!---HEADER--->
-    <nav class="navbar navbar-expand-lg navbar-light bg-nav">
+    <nav class="navbar navbar-expand-lg bg-nav">
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
                     <a href="/" class="nav-link"><i class="bi bi-arrow-left-circle-fill"></i> VOLTAR</a>
                 </li>
             </ul>
-            <ul>
-                <a href="/"><img src="{{ url_for('static', filename='img/logo3.png') }}" class="rounded" alt="Logo"></a>
-            </ul>
+            <div class="navbar-brand">
+                <a href="/"><img src="{{ url_for('rotas.static', filename='img/logo3.png') }}" class="rounded"
+                        alt="Logo"></a>
+            </div>
         </div>
     </nav>
     <!----FIM DO HEADER---->
-    
+
     <div class="container-fluid mt-4">
         <div class="row">
             <!-- Coluna do Calendário -->
             <div class="col-md-9">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0"><i class="fas fa-calendar-alt"></i> Calendário de Folgas</h5>
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-calendar3 me-2"></i>Calendário de Folgas</h5>
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <button class="btn btn-outline-primary btn-sm" onclick="previousMonth()">
-                                    <i class="fas fa-chevron-left"></i> Anterior
+                                    <i class="bi bi-chevron-left"></i> Anterior
                                 </button>
                                 <h5 id="currentMonth" class="mb-0"></h5>
                                 <button class="btn btn-outline-primary btn-sm" onclick="nextMonth()">
-                                    Próximo <i class="fas fa-chevron-right"></i>
+                                    Próximo <i class="bi bi-chevron-right"></i>
                                 </button>
                             </div>
-                            
+
                             <div class="table-responsive">
-                                <table class="table table-bordered">
-                                    <thead class="table-dark">
+                                <table class="table table-bordered mb-0">
+                                    <thead>
                                         <tr>
                                             <th class="text-center">Dom</th>
                                             <th class="text-center">Seg</th>
@@ -92,7 +226,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Coluna de Informações -->
             <div class="col-md-3">
                 <!-- Card de Agendamento -->
@@ -108,23 +242,26 @@
                             </div>
                             <div class="mb-2">
                                 <label for="motivoFolga" class="form-label small">Motivo (opcional):</label>
-                                <textarea class="form-control form-control-sm" id="motivoFolga" rows="2" placeholder="Descreva o motivo da folga..."></textarea>
+                                <textarea class="form-control form-control-sm" id="motivoFolga" rows="2"
+                                    placeholder="Descreva o motivo da folga..."></textarea>
                             </div>
                             <button type="submit" class="btn btn-success btn-sm w-100">
                                 <i class="fas fa-calendar-plus"></i> Agendar Folga
                             </button>
                             {% if usuario and usuario.star %}
-                            <button type="button" class="btn btn-warning btn-sm w-100 mt-1" onclick="abrirModalAprovacao()">
+                            <button type="button" class="btn btn-warning btn-sm w-100 mt-1"
+                                onclick="abrirModalAprovacao()">
                                 <i class="fas fa-check-circle"></i> Aprovar Folgas
                             </button>
-                            <button type="button" class="btn btn-primary btn-sm w-100 mt-1" onclick="abrirModalAgendarFuncionario()">
+                            <button type="button" class="btn btn-primary btn-sm w-100 mt-1"
+                                onclick="abrirModalAgendarFuncionario()">
                                 <i class="fas fa-user-plus"></i> Agendar para Terceiro
                             </button>
                             {% endif %}
                         </form>
                     </div>
                 </div>
-                
+
                 <!-- Card de Folgas Agendadas -->
                 <div class="card shadow-sm">
                     <div class="card-header bg-info text-white">
@@ -133,35 +270,36 @@
                     <div class="card-body" style="max-height: 400px; overflow-y: auto;">
                         <div id="listaFolgas">
                             {% if folgas %}
-                                {% for folga in folgas %}
-                                <div class="card mb-2 folga-item" data-data="{{ folga.data }}">
-                                    <div class="card-body p-2">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div>
-                                                <strong>{{ folga.data.split('-')[2] }}/{{ folga.data.split('-')[1] }}/{{ folga.data.split('-')[0] }}</strong>
-                                                {% if folga.motivo %}
-                                                    <br><small class="text-muted">{{ folga.motivo }}</small>
-                                                {% endif %}
-                                                <br><span class="badge 
+                            {% for folga in folgas %}
+                            <div class="card mb-2 folga-item" data-data="{{ folga.data }}">
+                                <div class="card-body p-2">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <strong>{{ folga.data.split('-')[2] }}/{{ folga.data.split('-')[1] }}/{{
+                                                folga.data.split('-')[0] }}</strong>
+                                            {% if folga.motivo %}
+                                            <br><small class="text-muted">{{ folga.motivo }}</small>
+                                            {% endif %}
+                                            <br><span class="badge 
                                                     {% if folga.status == 'pendente' %}bg-warning
                                                     {% elif folga.status == 'aprovada' %}bg-success
                                                     {% else %}bg-danger{% endif %}">{{ folga.status|title }}</span>
-                                            </div>
-                                            {% if folga.status != 'aprovada' %}
-                                            <button class="btn btn-sm btn-outline-danger btn-cancelar-folga" data-folga-data="{{ folga.data }}"
-                                                    title="Cancelar folga">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                            {% endif %}
                                         </div>
+                                        {% if folga.status != 'aprovada' %}
+                                        <button class="btn btn-sm btn-outline-danger btn-cancelar-folga"
+                                            data-folga-data="{{ folga.data }}" title="Cancelar folga">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                        {% endif %}
                                     </div>
                                 </div>
-                                {% endfor %}
+                            </div>
+                            {% endfor %}
                             {% else %}
-                                <div class="text-center text-muted">
-                                    <i class="fas fa-calendar-times fa-2x mb-2"></i>
-                                    <p>Nenhuma folga agendada</p>
-                                </div>
+                            <div class="text-center text-muted">
+                                <i class="fas fa-calendar-times fa-2x mb-2"></i>
+                                <p>Nenhuma folga agendada</p>
+                            </div>
                             {% endif %}
                         </div>
                     </div>
@@ -169,7 +307,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Modal de Aprovação de Folgas -->
     <div class="modal fade" id="modalAprovacao" tabindex="-1" aria-labelledby="modalAprovacaoLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -195,9 +333,10 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Modal de Agendar para Funcionário -->
-    <div class="modal fade" id="modalAgendarFuncionario" tabindex="-1" aria-labelledby="modalAgendarFuncionarioLabel" aria-hidden="true">
+    <div class="modal fade" id="modalAgendarFuncionario" tabindex="-1" aria-labelledby="modalAgendarFuncionarioLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -212,7 +351,8 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="usernameFuncionario" class="form-label">Username do Funcionário:</label>
-                                    <input type="text" class="form-control" id="usernameFuncionario" required placeholder="Digite o username">
+                                    <input type="text" class="form-control" id="usernameFuncionario" required
+                                        placeholder="Digite o username">
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -224,420 +364,45 @@
                         </div>
                         <div class="mb-3">
                             <label for="motivoFolgaFuncionario" class="form-label">Motivo:</label>
-                            <textarea class="form-control" id="motivoFolgaFuncionario" rows="3" required placeholder="Descreva o motivo da folga..."></textarea>
+                            <textarea class="form-control" id="motivoFolgaFuncionario" rows="3" required
+                                placeholder="Descreva o motivo da folga..."></textarea>
                         </div>
                         <div class="mb-3">
-                             <label class="form-label">Ação:</label>
-                             <div class="form-check">
-                                 <input class="form-check-input" type="radio" name="acaoFuncionario" id="acaoCriar" value="criar" checked>
-                                 <label class="form-check-label" for="acaoCriar">
-                                     Criar nova folga
-                                 </label>
-                             </div>
-                             <div class="form-check">
-                                 <input class="form-check-input" type="radio" name="acaoFuncionario" id="acaoRemover" value="apagar">
-                                 <label class="form-check-label" for="acaoRemover">
-                                     Remover folga existente
-                                 </label>
-                             </div>
-                         </div>
+                            <label class="form-label">Ação:</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="acaoFuncionario" id="acaoCriar"
+                                    value="criar" checked>
+                                <label class="form-check-label" for="acaoCriar">
+                                    Criar nova folga
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="acaoFuncionario" id="acaoRemover"
+                                    value="apagar">
+                                <label class="form-check-label" for="acaoRemover">
+                                    Remover folga existente
+                                </label>
+                            </div>
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="agendarFolgaFuncionario()">Agendar Folga</button>
+                    <button type="button" class="btn btn-primary" onclick="agendarFolgaFuncionario()">Agendar
+                        Folga</button>
                 </div>
             </div>
         </div>
     </div>
-    
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
+    <!-- Dados de folgas para JavaScript -->
     <script id="folgas-data" type="application/json">{{ folgas|tojson|safe }}</script>
-    <script>
-        // Função para obter o token CSRF
-        function getCSRFToken() {
-            return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        }
-        
-        // Função para fazer requisições com CSRF
-        function fetchWithCSRF(url, options = {}) {
-            options.headers = options.headers || {};
-            options.headers['X-CSRFToken'] = getCSRFToken();
-            return fetch(url, options);
-        }
-        
-        let currentDate = new Date();
-        let selectedDate = null;
-        let folgasData = JSON.parse(document.getElementById('folgas-data').textContent || '[]');
-        let todasFolgasData = {}; // Para armazenar folgas de todos os usuários
-        
-        // Inicializar calendário
-        document.addEventListener('DOMContentLoaded', async function() {
-            await carregarFolgasDoMes();
-            renderCalendar();
-            
-            // Event listener para o formulário
-            document.getElementById('formFolga').addEventListener('submit', function(e) {
-                e.preventDefault();
-                agendarFolga();
-            });
-            
-            // Event listener para botões de cancelar folga
-            document.addEventListener('click', function(e) {
-                if (e.target.closest('.btn-cancelar-folga')) {
-                    const button = e.target.closest('.btn-cancelar-folga');
-                    const dataFolga = button.getAttribute('data-folga-data');
-                    cancelarFolga(dataFolga);
-                }
-            });
-        });
-        
-        // Função para carregar folgas de todos os usuários do mês
-        async function carregarFolgasDoMes() {
-            try {
-                const ano = currentDate.getFullYear();
-                const mes = currentDate.getMonth() + 1;
-                
-                const response = await fetch(`/api/folgas_mes?ano=${ano}&mes=${mes}`);
-                const data = await response.json();
-                
-                if (data.status === 'success') {
-                    // Organizar folgas por data
-                    todasFolgasData = {};
-                    data.folgas.forEach(folga => {
-                        if (!todasFolgasData[folga.data]) {
-                            todasFolgasData[folga.data] = [];
-                        }
-                        todasFolgasData[folga.data].push(folga);
-                    });
-                } else {
-                    console.error('Erro na resposta da API:', data);
-                }
-            } catch (error) {
-                console.error('Erro ao carregar folgas do mês:', error);
-            }
-        }
-        
-        function renderCalendar() {
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-            
-            // Atualizar título do mês
-            const monthNames = [
-                'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-                'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-            ];
-            document.getElementById('currentMonth').textContent = `${monthNames[month]} ${year}`;
-            
-            // Primeiro dia do mês e último dia
-            const firstDay = new Date(year, month, 1);
-            const lastDay = new Date(year, month + 1, 0);
-            const startDate = new Date(firstDay);
-            startDate.setDate(startDate.getDate() - firstDay.getDay());
-            
-            const calendarDays = document.getElementById('calendar-days');
-            calendarDays.innerHTML = '';
-            
-            // Gerar semanas (máximo 6 semanas)
-            for (let week = 0; week < 6; week++) {
-                const weekRow = document.createElement('tr');
-                
-                for (let day = 0; day < 7; day++) {
-                    const date = new Date(startDate);
-                    date.setDate(startDate.getDate() + (week * 7) + day);
-                    
-                    const dayCell = document.createElement('td');
-                    dayCell.className = 'text-center p-2';
-                    dayCell.style.cursor = 'pointer';
-                    dayCell.style.height = '60px';
-                    dayCell.onclick = () => selectDate(date);
-                    
-                    // Verificar se é do mês atual
-                    if (date.getMonth() !== month) {
-                        dayCell.classList.add('text-muted', 'bg-light');
-                    }
-                    
-                    // Verificar se há pessoas de folga neste dia
-                    const currentDateStr = date.toISOString().split('T')[0];
-                    const pessoasDefolga = todasFolgasData[currentDateStr] || [];
-                    
-                    let folgasHtml = '';
-                    if (pessoasDefolga.length > 0) {
-                        folgasHtml = pessoasDefolga.map(f => {
-                            const statusClass = f.status === 'aprovada' ? 'text-success' : 'text-warning';
-                            const statusIcon = f.status === 'aprovada' ? '✓' : '⏳';
-                            return `<small class="d-block text-truncate ${statusClass}" title="${f.nome_completo} (${f.status})">${statusIcon} ${f.nome_completo}</small>`;
-                        }).join('');
-                        
-                        // Adicionar cor de fundo suave para dias com folgas
-                        dayCell.classList.add('bg-light', 'border-success');
-                    }
-                    
-                    dayCell.innerHTML = `
-                        <div class="calendar-day-number">${date.getDate()}</div>
-                        <div class="folgas-list">${folgasHtml}</div>
-                    `;
-                    
-                    weekRow.appendChild(dayCell);
-                }
-                
-                calendarDays.appendChild(weekRow);
-                
-                // Parar se já passou do mês atual
-                if (week > 0 && new Date(startDate.getTime() + (week * 7 + 6) * 24 * 60 * 60 * 1000).getMonth() !== month) {
-                    break;
-                }
-            }
-        }
-        
-        function selectDate(date) {
-            // Remover seleção anterior
-            document.querySelectorAll('td.table-primary').forEach(el => {
-                el.classList.remove('table-primary');
-            });
-            
-            // Selecionar nova data
-            event.target.closest('td').classList.add('table-primary');
-            selectedDate = date;
-            
-            // Atualizar campo de data
-            const dateStr = date.toISOString().split('T')[0];
-            document.getElementById('dataFolga').value = dateStr;
-        }
-        
-        async function previousMonth() {
-            currentDate.setMonth(currentDate.getMonth() - 1);
-            await carregarFolgasDoMes();
-            renderCalendar();
-        }
-        
-        async function nextMonth() {
-            currentDate.setMonth(currentDate.getMonth() + 1);
-            await carregarFolgasDoMes();
-            renderCalendar();
-        }
-        
-        function agendarFolga() {
-            const data = document.getElementById('dataFolga').value;
-            const motivo = document.getElementById('motivoFolga').value;
-            
-            if (!data) {
-                alert('Por favor, selecione uma data.');
-                return;
-            }
-            
-            // Verificar se a data não é no passado
-            const hoje = new Date();
-            hoje.setHours(0, 0, 0, 0);
-            const dataFolga = new Date(data);
-            
-            if (dataFolga < hoje) {
-                alert('Não é possível agendar folga para datas passadas.');
-                return;
-            }
-            
-            const dados = {
-                data: data,
-                motivo: motivo
-            };
-            
-            fetchWithCSRF('/api/agendar_folga', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(dados)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    alert('Folga agendada com sucesso!');
-                    location.reload(); // Recarregar página para atualizar a lista
-                } else {
-                    alert('Erro: ' + data.message);
-                }
-            })
-            .catch(error => {
-                alert('Erro de conexão: ' + error.message);
-            });
-        }
-        
-        function cancelarFolga(dataFolga) {
-            if (!confirm('Tem certeza que deseja cancelar esta folga?')) {
-                return;
-            }
-            
-            fetchWithCSRF('/api/cancelar_folga', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({data: dataFolga})
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    alert('Folga cancelada com sucesso!');
-                    location.reload(); // Recarregar página para atualizar a lista
-                } else {
-                    alert('Erro: ' + data.message);
-                }
-            })
-            .catch(error => {
-                alert('Erro de conexão: ' + error.message);
-            });
-        }
-        
-        function abrirModalAprovacao() {
-            // Buscar folgas pendentes
-            carregarFolgasPendentes();
-            const modal = new bootstrap.Modal(document.getElementById('modalAprovacao'));
-            modal.show();
-        }
-        
-        async function carregarFolgasPendentes() {
-            try {
-                console.log('Carregando folgas pendentes...');
-                const response = await fetch('/api/folgas_pendentes');
-                console.log('Response status:', response.status);
-                const data = await response.json();
-                console.log('Data received:', data);
-                
-                if (data.status === 'success') {
-                    const lista = document.getElementById('listaFolgasPendentes');
-                    lista.innerHTML = '';
-                    
-                    if (data.folgas.length === 0) {
-                        lista.innerHTML = '<p class="text-muted">Nenhuma folga pendente para aprovação.</p>';
-                        return;
-                    }
-                    
-                    data.folgas.forEach(folga => {
-                        const item = document.createElement('div');
-                        item.className = 'card mb-2';
-                        item.innerHTML = `
-                            <div class="card-body p-2">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <strong>${folga.nome_completo}</strong><br>
-                                        <small class="text-muted">Data: ${folga.data}</small><br>
-                                        ${folga.motivo ? `<small>Motivo: ${folga.motivo}</small>` : ''}
-                                    </div>
-                                    <button class="btn btn-success btn-sm" onclick="aprovarFolga('${folga.username}', '${folga.data}')">
-                                        <i class="fas fa-check"></i> Aprovar
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                        lista.appendChild(item);
-                    });
-                } else {
-                    console.error('Erro ao carregar folgas pendentes:', data.message);
-                    const lista = document.getElementById('listaFolgasPendentes');
-                    lista.innerHTML = '<p class="text-danger">Erro: ' + data.message + '</p>';
-                }
-            } catch (error) {
-                console.error('Erro de conexão:', error);
-                const lista = document.getElementById('listaFolgasPendentes');
-                lista.innerHTML = '<p class="text-danger">Erro de conexão: ' + error.message + '</p>';
-            }
-        }
-        
-        async function aprovarFolga(username, data) {
-            try {
-                const response = await fetchWithCSRF('/api/aprovar_folga', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        username: username,
-                        data: data
-                    })
-                });
-                
-                const result = await response.json();
-                
-                if (result.status === 'success') {
-                    alert('Folga aprovada com sucesso!');
-                    carregarFolgasPendentes(); // Recarregar lista
-                    carregarFolgasDoMes(); // Atualizar calendário
-                    renderCalendar();
-                } else {
-                    alert('Erro: ' + result.message);
-                }
-            } catch (error) {
-                alert('Erro de conexão: ' + error.message);
-            }
-        }
-        
-        // Função para abrir modal de agendar para funcionário
-        function abrirModalAgendarFuncionario() {
-            const modal = new bootstrap.Modal(document.getElementById('modalAgendarFuncionario'));
-            modal.show();
-        }
-        
-        // Função para agendar folga para funcionário
-         async function agendarFolgaFuncionario() {
-             const username = document.getElementById('usernameFuncionario').value.trim();
-             const dataFolga = document.getElementById('dataFolgaFuncionario').value;
-             const motivo = document.getElementById('motivoFolgaFuncionario').value.trim();
-             const acao = document.querySelector('input[name="acaoFuncionario"]:checked').value;
-             
-             // Validação baseada na ação
-             if (!username || !dataFolga) {
-                 alert('Por favor, preencha o username e a data.');
-                 return;
-             }
-             
-             if (acao === 'criar' && !motivo) {
-                 alert('Por favor, preencha o motivo para criar uma nova folga.');
-                 return;
-             }
-            
-            try {
-                const response = await fetchWithCSRF('/api/editar_folga', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        username: username,
-                        data_antiga: dataFolga, // Para criar, usamos a mesma data
-                        data_nova: dataFolga,
-                        motivo: motivo,
-                        acao: acao
-                    })
-                });
-                
-                const result = await response.json();
-                 
-                 if (result.status === 'success') {
-                     const mensagem = acao === 'criar' ? 'Folga agendada com sucesso para o funcionário!' : 'Folga removida com sucesso!';
-                     alert(mensagem);
-                     
-                     // Limpar formulário
-                     document.getElementById('usernameFuncionario').value = '';
-                     document.getElementById('dataFolgaFuncionario').value = '';
-                     document.getElementById('motivoFolgaFuncionario').value = '';
-                     document.getElementById('acaoCriar').checked = true;
-                    
-                    // Fechar modal
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('modalAgendarFuncionario'));
-                    modal.hide();
-                    
-                    // Atualizar calendário
-                    await carregarFolgasDoMes();
-                    renderCalendar();
-                } else {
-                    alert('Erro: ' + result.message);
-                }
-            } catch (error) {
-                alert('Erro de conexão: ' + error.message);
-            }
-        }
-    </script>
+
+    <!-- JavaScript externo -->
+    <script src="{{ url_for('rotas.static', filename='js/folgas.js') }}"></script>
 </body>
+
 </html>

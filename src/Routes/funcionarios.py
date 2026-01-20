@@ -158,66 +158,41 @@ def folgas_mes():
 
 @funcionarios_bp.route("/api/listar_funcionarios", methods=["GET"])
 def listar_funcionarios():
-    """API para listar funcionários baseado nas permissões do usuário"""
+    """API para listar funcionários - acesso restrito ao setor RH"""
     try:
-        # Verificar se o usuário tem permissão (star = true)
+        # Verificar autenticação
         username = session.get("user")
         if not username:
             return jsonify({"success": False, "message": "Usuário não autenticado"})
 
+        # Verificar permissão
         usuario_atual = db.usuarios.find_one({"username": username})
-        if not usuario_atual or not usuario_atual.get("lvl") != 0:
-            return jsonify(
-                {
-                    "success": False,
-                    "message": "Acesso negado. Permissões insuficientes.",
-                }
+        if not usuario_atual:
+            return jsonify({"success": False, "message": "Usuário não encontrado"})
+
+        if (
+            usuario_atual.get("setor") != "rh"
+            or usuario_atual.get("username") != "fernandopereira"
+        ):
+            return jsonify({"success": False, "message": "Acesso negado"})
+
+        # Buscar todos os funcionários
+        funcionarios = list(db.usuarios.find({}, {"_id": 0, "password": 0}))
+
+        # Processar dados básicos
+        for func in funcionarios:
+            # Login info
+            login_times = func.get("login_times", [])
+            func["total_logins"] = (
+                len(login_times) if isinstance(login_times, list) else 0
             )
+            func["ultimo_login"] = login_times[-1] if login_times else "Nunca"
+            func.pop("login_times", None)
 
-        # Definir filtro baseado no usuário
-        filtro = {}
-
-        # Se o usuário é fernandopereira, pode ver todos os funcionários
-        if username == "fernandopereira":
-            filtro = {}  # Sem filtro, vê todos
-        else:
-            # Usuários com star = true veem apenas funcionários do mesmo turno
-            turno_usuario = usuario_atual.get("turno")
-            if turno_usuario:
-                filtro = {"turno": turno_usuario}
-            else:
-                # Se não tem turno definido, não vê ninguém
-                filtro = {"turno": "__turno_inexistente__"}
-
-        # Buscar funcionários baseado no filtro
-        funcionarios = list(db.usuarios.find(filtro, {"_id": 0}))
-
-        # Processar dados para melhor visualização
-        for funcionario in funcionarios:
-            # Processar login_times
-            if "login_times" in funcionario and isinstance(
-                funcionario["login_times"], list
-            ):
-                funcionario["total_logins"] = len(funcionario["login_times"])
-                if funcionario["login_times"]:
-                    # Pegar o último login (mais recente)
-                    funcionario["ultimo_login"] = funcionario["login_times"][-1]
-                else:
-                    funcionario["ultimo_login"] = "Nunca"
-                # Remover o array completo para economizar dados
-                del funcionario["login_times"]
-            else:
-                funcionario["total_logins"] = 0
-                funcionario["ultimo_login"] = "Nunca"
-
-            # Processar folgas (opcional, para não sobrecarregar)
-            if "folgas" in funcionario:
-                if isinstance(funcionario["folgas"], list):
-                    funcionario["total_folgas"] = len(funcionario["folgas"])
-                # Remover folgas detalhadas para economizar dados
-                del funcionario["folgas"]
-            else:
-                funcionario["total_folgas"] = 0
+            # Folgas info
+            folgas = func.get("folgas", [])
+            func["total_folgas"] = len(folgas) if isinstance(folgas, list) else 0
+            func.pop("folgas", None)
 
         return jsonify(
             {"success": True, "funcionarios": funcionarios, "total": len(funcionarios)}
