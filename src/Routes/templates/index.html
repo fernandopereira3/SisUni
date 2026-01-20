@@ -21,33 +21,50 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="sentenciadosDropdown" role="button"
+                    <a class="nav-link dropdown-toggle" href="#" id="administrativoDropdown" role="button"
                         aria-expanded="false">
-                        <i class="bi bi-bricks"></i> SENTENCIADOS
+                        <i class="bi bi-calculator"></i> ADMINISTRATIVO
                     </a>
-                    <ul class="dropdown-menu" aria-labelledby="sentenciadosDropdown">
-                        <li><a class="dropdown-item" href="/trabalho">Trabalho</a></li>
-                        <li><a class="dropdown-item" href="/pesquisas/sentenciados">Pesquisa</a></li>
+                    <ul class="dropdown-menu" aria-labelledby="administrativoDropdown">
+                        <li><a class="dropdown-item" href="/">Pecúlio</a></li>
+                        <li><a class="dropdown-item" href="/">Finanças</a></li>
+                        <li><a class="dropdown-item" href="/">Recursos Humanos (RH)</a></li>
                     </ul>
-                </li>
-                <li class="nav-item">
-
                 </li>
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="visitasDropdown" role="button"
+                    <a class="nav-link dropdown-toggle" href="#" id="producaoDropdown" role="button"
                         aria-expanded="false">
-                        <i class="fas fa-users"></i> VISITAS
+                        <i class="bi bi-tools"></i> PRODUÇÃO
                     </a>
-                    <ul class="dropdown-menu" aria-labelledby="visitasDropdown">
-                        <li><a class="dropdown-item" href="/entrada_saida">Entrada/Saida</a></li>
-                        <li><a class="dropdown-item" href="/jumbo">Jumbo</a></li>
+                    <ul class="dropdown-menu" aria-labelledby="producaoDropdown">
+                        <li><a class="dropdown-item" href="/trabalho">Trabalho</a></li>
+                        <li><a class="dropdown-item" href="/pesquisas/sentenciados">Educação</a></li>
                     </ul>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/funcionarios">
-                        <i class="bi bi-person-bounding-box"></i> FUNCIONÁRIOS
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="sentenciadosDropdown" role="button"
+                        aria-expanded="false">
+                        <i class="bi bi-people"></i> SENTENCIADOS
                     </a>
+                    <ul class="dropdown-menu" aria-labelledby="sentenciadosDropdown">
+                        <li class="dropdown-submenu">
+                        <li><a class="dropdown-item" href="/pesquisas/sentenciados">Pesquisa</a></li>
+                        <a class="dropdown-item dropdown-toggle" href="#">Visitantes</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/entrada_saida">Entrada/Saída</a></li>
+                            <li><a class="dropdown-item" href="/jumbo">Jumbo</a></li>
+                        </ul>
                 </li>
+            </ul>
+            </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="chefiaDropdown" role="button" aria-expanded="false">
+                    <i class="bi bi-star-fill"></i> CHEFIA
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="chefiaDropdown">
+                    <li><a class="dropdown-item" href="/funcionarios/folgas">Folgas</a></li>
+                </ul>
+            </li>
             </ul>
             <div class="navbar-brand">
                 <a href="/"><img src="{{ url_for('static', filename='img/logo3.png') }}" class="rounded" alt="Logo"></a>
