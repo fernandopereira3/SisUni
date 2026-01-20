@@ -40,6 +40,11 @@ rotas_bp = Blueprint(
 db = conexao()
 
 
+@rotas_bp.route("/at_work", methods=["GET", "POST"])
+def at_work():
+    return render_template("at_work.html")
+
+
 # Context processor para injetar tabela de trabalho e estatísticas
 @rotas_bp.context_processor
 def inject_tabela_trabalho():
