@@ -357,7 +357,7 @@ body {
    display: block !important;
 }
 
-.navbar .dropdown:hover>.dropdown-menu {
+.navbar .dropdown:hover .dropdown-menu {
    display: block !important;
 }
 
@@ -371,22 +371,17 @@ body {
    left: 100%;
    margin-top: -1px;
    margin-left: 0;
-   display: none !important;
-   /* Oculto por padrão */
 }
 
-
-/* Mostrar submenu apenas quando tiver a classe 'show' */
-.dropdown-submenu>.dropdown-menu.show {
+.dropdown-submenu:hover>.dropdown-menu {
    display: block !important;
 }
 
-/* Arrow indicator removed as per user request */
-/* .dropdown-submenu>.dropdown-item::after {
+.dropdown-submenu>.dropdown-item::after {
    content: "▶";
    float: right;
    margin-left: 0.5rem;
-} */
+}
 
 
 /* FORMS */

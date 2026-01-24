@@ -180,6 +180,7 @@ def login():
         usuario_atualizado = db.usuarios.find_one({"username": username})
         session["user"] = username
         session["lvl"] = usuario_atualizado.get("lvl")
+        session["setor"] = usuario_atualizado.get("setor", "N/A")
         return redirect(url_for("rotas.index"))
 
     return render_template("login.html")

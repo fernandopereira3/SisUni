@@ -58,11 +58,16 @@
                             <div class="col-4">
                                 <div class="form-floating">
                                     <select class="form-select" id="setor" name="setor">
-                                        <option value="seguranca">Segurança</option>
-                                        <option value="producao">Produção</option>
-                                        <option value="simic">Simic</option>
+                                        <option value="pesquisa">Pesquisa</option>
                                         <option value="administrativo">Administrativo</option>
+                                        <option value="cras">CRAS</option>
+                                        <option value="direcao">Direção</option>
+                                        <option value="producao">Produção</option>
                                         <option value="rh">RH</option>
+                                        <option value="seguranca">Segurança</option>
+                                        <option value="simic">SIMIC</option>
+                                        <option value="supervisao">Supervisão</option>
+                                        <option value="cpd">CPD</option>
                                     </select>
                                     <label for="setor" style="color: #000;">Selecione o Setor</label>
                                 </div>
@@ -152,6 +157,12 @@
 
         /* Garantir que labels sempre se movam quando há texto */
         .form-floating>input:not(:placeholder-shown)~label {
+            transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem) !important;
+            opacity: 0.65 !important;
+        }
+
+        /* Forçar label do select para cima sempre */
+        .form-floating>select~label {
             transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem) !important;
             opacity: 0.65 !important;
         }
