@@ -67,9 +67,9 @@ def debug_trabalho_db():
     """Debug route to view trabalho collection data"""
     verificar_acesso_debug()
     try:
-        count = db.trab.count_documents({})
-        documentos = list(db.trab.find({}).limit(100))
-        primeiro_doc = db.trab.find_one({})
+        count = db.trabalho.count_documents({})
+        documentos = list(db.trabalho.find({}).limit(100))
+        primeiro_doc = db.trabalho.find_one({})
 
         df_temp = pd.DataFrame(documentos)
         if "_id" in df_temp.columns:
@@ -278,8 +278,8 @@ def normalizar_banco():
 
         # 3. NORMALIZAR TRABALHO
         print("Normalizando trabalho...")
-        if "trab" in db.list_collection_names():
-            for doc in db.trab.find():
+        if "trabalho" in db.list_collection_names():
+            for doc in db.trabalho.find():
                 try:
                     updates = {}
 
@@ -290,7 +290,7 @@ def normalizar_banco():
                                 updates[campo] = valor_novo
 
                     if updates:
-                        db.trab.update_one({"_id": doc["_id"]}, {"$set": updates})
+                        db.trabalho.update_one({"_id": doc["_id"]}, {"$set": updates})
                         total_atualizados += 1
 
                 except Exception as e:
@@ -374,8 +374,8 @@ def preview_normalizacao():
                         break
 
         # Contar trabalho que precisa normalização
-        if "trab" in db.list_collection_names():
-            for doc in db.trab.find().limit(100):
+        if "trabalho" in db.list_collection_names():
+            for doc in db.trabalho.find().limit(100):
                 for campo in ["nome", "setor"]:
                     if (
                         campo in doc
@@ -429,7 +429,7 @@ def clean_matricula_complete():
 @debug_bp.route("/clear/trab", methods=["GET"])
 def clean_trab():
     count = 0
-    for doc in db.trab.find():
+    for doc in db.trabalho.find():
         if "matricula" in doc and isinstance(doc["matricula"], str):
             original = doc["matricula"]
 
@@ -441,7 +441,7 @@ def clean_trab():
                 clean_matricula = clean_matricula[:-1]
 
             if clean_matricula != original:
-                db.trab.update_one(
+                db.trabalho.update_one(
                     {"_id": doc["_id"]},
                     {"$set": {"matricula": clean_matricula}},
                 )

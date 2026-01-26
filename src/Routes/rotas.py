@@ -50,7 +50,7 @@ def at_work():
 def inject_tabela_trabalho():
     try:
         # Buscar documentos da coleção trab
-        documentos = list(db.trab.find({}))
+        documentos = list(db.trabalho.find({}))
         # Gerar tabela HTML
         tabela_html = construir_tabela_trabalho(documentos)
 
@@ -290,10 +290,10 @@ def adicionar_lista(matricula):
         # Verificar se existe na coleção trab
         setor_trabalho = None
         try:
-            trabalho = db.trab.find_one({"matricula": matricula})
+            trabalho = db.trabalho.find_one({"matricula": matricula})
             if not trabalho:
                 # Tentar buscar pelo nome se não encontrou pela matrícula
-                trabalho = db.trab.find_one({"nome": sentenciado["nome"]})
+                trabalho = db.trabalho.find_one({"nome": sentenciado["nome"]})
 
             if trabalho:
                 setor_trabalho = trabalho.get("setor", "Setor não especificado")

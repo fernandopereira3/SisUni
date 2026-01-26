@@ -9,7 +9,7 @@ trabalho_bp = Blueprint("trabalho", __name__, template_folder="templates")
 def conf_trabalho(matricula):
     try:
         # Verificar diretamente no MongoDB
-        resultado = db.trab.find_one({"matricula": str(matricula)})
+        resultado = db.trabalho.find_one({"matricula": str(matricula)})
         return resultado is not None
     except Exception as e:
         print(f"Erro ao verificar matrícula: {e}")
@@ -26,8 +26,8 @@ def trabalho():
 def api_trabalho():
     """API para obter os dados em formato JSON"""
     try:
-        if "trab" in db.list_collection_names():
-            documentos = list(db.trab.find({}, {"_id": 0}))
+        if "trabalho" in db.list_collection_names():
+            documentos = list(db.trabalho.find({}, {"_id": 0}))
             return {
                 "status": "success",
                 "data": documentos,
