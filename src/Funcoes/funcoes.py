@@ -1,9 +1,9 @@
 from flask_wtf import FlaskForm
 import datetime
 from wtforms import StringField, SubmitField
-from Data.conexao import conexao
+from Data.conexao import cpppac
 
-db = conexao()
+cpppac = cpppac()
 
 
 class PesquisaForm(FlaskForm):
@@ -37,10 +37,12 @@ def construir_tabela(
 
             # Selecionar a coleção apropriada
             if colecao == "excluidos":
-                documentos = list(db.excluidos.find(query, {"_id": 0}).sort("nome", 1))
+                documentos = list(
+                    cpppac.excluidos.find(query, {"_id": 0}).sort("nome", 1)
+                )
             else:
                 documentos = list(
-                    db.sentenciados.find(query, {"_id": 0}).sort("nome", 1)
+                    cpppac.sentenciados.find(query, {"_id": 0}).sort("nome", 1)
                 )
 
         if documentos:
@@ -97,9 +99,11 @@ def construir_tabela(
                 # Coluna de ações (se solicitada)
                 acoes_cell = ""
                 if incluir_acoes:
-                    acoes_cell = """
+                    # Determinar se é excluídos ou sentenciados para a função JS
+                    is_excluidos = "true" if colecao == "excluidos" else "false"
+                    acoes_cell = f"""
                         <td>
-                            
+                            <button class="btn btn-sm btn-info" onclick="carregarDetalhes('{matricula}', {is_excluidos})">Detalhes</button>
                         </td>
                     """
 
@@ -189,7 +193,7 @@ def resumo_visitas():
             {"$project": {"matricula": 1, "marcadores": 1}},
         ]
 
-        documentos_hoje = list(db.sentenciados.aggregate(pipeline))
+        documentos_hoje = list(cpppac.sentenciados.aggregate(pipeline))
 
         # Calcular resumo
         total_matriculas = len(documentos_hoje)
@@ -243,7 +247,7 @@ def export_aux():
         filter = {}
         project = {"_id": 0}
 
-        result = db.aux.find(filter=filter, projection=project)
+        result = cpppac.aux.find(filter=filter, projection=project)
         return result
 
     except Exception as e:

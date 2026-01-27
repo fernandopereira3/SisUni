@@ -13,11 +13,11 @@ from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from io import BytesIO
 import datetime
-from Data.conexao import conexao
+from Data.conexao import cpppac
 from Funcoes.funcoes import PesquisaForm
 
 jumbo_bp = Blueprint("jumbo", __name__)
-db = conexao()
+cpppac = cpppac()
 
 # Create DataFrame for daily visits with proper datetime type
 df_visitas = pd.DataFrame(
@@ -55,7 +55,7 @@ def jumbo():
         if request.method == "POST":
             if "pesquisar" in request.form:
                 matricula = request.form.get("matricula")
-                sentenciado = db.sentenciados.find_one({"matricula": matricula})
+                sentenciado = cpppac.sentenciados.find_one({"matricula": matricula})
                 if sentenciado:
                     # Normalizar nome do sentenciado em maiúsculas
                     nome_normalizado = sentenciado.get("nome", "").upper().strip()
@@ -77,7 +77,7 @@ def jumbo():
                 visitante_normalizado = visitante.upper().strip()
                 parentesco_normalizado = parentesco.upper().strip()
 
-                existing_mongo = db.visita.find_one(
+                existing_mongo = cpppac.visita.find_one(
                     {
                         "matricula": matricula,
                         "visitante": visitante_normalizado,
@@ -100,7 +100,7 @@ def jumbo():
                 if existing_mongo:
                     flash("Visita já existe no Banco de dados", "info")
                 else:
-                    db.visita.insert_one(nova_visita)
+                    cpppac.visita.insert_one(nova_visita)
                     flash(
                         "Visita registrada com sucesso no histórico permanente",
                         "success",

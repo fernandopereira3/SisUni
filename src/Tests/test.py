@@ -1,5 +1,5 @@
 from flask import render_template, Blueprint
-from Data.conexao import conexao
+from Data.conexao import cpppac
 
 bp_test = Blueprint(
     "test",
@@ -8,7 +8,7 @@ bp_test = Blueprint(
     static_folder="static",
     static_url_path="/static",
 )
-db = conexao()
+cpppac = cpppac()
 
 
 @bp_test.route("/test/trab")

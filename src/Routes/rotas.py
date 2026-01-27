@@ -25,7 +25,7 @@ from Funcoes.funcoes import (
     resumo_visitas,
     construir_tabela_trabalho,
 )
-from Data.conexao import conexao
+from Data.conexao import cpppac
 
 # Criar o blueprint com configuração para templates e static
 rotas_bp = Blueprint(
@@ -37,7 +37,7 @@ rotas_bp = Blueprint(
 )
 
 # Conexão com o banco
-db = conexao()
+cpppac = cpppac()
 
 
 @rotas_bp.route("/at_work", methods=["GET", "POST"])
@@ -50,7 +50,7 @@ def at_work():
 def inject_tabela_trabalho():
     try:
         # Buscar documentos da coleção trab
-        documentos = list(db.trabalho.find({}))
+        documentos = list(cpppac.trabalho.find({}))
         # Gerar tabela HTML
         tabela_html = construir_tabela_trabalho(documentos)
 
@@ -98,7 +98,7 @@ def login():
             return render_template("login.html", error="Digite um nome válido.")
 
         # Buscar usuário existente
-        user = db.usuarios.find_one({"username": username})
+        user = cpppac.usuarios.find_one({"username": username})
 
         if user:
             # Usuário existe
@@ -133,7 +133,7 @@ def login():
                     print(f"[DEBUG] Salvando senha para usuário: {username}")
                     print(f"[DEBUG] Hash gerado: {password_hash}")
 
-                    result = db.usuarios.update_one(
+                    result = cpppac.usuarios.update_one(
                         {"username": username},
                         {"$set": {"lvl10_password": password_hash}},
                     )
@@ -161,12 +161,12 @@ def login():
                         )
 
             # Login bem-sucedido: registrar e redirecionar
-            db.usuarios.update_one(
+            cpppac.usuarios.update_one(
                 {"username": username}, {"$push": {"login_times": login_time}}
             )
         else:
             # Usuário novo: criar
-            db.usuarios.insert_one(
+            cpppac.usuarios.insert_one(
                 {
                     "username": username,
                     "nome_completo": nome_completo,
@@ -177,7 +177,7 @@ def login():
             )
 
         # Finalizar login - buscar dados atualizados do usuário
-        usuario_atualizado = db.usuarios.find_one({"username": username})
+        usuario_atualizado = cpppac.usuarios.find_one({"username": username})
         session["user"] = username
         session["lvl"] = usuario_atualizado.get("lvl")
         session["setor"] = usuario_atualizado.get("setor", "N/A")
@@ -192,7 +192,7 @@ def login():
 @rotas_bp.route("/sentenciado_detalhes/<matricula>", methods=["GET"])
 def sentenciado_detalhes(matricula):
     try:
-        sentenciados_collection = db.sentenciados
+        sentenciados_collection = cpppac.sentenciados
 
         # Buscar o sentenciado
         sentenciado = sentenciados_collection.find_one({"matricula": matricula})
@@ -222,7 +222,7 @@ def sentenciado_detalhes(matricula):
 @rotas_bp.route("/excluido_detalhes/<matricula>", methods=["GET"])
 def excluido_detalhes(matricula):
     try:
-        excluidos_collection = db.excluidos
+        excluidos_collection = cpppac.excluidos
 
         # Buscar o excluido
         excluido = excluidos_collection.find_one({"matricula": matricula})
@@ -282,7 +282,7 @@ def entrada_saida():
 def adicionar_lista(matricula):
     global df_lista_sentenciados
 
-    sentenciado = db.sentenciados.find_one({"matricula": matricula})
+    sentenciado = cpppac.sentenciados.find_one({"matricula": matricula})
 
     if sentenciado:
         data = request.get_json()
@@ -290,10 +290,10 @@ def adicionar_lista(matricula):
         # Verificar se existe na coleção trab
         setor_trabalho = None
         try:
-            trabalho = db.trabalho.find_one({"matricula": matricula})
+            trabalho = cpppac.trabalho.find_one({"matricula": matricula})
             if not trabalho:
                 # Tentar buscar pelo nome se não encontrou pela matrícula
-                trabalho = db.trabalho.find_one({"nome": sentenciado["nome"]})
+                trabalho = cpppac.trabalho.find_one({"nome": sentenciado["nome"]})
 
             if trabalho:
                 setor_trabalho = trabalho.get("setor", "Setor não especificado")
@@ -307,7 +307,7 @@ def adicionar_lista(matricula):
         criancas = data.get("criancas", 0)
 
         try:
-            db.sentenciados.update_one(
+            cpppac.sentenciados.update_one(
                 {"matricula": matricula},
                 {
                     "$push": {
@@ -351,7 +351,7 @@ def visualizar_lista():
 
     # Buscar apenas documentos que têm visitas de hoje E ordenar por nome
     documentos = list(
-        db.sentenciados.find(
+        cpppac.sentenciados.find(
             {"visitas": {"$elemMatch": {"$gte": hoje_inicio, "$lte": hoje_fim}}},
             {"_id": 0},
         ).sort("nome", 1)
@@ -392,7 +392,7 @@ def api_lista_dados():
 
     # Buscar apenas documentos que têm visitas de hoje E ordenar por nome
     documentos = list(
-        db.sentenciados.find(
+        cpppac.sentenciados.find(
             {"visitas": {"$elemMatch": {"$gte": hoje_inicio, "$lte": hoje_fim}}},
             {"_id": 0},
         ).sort("nome", 1)
@@ -431,7 +431,7 @@ def editar_marcadores(matricula):
         criancas = int(data.get("criancas", 0))
 
         # Atualizar os marcadores no banco
-        resultado = db.sentenciados.update_one(
+        resultado = cpppac.sentenciados.update_one(
             {"matricula": matricula},
             {"$set": {"marcadores": [garrafas, homens, mulheres, criancas]}},
         )
@@ -480,7 +480,7 @@ def remover_visita_hoje(matricula):
         )
 
         # Remover apenas as visitas de hoje
-        resultado = db.sentenciados.update_one(
+        resultado = cpppac.sentenciados.update_one(
             {"matricula": matricula},
             {"$pull": {"visitas": {"$gte": hoje_inicio, "$lte": hoje_fim}}},
         )
@@ -519,7 +519,7 @@ def download_pdf():
 
     # Buscar apenas documentos que têm visitas de hoje E ordenar por nome
     documentos = list(
-        db.sentenciados.find(
+        cpppac.sentenciados.find(
             {"visitas": {"$elemMatch": {"$gte": hoje_inicio, "$lte": hoje_fim}}},
             {"_id": 0},
         ).sort("nome", 1)
@@ -704,15 +704,15 @@ def index():
 
     # Calculate totals for each pavilion from your data
     totals = {
-        "aloj_1a": db.sentenciados.count_documents({"pavilhao": "1A"}),
-        "aloj_1b": db.sentenciados.count_documents({"pavilhao": "1B"}),
-        "aloj_2a": db.sentenciados.count_documents({"pavilhao": "2A"}),
-        "aloj_2b": db.sentenciados.count_documents({"pavilhao": "2B"}),
-        "aloj_3a": db.sentenciados.count_documents({"pavilhao": "3A"}),
-        "aloj_3b": db.sentenciados.count_documents({"pavilhao": "3B"}),
-        "aloj_4a": db.sentenciados.count_documents({"pavilhao": "4A"}),
-        "aloj_4b": db.sentenciados.count_documents({"pavilhao": "4B"}),
-        "total": db.sentenciados.count_documents({}),
+        "aloj_1a": cpppac.sentenciados.count_documents({"pavilhao": "1A"}),
+        "aloj_1b": cpppac.sentenciados.count_documents({"pavilhao": "1B"}),
+        "aloj_2a": cpppac.sentenciados.count_documents({"pavilhao": "2A"}),
+        "aloj_2b": cpppac.sentenciados.count_documents({"pavilhao": "2B"}),
+        "aloj_3a": cpppac.sentenciados.count_documents({"pavilhao": "3A"}),
+        "aloj_3b": cpppac.sentenciados.count_documents({"pavilhao": "3B"}),
+        "aloj_4a": cpppac.sentenciados.count_documents({"pavilhao": "4A"}),
+        "aloj_4b": cpppac.sentenciados.count_documents({"pavilhao": "4B"}),
+        "total": cpppac.sentenciados.count_documents({}),
     }
 
     # Usar a função para obter o resumo

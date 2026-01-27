@@ -71,7 +71,7 @@ class MockDB:
         pass
 
 
-def conexao():
+def cpppac():
     try:
         mongo = PyMongo(app)
         db = mongo.db
