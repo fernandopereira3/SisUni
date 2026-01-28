@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SisUni - CPPPAC - SIMIC</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/sp.png') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('rotas.static', filename='style.css') }}">
+    <style>
+        /* Form Organization and Centralization Styles */
+        #section-novo-cadastro .tab-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        #section-novo-cadastro .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        #section-novo-cadastro .form-control,
+        #section-novo-cadastro .form-select {
+            border-radius: 0.375rem;
+            border: 1px solid #ced4da;
+            padding: 0.5rem 0.75rem;
+        }
+
+        #section-novo-cadastro .form-control:focus,
+        #section-novo-cadastro .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        #section-novo-cadastro .row {
+            margin-bottom: 1rem;
+        }
+
+        #section-novo-cadastro .card {
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #section-novo-cadastro .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            padding: 0.75rem 1rem;
+        }
+
+        #section-novo-cadastro .card-body {
+            padding: 1.5rem;
+        }
+
+        /* Photo placeholder styling */
+        #section-novo-cadastro .photo-placeholder {
+            background-color: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 150px;
+            border-radius: 0.375rem;
+        }
+
+        /* Table styling improvements */
+        #section-novo-cadastro .table {
+            margin-bottom: 0;
+        }
+
+        #section-novo-cadastro .table thead th {
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0.75rem;
+        }
+
+        #section-novo-cadastro .table tbody td {
+            padding: 0.75rem;
+            vertical-align: middle;
+        }
+
+        /* Section headers */
+        #section-novo-cadastro h6.text-primary {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        /* Button styling */
+        #section-novo-cadastro .btn {
+            padding: 0.5rem 1.25rem;
+            font-weight: 500;
+            border-radius: 0.375rem;
+        }
+
+        /* Highlighted section (Cela info) */
+        #section-novo-cadastro .bg-light {
+            background-color: #f8f9fa !important;
+            border: 1px solid #e9ecef;
+            border-radius: 0.5rem;
+        }
+
+        /* Input group improvements */
+        #section-novo-cadastro .input-group .btn {
+            padding: 0.5rem 1rem;
+        }
+
+        /* Form sections spacing */
+        #section-novo-cadastro form>.row:last-child,
+        #section-novo-cadastro form>div:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Tab navigation improvements */
+        #cadastroTabs .nav-link {
+            color: #495057;
+            font-weight: 500;
+            padding: 0.75rem 1.25rem;
+            border: none;
+            border-bottom: 3px solid transparent;
+        }
+
+        #cadastroTabs .nav-link:hover {
+            color: #0d6efd;
+            border-bottom-color: #dee2e6;
+        }
+
+        #cadastroTabs .nav-link.active {
+            color: #0d6efd;
+            background-color: transparent;
+            border-bottom-color: #0d6efd;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            #section-novo-cadastro .tab-content {
+                padding: 10px;
+            }
+
+            #section-novo-cadastro .card-body {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- HEADER PADRÃO -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-nav">
+        <div class="container-fluid">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a href="/" class="nav-link"><i class="bi bi-arrow-left-circle-fill"></i> VOLTAR</a>
+                </li>
+            </ul>
+            <div class="d-flex align-items-center">
+                <a href="/"><img src="{{ url_for('rotas.static', filename='img/logo3.png') }}" class="rounded"
+                        alt="Logo"></a>
+            </div>
+        </div>
+    </nav>
+    <!-- FIM DO HEADER -->
+
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <!-- Painel Lateral Fixo -->
+            <div class="col-md-2">
+                <div class="card box-shadow" style="position: sticky; top: 20px;">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-user"></i> SIMIC
+                        </h5>
+                        <small class="text-white">Setor de Informação</small>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            <a href="#" class="list-group-item list-group-item-action active"
+                                data-section="estatisticas">
+                                <i class="fas fa-chart-bar"></i> Estatísticas
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action" data-section="novo-cadastro">
+                                <i class="fas fa-user-plus"></i> Novo Cadastro
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Área de Conteúdo Principal -->
+            <div class="col-md-10">
+                <!-- Seção: Estatísticas (Padrão) -->
+                <div id="section-estatisticas" class="content-section">
+                    <!-- Estatísticas -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card box-shadow" style="border: 1px solid #ccc; border-radius: 10px;">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-chart-bar"></i> Estatísticas SIMIC
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="card text-center">
+                                                <div class="card-header"><i class="fas fa-users"></i> Total de
+                                                    Cadastros</div>
+                                                <div class="card-body">
+                                                    <h3 id="total-pacientes">-</h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="card text-center">
+                                                <div class="card-header"><i class="fas fa-clock"></i> Última
+                                                    Atualização</div>
+                                                <div class="card-body">
+                                                    <h6 id="ultima-atualizacao">-</h6>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="card text-center">
+                                                <div class="card-header"><i class="fas fa-sync-alt"></i> Ações</div>
+                                                <div class="card-body">
+                                                    <button class="btn btn-primary btn-sm" onclick="atualizarDados()">
+                                                        <i class="fas fa-refresh"></i> Atualizar
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lista de Cadastros -->
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <div class="card box-shadow" style="border: 1px solid #ccc; border-radius: 10px;">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-list"></i> Cadastros SIMIC
+                                    </h5>
+                                    <small class="text-muted">Lista de registros no sistema</small>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Área da Tabela -->
+                                    <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                                        <div id="tabela-simic-container">
+                                            <!-- A tabela será carregada aqui via JavaScript -->
+                                            <div class="text-center p-4">
+                                                <div class="spinner-border" role="status">
+                                                    <span class="visually-hidden">Carregando...</span>
+                                                </div>
+                                                <p class="mt-2">Carregando dados...</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção: Novo Cadastro -->
+                <div id="section-novo-cadastro" class="content-section" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card box-shadow">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-user-plus"></i> Novo Cadastro
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Tabs Navigation -->
+                                    <ul class="nav nav-tabs" id="cadastroTabs" role="tablist">
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link active" id="dados-pessoais-tab" data-bs-toggle="tab"
+                                                data-bs-target="#dados-pessoais" type="button" role="tab">
+                                                Dados Pessoais
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="dados-criminais-tab" data-bs-toggle="tab"
+                                                data-bs-target="#dados-criminais" type="button" role="tab">
+                                                Dados Criminais
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="aliases-tab" data-bs-toggle="tab"
+                                                data-bs-target="#aliases" type="button" role="tab">
+                                                Aliases e outros
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="rol-visitas-tab" data-bs-toggle="tab"
+                                                data-bs-target="#rol-visitas" type="button" role="tab">
+                                                Rol de Visitas
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="movimentacoes-tab" data-bs-toggle="tab"
+                                                data-bs-target="#movimentacoes" type="button" role="tab">
+                                                Movimentações p/ Certidão
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="processos-tab" data-bs-toggle="tab"
+                                                data-bs-target="#processos" type="button" role="tab">
+                                                Processos
+                                            </button>
+                                        </li>
+                                    </ul>
+
+                                    <!-- Tabs Content -->
+                                    <div class="tab-content mt-3" id="cadastroTabsContent">
+                                        <!-- Tab: Dados Pessoais -->
+                                        <div class="tab-pane fade show active" id="dados-pessoais" role="tabpanel">
+                                            <form id="form-dados-pessoais">
+                                                <div class="row mb-3">
+                                                    <div class="col-md-2">
+                                                        <label class="form-label text-primary">Matrícula</label>
+                                                        <input type="text" class="form-control" name="matricula">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label text-primary">Nome</label>
+                                                        <input type="text" class="form-control" name="nome">
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <label class="form-label text-primary">Status</label>
+                                                        <input type="text" class="form-control text-success fw-bold"
+                                                            value="NA UNIDADE" readonly>
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <div class="photo-placeholder">
+                                                            <small class="text-muted">(foto)</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="row mb-3">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label text-primary">RG</label>
+                                                        <input type="text" class="form-control" name="rg"
+                                                            placeholder=". . -">
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label text-primary">CPF</label>
+                                                        <input type="text" class="form-control" name="cpf"
+                                                            placeholder=". . -">
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label text-primary">Nascimento</label>
+                                                        <input type="date" class="form-control" name="nascimento">
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label text-primary">Controle Interno</label>
+                                                        <input type="text" class="form-control" name="controle_interno">
+                                                    </div>
+                                                </div>
+
+                                                <div class="row mb-3">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label text-primary">Nacionalidade</label>
+                                                        <input type="text" class="form-control" name="nacionalidade">
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label text-primary">País de origem</label>
+                                                        <input type="text" class="form-control" name="pais_origem">
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label text-primary">Naturalidade</label>
+                                                        <input type="text" class="form-control" name="naturalidade">
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <label class="form-label text-primary">UF</label>
+                                                        <select class="form-select" name="uf_naturalidade">
+                                                            <option value="">Selecione</option>
+                                                            <option value="SP">SP</option>
+                                                            <option value="RJ">RJ</option>
+                                                            <option value="MG">MG</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div class="row mb-3">
+                                                    <div class="col-md-2">
+                                                        <label class="form-label text-primary">Peso</label>
+                                                        <input type="text" class="form-control" name="peso">
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <label class="form-label text-primary">Estatura</label>
+                                                        <input type="text" class="form-control" name="estatura">
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label text-primary">Cabelos cor</label>
+                                                        <select class="form-select" name="cabelos_cor">
+                                                            <option value="">Selecione</option>
+                                                            <option value="Preto">Preto</option>
+                                                            <option value="Castanho">Castanho</option>
+                                                            <option value="Loiro">Loiro</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label text-primary">Cabelos tipo</label>
+                                                        <select class="form-select" name="cabelos_tipo">
+                                                            <option value="">Selecione</option>
+                                                            <option value="Liso">Liso</option>
+                                                            <option value="Ondulado">Ondulado</option>
+                                                            <option value="Crespo">Crespo</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <label class="form-label text-primary">Olhos</label>
+                                                        <input type="text" class="form-control" name="olhos">
+                                                    </div>
+                                                </div>
+
+                                                <div class="row mb-3">
+                                                    <div class="col-md-4">
+                                                        <label class="form-label text-primary">Religião</label>
+                                                        <input type="text" class="form-control" name="religiao">
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label text-primary">Escolaridade</label>
+                                                        <input type="text" class="form-control" name="escolaridade">
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label text-primary">Grau de
+                                                            Escolaridade</label>
+                                                        <select class="form-select" name="grau_escolaridade">
+                                                            <option value="">Selecione</option>
+                                                            <option value="Fundamental">Fundamental</option>
+                                                            <option value="Médio">Médio</option>
+                                                            <option value="Superior">Superior</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div class="row mb-3">
+                                                    <div class="col-md-2">
+                                                        <label class="form-label text-primary">Sexo</label>
+                                                        <select class="form-select" name="sexo">
+                                                            <option value="">Selecione</option>
+                                                            <option value="M">Masculino</option>
+                                                            <option value="F">Feminino</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label text-primary">Pré nome social</label>
+                                                        <input type="text" class="form-control" name="pre_nome_social">
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label text-primary">Como se reconhece</label>
+                                                        <select class="form-select" name="como_reconhece">
+                                                            <option value="">Selecione</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <label class="form-label text-primary">Orientação sexual</label>
+                                                        <select class="form-select" name="orientacao_sexual">
+                                                            <option value="">Selecione</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <label class="form-label text-primary">Identidade gênero</label>
+                                                        <select class="form-select" name="identidade_genero">
+                                                            <option value="">Selecione</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div class="row mb-3">
+                                                    <div class="col-md-4">
+                                                        <label class="form-label text-primary">Profissão</label>
+                                                        <input type="text" class="form-control" name="profissao">
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label text-primary">Estado Civil</label>
+                                                        <select class="form-select" name="estado_civil">
+                                                            <option value="">Selecione</option>
+                                                            <option value="Solteiro">Solteiro</option>
+                                                            <option value="Casado">Casado</option>
+                                                            <option value="Divorciado">Divorciado</option>
+                                                            <option value="Viúvo">Viúvo</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label text-primary">Esposa</label>
+                                                        <input type="text" class="form-control" name="esposa">
+                                                    </div>
+                                                    <div class="col-md-1">
+                                                        <label class="form-label text-primary">Nº de Filhos</label>
+                                                        <input type="number" class="form-control" name="num_filhos">
+                                                    </div>
+                                                </div>
+
+                                                <div class="row mb-3">
+                                                    <div class="col-md-12">
+                                                        <label class="form-label text-primary">Defeitos Físicos</label>
+                                                        <input type="text" class="form-control" name="defeitos_fisicos">
+                                                    </div>
+                                                </div>
+
+                                                <div class="row mb-3">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label text-primary">Sinais -
+                                                            Cicatrizes</label>
+                                                        <input type="text" class="form-control"
+                                                            name="sinais_cicatrizes">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label text-primary">Sinais -
+                                                            Tatuagens</label>
+                                                        <input type="text" class="form-control" name="sinais_tatuagens">
+                                                    </div>
+                                                </div>
+
+                                                <div class="row mb-3">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label text-primary">Sinais -
+                                                            Nascimento</label>
+                                                        <input type="text" class="form-control"
+                                                            name="sinais_nascimento">
+                                                    </div>
+                                                </div>
+
+                                                <div class="row mb-3">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label text-primary">Pai</label>
+                                                        <input type="text" class="form-control" name="pai">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label text-primary">Mãe</label>
+                                                        <input type="text" class="form-control" name="mae">
+                                                    </div>
+                                                </div>
+
+                                                <div class="row mb-3">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label text-primary">Endereço</label>
+                                                        <input type="text" class="form-control" name="endereco">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label text-primary">Bairro</label>
+                                                        <input type="text" class="form-control" name="bairro">
+                                                    </div>
+                                                </div>
+
+                                                <div class="row mb-3">
+                                                    <div class="col-md-4">
+                                                        <label class="form-label text-primary">Cidade</label>
+                                                        <input type="text" class="form-control" name="cidade">
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <label class="form-label text-primary">UF</label>
+                                                        <select class="form-select" name="uf_endereco">
+                                                            <option value="">Selecione</option>
+                                                            <option value="SP">SP</option>
+                                                            <option value="RJ">RJ</option>
+                                                            <option value="MG">MG</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <label class="form-label text-primary">CEP</label>
+                                                        <input type="text" class="form-control" name="cep"
+                                                            placeholder=". -">
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label text-primary">Referência do
+                                                            endereço</label>
+                                                        <input type="text" class="form-control"
+                                                            name="referencia_endereco">
+                                                    </div>
+                                                </div>
+
+                                                <div class="text-end mt-4">
+                                                    <button type="submit" class="btn btn-primary">
+                                                        <i class="fas fa-save"></i> Salvar Dados Pessoais
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+
+                                        <!-- Tab: Dados Criminais -->
+                                        <div class="tab-pane fade" id="dados-criminais" role="tabpanel">
+                                            <form class="p-3">
+                                                <!-- Linha 1: Regime, DEECRIM, Região, Situação -->
+                                                <div class="row mb-3">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label text-primary">Regime Execução</label>
+                                                        <input type="text" class="form-control" name="regime_execucao">
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label text-primary">DEECRIM</label>
+                                                        <input type="text" class="form-control" name="deecrim">
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label text-primary">Região do
+                                                            Processo</label>
+                                                        <select class="form-select" name="regiao_processo">
+                                                            <option value="">Selecione</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label text-primary">Situação Criminal</label>
+                                                        <select class="form-select" name="situacao_criminal">
+                                                            <option value="">Selecione</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Linha 2: Data Prisão, Possui Advogado, Fuga, Local -->
+                                                <div class="row mb-3">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label text-primary">Data Prisão</label>
+                                                        <input type="date" class="form-control" name="data_prisao">
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label text-primary">Possui Advogado</label>
+                                                        <select class="form-select" name="possui_advogado">
+                                                            <option value="">Selecione</option>
+                                                            <option value="Sim">Sim</option>
+                                                            <option value="Não">Não</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label text-primary">Fuga</label>
+                                                        <select class="form-select" name="fuga">
+                                                            <option value="">Selecione</option>
+                                                            <option value="Sim">Sim</option>
+                                                            <option value="Não">Não</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label text-primary">Local</label>
+                                                        <input type="text" class="form-control" name="local_fuga">
+                                                    </div>
+                                                </div>
+
+                                                <!-- Linha 3: Artigo, Anos, Meses, Dias -->
+                                                <div class="row mb-3">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label text-primary">Artigo</label>
+                                                        <input type="text" class="form-control" name="artigo">
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label text-primary">Anos/Prisão</label>
+                                                        <input type="text" class="form-control" name="anos_prisao">
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label text-primary">Meses/Prisão</label>
+                                                        <input type="text" class="form-control" name="meses_prisao">
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label text-primary">Dias/Prisão</label>
+                                                        <input type="text" class="form-control" name="dias_prisao">
+                                                    </div>
+                                                </div>
+
+                                                <!-- Linha 4: Perfil, RG Criminal -->
+                                                <div class="row mb-3">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label text-primary">Perfil</label>
+                                                        <input type="text" class="form-control" name="perfil">
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label text-primary">RG Criminal</label>
+                                                        <input type="text" class="form-control" name="rg_criminal">
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label text-primary">Reincidente</label>
+                                                        <select class="form-select" name="reincidente">
+                                                            <option value="">Selecione</option>
+                                                            <option value="Sim">Sim</option>
+                                                            <option value="Não">Não</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Linha 5: Vulgo, Hediondo -->
+                                                <div class="row mb-3">
+                                                    <div class="col-md-9">
+                                                        <label class="form-label text-primary">Vulgo</label>
+                                                        <input type="text" class="form-control" name="vulgo">
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label text-primary">Hediondo</label>
+                                                        <select class="form-select" name="hediondo">
+                                                            <option value="">Selecione</option>
+                                                            <option value="Sim">Sim</option>
+                                                            <option value="Não">Não</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Seção Cela (destacada) -->
+                                                <h6 class="text-primary mt-4">Informações da Cela</h6>
+                                                <div class="bg-light p-3 rounded mb-3">
+                                                    <div class="row mb-3">
+                                                        <div class="col-md-4">
+                                                            <label class="form-label fw-bold">Cela</label>
+                                                            <input type="text" class="form-control" name="cela">
+                                                        </div>
+                                                        <div class="col-md-8">
+                                                            <label class="form-label fw-bold">Pavilhão</label>
+                                                            <select class="form-select" name="pavilhao">
+                                                                <option value="">Selecione</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-4">
+                                                            <label class="form-label fw-bold">Situação</label>
+                                                            <input type="text" class="form-control"
+                                                                name="situacao_cela">
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <label class="form-label fw-bold">Dias</label>
+                                                            <input type="text" class="form-control" name="dias_cela">
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <label class="form-label fw-bold">Vencimento</label>
+                                                            <input type="date" class="form-control"
+                                                                name="vencimento_cela">
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Linha 6: Dados de Inclusão e Ocorrências -->
+                                                <div class="row mb-3">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label text-primary">Dados de Inclusão</label>
+                                                        <input type="text" class="form-control mb-2"
+                                                            name="dados_inclusao">
+                                                        <input type="text" class="form-control mb-2"
+                                                            name="dados_inclusao_2">
+                                                        <input type="text" class="form-control" name="dados_inclusao_3">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label text-primary">Ocorrências</label>
+                                                        <textarea class="form-control" name="ocorrencias"
+                                                            rows="5"></textarea>
+                                                    </div>
+                                                </div>>
+
+                                                <div class="mb-3">
+                                                    <h6 class="text-primary mb-2">Movimentações do sentenciado</h6>
+                                                    <div class="table-responsive">
+                                                        <table class="table table-sm table-bordered">
+                                                            <thead class="table-success">
+                                                                <tr>
+                                                                    <th style="width: 15%">DATA</th>
+                                                                    <th style="width: 15%">TIPO</th>
+                                                                    <th style="width: 35%">MOTIVO</th>
+                                                                    <th style="width: 35%">DESTINO / PROCEDÊNCIA</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td colspan="4" class="text-center text-muted">
+                                                                        Nenhuma movimentação registrada
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+
+                                                <div class="text-end mt-4">
+                                                    <button type="submit" class="btn btn-primary">
+                                                        <i class="fas fa-save"></i> Salvar Dados Criminais
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+
+                                        <!-- Tab: Aliases e outros -->
+                                        <div class="tab-pane fade" id="aliases" role="tabpanel">
+                                            <form id="form-aliases">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <div class="card mb-3">
+                                                            <div class="card-header bg-light">
+                                                                <h6 class="mb-0">Aliases</h6>
+                                                            </div>
+                                                            <div class="card-body">
+                                                                <div class="table-responsive">
+                                                                    <table class="table table-sm table-bordered">
+                                                                        <thead class="table-success">
+                                                                            <tr>
+                                                                                <th>ALIAS</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            <tr>
+                                                                                <td class="text-center text-muted">
+                                                                                    Nenhum alias registrado
+                                                                                </td>
+                                                                            </tr>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                                <div class="mt-3">
+                                                                    <label
+                                                                        class="form-label text-primary">Alias:</label>
+                                                                    <div class="input-group">
+                                                                        <input type="text" class="form-control"
+                                                                            name="novo_alias">
+                                                                        <button class="btn btn-success" type="button">
+                                                                            <i class="fas fa-plus"></i>
+                                                                        </button>
+                                                                        <button class="btn btn-danger" type="button">
+                                                                            <i class="fas fa-trash"></i>
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-md-6">
+                                                        <div class="card mb-3">
+                                                            <div class="card-header bg-light">
+                                                                <h6 class="mb-0">Documentos</h6>
+                                                            </div>
+                                                            <div class="card-body">
+                                                                <div class="row mb-2">
+                                                                    <div class="col-md-8">
+                                                                        <label class="form-label text-primary">Registro
+                                                                            de Nascimento</label>
+                                                                    </div>
+                                                                    <div class="col-md-4">
+                                                                        <select class="form-select form-select-sm"
+                                                                            name="doc_nascimento">
+                                                                            <option value="">Selecione</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="row mb-2">
+                                                                    <div class="col-md-8">
+                                                                        <label class="form-label text-primary">Registro
+                                                                            de Batismo</label>
+                                                                    </div>
+                                                                    <div class="col-md-4">
+                                                                        <select class="form-select form-select-sm"
+                                                                            name="doc_batismo">
+                                                                            <option value="">Selecione</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="row mb-2">
+                                                                    <div class="col-md-8">
+                                                                        <label class="form-label text-primary">Título de
+                                                                            Eleitor</label>
+                                                                    </div>
+                                                                    <div class="col-md-4">
+                                                                        <select class="form-select form-select-sm"
+                                                                            name="doc_titulo">
+                                                                            <option value="">Selecione</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="row mb-2">
+                                                                    <div class="col-md-8">
+                                                                        <label class="form-label text-primary">Registro
+                                                                            de Casamento</label>
+                                                                    </div>
+                                                                    <div class="col-md-4">
+                                                                        <select class="form-select form-select-sm"
+                                                                            name="doc_casamento">
+                                                                            <option value="">Selecione</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="row mb-2">
+                                                                    <div class="col-md-8">
+                                                                        <label
+                                                                            class="form-label text-primary">Certificado
+                                                                            Militar</label>
+                                                                    </div>
+                                                                    <div class="col-md-4">
+                                                                        <select class="form-select form-select-sm"
+                                                                            name="doc_militar">
+                                                                            <option value="">Selecione</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="row mb-2">
+                                                                    <div class="col-md-8">
+                                                                        <label class="form-label text-primary">Carteira
+                                                                            Nac. Habilitação</label>
+                                                                    </div>
+                                                                    <div class="col-md-4">
+                                                                        <select class="form-select form-select-sm"
+                                                                            name="doc_cnh">
+                                                                            <option value="">Selecione</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="row mb-2">
+                                                                    <div class="col-md-8">
+                                                                        <label class="form-label text-primary">Cédula de
+                                                                            Identidade</label>
+                                                                    </div>
+                                                                    <div class="col-md-4">
+                                                                        <select class="form-select form-select-sm"
+                                                                            name="doc_identidade">
+                                                                            <option value="">Selecione</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="row mb-2">
+                                                                    <div class="col-md-8">
+                                                                        <label class="form-label text-primary">Carteira
+                                                                            de Trabalho</label>
+                                                                    </div>
+                                                                    <div class="col-md-4">
+                                                                        <select class="form-select form-select-sm"
+                                                                            name="doc_trabalho">
+                                                                            <option value="">Selecione</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="row mb-3">
+                                                                    <div class="col-md-12">
+                                                                        <label class="form-label text-primary">Outros
+                                                                            Documentos:</label>
+                                                                        <input type="text" class="form-control"
+                                                                            name="outros_documentos">
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <label class="form-label text-primary">Prisões onde esteve
+                                                        recolhido</label>
+                                                    <textarea class="form-control" name="prisoes_recolhido"
+                                                        rows="3"></textarea>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <label class="form-label text-primary">Em caso de acidente, doença
+                                                        grave ou morte, solicita que seja avisado(a):</label>
+                                                    <textarea class="form-control" name="contato_emergencia"
+                                                        rows="3"></textarea>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <label class="form-label text-primary">Observações</label>
+                                                    <textarea class="form-control" name="observacoes"
+                                                        rows="4"></textarea>
+                                                </div>
+
+                                                <div class="text-end mt-4">
+                                                    <button type="submit" class="btn btn-primary">
+                                                        <i class="fas fa-save"></i> Salvar Aliases e Outros
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+
+                                        <!-- Tab: Rol de Visitas -->
+                                        <div class="tab-pane fade" id="rol-visitas" role="tabpanel">
+                                            <form id="form-rol-visitas">
+                                                <div class="table-responsive mb-3">
+                                                    <table class="table table-sm table-bordered">
+                                                        <thead class="table-success">
+                                                            <tr>
+                                                                <th style="width: 25%">NOME</th>
+                                                                <th style="width: 10%">SEXO</th>
+                                                                <th style="width: 15%">NASCTO</th>
+                                                                <th style="width: 20%">PARENTESCO</th>
+                                                                <th style="width: 30%">SITUAÇÃO</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td colspan="5" class="text-center text-muted">
+                                                                    Nenhum visitante cadastrado
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+
+                                                <div class="card">
+                                                    <div class="card-header bg-light">
+                                                        <h6 class="mb-0">Adicionar Visitante</h6>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="row mb-3">
+                                                            <div class="col-md-6">
+                                                                <label class="form-label text-primary">Nome</label>
+                                                                <input type="text" class="form-control"
+                                                                    name="visitante_nome">
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <label class="form-label text-primary">Endereço</label>
+                                                                <input type="text" class="form-control"
+                                                                    name="visitante_endereco">
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="row mb-3">
+                                                            <div class="col-md-3">
+                                                                <label class="form-label text-primary">Bairro</label>
+                                                                <input type="text" class="form-control"
+                                                                    name="visitante_bairro">
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <label class="form-label text-primary">Cidade</label>
+                                                                <input type="text" class="form-control"
+                                                                    name="visitante_cidade">
+                                                            </div>
+                                                            <div class="col-md-2">
+                                                                <label class="form-label text-primary">UF</label>
+                                                                <select class="form-select" name="visitante_uf">
+                                                                    <option value="">Selecione</option>
+                                                                    <option value="SP">SP</option>
+                                                                    <option value="RJ">RJ</option>
+                                                                    <option value="MG">MG</option>
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-md-3">
+                                                                <label class="form-label text-primary">CEP</label>
+                                                                <input type="text" class="form-control"
+                                                                    name="visitante_cep">
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="row mb-3">
+                                                            <div class="col-md-3">
+                                                                <label class="form-label text-primary">Telefone</label>
+                                                                <input type="text" class="form-control"
+                                                                    name="visitante_telefone">
+                                                            </div>
+                                                            <div class="col-md-3">
+                                                                <label class="form-label text-primary">CPF</label>
+                                                                <input type="text" class="form-control"
+                                                                    name="visitante_cpf">
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="row mb-3">
+                                                            <div class="col-md-3">
+                                                                <label class="form-label text-primary">RG</label>
+                                                                <input type="text" class="form-control"
+                                                                    name="visitante_rg">
+                                                            </div>
+                                                            <div class="col-md-3">
+                                                                <label
+                                                                    class="form-label text-primary">Nascimento</label>
+                                                                <input type="date" class="form-control"
+                                                                    name="visitante_nascimento">
+                                                            </div>
+                                                            <div class="col-md-3">
+                                                                <label class="form-label text-primary">Local
+                                                                    Nascimento</label>
+                                                                <input type="text" class="form-control"
+                                                                    name="visitante_local_nascimento">
+                                                            </div>
+                                                            <div class="col-md-3">
+                                                                <label class="form-label text-primary">Sexo</label>
+                                                                <select class="form-select" name="visitante_sexo">
+                                                                    <option value="">Selecione</option>
+                                                                    <option value="M">Masculino</option>
+                                                                    <option value="F">Feminino</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="row mb-3">
+                                                            <div class="col-md-3">
+                                                                <label class="form-label text-primary">Estado
+                                                                    Civil</label>
+                                                                <select class="form-select"
+                                                                    name="visitante_estado_civil">
+                                                                    <option value="">Selecione</option>
+                                                                    <option value="Solteiro">Solteiro</option>
+                                                                    <option value="Casado">Casado</option>
+                                                                    <option value="Divorciado">Divorciado</option>
+                                                                    <option value="Viúvo">Viúvo</option>
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-md-3">
+                                                                <label
+                                                                    class="form-label text-primary">Parentesco</label>
+                                                                <select class="form-select" name="visitante_parentesco">
+                                                                    <option value="">Selecione</option>
+                                                                    <option value="Pai">Pai</option>
+                                                                    <option value="Mãe">Mãe</option>
+                                                                    <option value="Cônjuge">Cônjuge</option>
+                                                                    <option value="Filho(a)">Filho(a)</option>
+                                                                    <option value="Irmão(ã)">Irmão(ã)</option>
+                                                                    <option value="Outro">Outro</option>
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <label class="form-label text-primary">Situação da
+                                                                    Visita</label>
+                                                                <select class="form-select" name="visitante_situacao">
+                                                                    <option value="">Selecione</option>
+                                                                    <option value="Autorizado">Autorizado</option>
+                                                                    <option value="Pendente">Pendente</option>
+                                                                    <option value="Suspenso">Suspenso</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="mb-3">
+                                                            <label class="form-label text-primary">Ocorrências</label>
+                                                            <textarea class="form-control" name="visitante_ocorrencias"
+                                                                rows="3"></textarea>
+                                                        </div>
+
+                                                        <div class="text-end">
+                                                            <button type="button" class="btn btn-success">
+                                                                <i class="fas fa-plus"></i> Adicionar Visitante
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="text-end mt-4">
+                                                    <button type="submit" class="btn btn-primary">
+                                                        <i class="fas fa-save"></i> Salvar Rol de Visitas
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+
+                                        <!-- Tab: Movimentações p/ Certidão -->
+                                        <div class="tab-pane fade" id="movimentacoes" role="tabpanel">
+                                            <p class="text-muted mb-3">Registro de movimentações para certidão</p>
+                                            <div class="text-end mb-3">
+                                                <button class="btn btn-success btn-sm">
+                                                    <i class="fas fa-plus"></i> Nova Movimentação
+                                                </button>
+                                            </div>
+                                            <div class="table-responsive">
+                                                <table class="table table-sm table-bordered">
+                                                    <thead class="table-success">
+                                                        <tr>
+                                                            <th style="width: 15%">DATA</th>
+                                                            <th style="width: 15%">TIPO</th>
+                                                            <th style="width: 35%">MOTIVO</th>
+                                                            <th style="width: 35%">DESTINO / PROCEDÊNCIA</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td colspan="4" class="text-center text-muted">
+                                                                Nenhuma movimentação registrada
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        <!-- Tab: Processos -->
+                                        <div class="tab-pane fade" id="processos" role="tabpanel">
+                                            <form id="form-processos">
+                                                <div class="mb-3">
+                                                    <h6 class="text-primary">Processos</h6>
+                                                    <div class="table-responsive">
+                                                        <table class="table table-sm table-bordered">
+                                                            <thead class="table-success">
+                                                                <tr>
+                                                                    <th style="width: 20%">DATA PROCESSO</th>
+                                                                    <th style="width: 40%">CIDADE</th>
+                                                                    <th style="width: 40%">Nº PROCESSO</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td colspan="3" class="text-center text-muted">
+                                                                        Nenhum processo registrado
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+
+                                                <div class="card">
+                                                    <div class="card-header bg-light">
+                                                        <h6 class="mb-0">Adicionar Processo</h6>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="row mb-3">
+                                                            <div class="col-md-3">
+                                                                <label class="form-label text-primary">Data do
+                                                                    delito</label>
+                                                                <input type="date" class="form-control"
+                                                                    name="processo_data_delito">
+                                                            </div>
+                                                            <div class="col-md-5">
+                                                                <label class="form-label text-primary">Cidade</label>
+                                                                <input type="text" class="form-control"
+                                                                    name="processo_cidade">
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <label class="form-label text-primary">Processo</label>
+                                                                <input type="text" class="form-control"
+                                                                    name="processo_numero">
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="mb-3">
+                                                            <label class="form-label text-primary">Processos</label>
+                                                            <div class="input-group mb-2">
+                                                                <button class="btn btn-success btn-sm" type="button">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </button>
+                                                                <button class="btn btn-danger btn-sm" type="button">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="text-end">
+                                                            <button type="button" class="btn btn-success">
+                                                                <i class="fas fa-plus"></i> Adicionar Processo
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="text-end mt-4">
+                                                    <button type="submit" class="btn btn-primary">
+                                                        <i class="fas fa-save"></i> Salvar Processos
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../static/js/simic.js"></script>
+    <script>
+        // Menu Navigation
+        document.querySelectorAll('.list-group-item[data-section]').forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                // Remove active class from all links
+                document.querySelectorAll('.list-group-item').forEach(a => a.classList.remove('active'));
+
+                // Add active class to clicked link
+                this.classList.add('active');
+
+                // Hide all sections
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.style.display = 'none';
+                });
+
+                // Show selected section
+                const sectionId = 'section-' + this.getAttribute('data-section');
+                document.getElementById(sectionId).style.display = 'block';
+            });
+        });
+
+        // Função para atualizar dados (placeholder)
+        function atualizarDados() {
+            console.log('Atualizando dados do SIMIC...');
+            // Implementar lógica de atualização
+        }
+    </script>
+</body>
+
+</html>

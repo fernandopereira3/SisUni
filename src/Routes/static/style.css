@@ -41,6 +41,7 @@ body {
    padding: 0;
    font-size: 14px;
    line-height: 1.6;
+   overflow-x: hidden;
 }
 
 /* Navegação modernizada */
@@ -52,6 +53,151 @@ body {
    box-shadow: var(--shadow-md);
    transition: var(--transition);
 }
+
+/* ========================================
+   SIDEBAR NAVIGATION
+   ======================================== */
+
+/* Wrapper para layout com sidebar */
+.wrapper {
+   display: flex;
+   width: 100%;
+   align-items: stretch;
+}
+
+/* Sidebar principal */
+#sidebar {
+   min-width: 250px;
+   max-width: 250px;
+   background: linear-gradient(180deg, var(--color-black) 0%, #1a1a1a 100%);
+   color: var(--color-white);
+   transition: all 0.3s;
+   min-height: 100vh;
+   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
+   border-right: 2px solid var(--color-gold);
+}
+
+#sidebar.active {
+   margin-left: -250px;
+}
+
+/* Cabeçalho do sidebar */
+#sidebar .sidebar-header {
+   padding: 20px;
+   background: rgba(197, 158, 79, 0.1);
+   border-bottom: 2px solid var(--color-gold);
+}
+
+#sidebar .sidebar-header h3 {
+   color: var(--color-white);
+   font-size: 1.2rem;
+   margin: 0;
+   font-weight: 600;
+}
+
+#sidebar .sidebar-header small {
+   color: var(--color-gold);
+}
+
+/* Lista de componentes do sidebar */
+#sidebar ul.components {
+   padding: 20px 0;
+}
+
+#sidebar ul li {
+   padding: 0;
+}
+
+#sidebar ul li a {
+   padding: 12px 20px;
+   font-size: 1rem;
+   display: block;
+   color: rgba(255, 255, 255, 0.8);
+   text-decoration: none;
+   transition: all 0.3s;
+   border-left: 3px solid transparent;
+}
+
+#sidebar ul li a:hover,
+#sidebar ul li a.active {
+   color: var(--color-white);
+   background: rgba(197, 158, 79, 0.2);
+   border-left-color: var(--color-gold);
+}
+
+#sidebar ul li a i {
+   margin-right: 10px;
+   width: 20px;
+   text-align: center;
+   color: var(--color-gold);
+}
+
+/* Área de conteúdo principal (quando usado com sidebar) */
+#content {
+   width: 100%;
+   padding: 0;
+   min-height: 100vh;
+   transition: all 0.3s;
+   background-color: var(--light-bg);
+}
+
+/* Botão para colapsar sidebar */
+#sidebarCollapse {
+   background: linear-gradient(135deg, var(--color-red), var(--primary-hover));
+   border: none;
+   color: var(--color-white);
+   padding: 8px 15px;
+   border-radius: var(--border-radius);
+   transition: all 0.3s;
+   font-weight: 500;
+}
+
+#sidebarCollapse:hover {
+   background: linear-gradient(135deg, var(--primary-hover), #991b1b);
+   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+   transform: translateY(-1px);
+}
+
+/* Conteúdo principal dentro do layout com sidebar */
+.main-content {
+   padding: 20px;
+}
+
+/* Link do rodapé do sidebar */
+.sidebar-footer-link {
+   color: rgba(255, 255, 255, 0.8);
+   text-decoration: none;
+   transition: all 0.3s;
+}
+
+.sidebar-footer-link:hover {
+   color: var(--color-gold);
+}
+
+.sidebar-footer-link i {
+   color: var(--color-gold);
+}
+
+/* Seções de conteúdo (para navegação por abas) */
+.content-section {
+   display: block;
+}
+
+/* Responsividade do sidebar */
+@media (max-width: 768px) {
+   #sidebar {
+      margin-left: -250px;
+   }
+
+   #sidebar.active {
+      margin-left: 0;
+   }
+}
+
+/* ========================================
+   FIM SIDEBAR NAVIGATION
+   ======================================== */
+
 
 .bg-main-card {
    background-color: var(--card-bg);
