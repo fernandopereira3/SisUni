@@ -145,9 +145,6 @@ function criarConteudoDetalhes(sentenciado, isExcluidos = false) {
                         <i class="fas fa-camera me-2"></i>Fotografia
                     </div>
                     <div class="card-body text-center p-3">
-                        <div id="fotoPreview" class="border rounded p-2 bg-light d-flex align-items-center justify-content-center mb-3" style="height: 280px; overflow: hidden;">
-                            <img src="/static/img/default_avatar.png" class="img-fluid rounded" style="max-height: 100%; max-width: 100%; object-fit: contain;" alt="Foto padrão">
-                        </div>
                         <div class="d-grid gap-2">
                             <label for="inputFoto" class="btn btn-primary">
                                 <i class="fas fa-upload me-2"></i>Selecionar Foto
