@@ -1,3 +1,4 @@
+ruff==0.15.2
 annotated-types==0.7.0
 blinker==1.9.0
 chardet==5.2.0
