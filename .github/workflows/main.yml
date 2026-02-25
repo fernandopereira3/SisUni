@@ -49,7 +49,7 @@ jobs:
       with:
         context: .
         push: true
-        tags: ${{ secrets.DOCKER_USERNAME }}/sisuni:Version-Flask:1.${{github.run_number}}
+        tags: ${{ secrets.DOCKER_USERNAME }}/sisuni:1.${{github.run_number}}
         ### DOIS DOCKER FILES
         ### UM PARA O FRONT E OUTRO PARA O BACK
         ### O FRONT SERÁ BUILDADO COM O DOCKERFILE DO FRONT E O BACK SERÁ BUILDADO COM O DOCKERFILE DO BACK
