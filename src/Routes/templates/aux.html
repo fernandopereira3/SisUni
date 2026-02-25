@@ -1,0 +1,60 @@
+ <div class="login-container">
+
+        <!-- Lado esquerdo: imagem -->
+        <div class="login-image-side">
+            <div class="image-text">
+                <h2>✨ Bem-vinda ao SIMPLES✨</h2>
+                <p>Gerenciamento elegante e fácil</p>
+            </div>
+            <img id="mascot-img" src="{% static 'index/img/index2.png' %}" alt="Mascote Salão Glamour"
+                class="mascot-img">
+        </div>
+
+        <!-- Lado direito: formulário -->
+        <div class="login-form-side">
+
+            <div class="index-logo">
+                <img src="{% static 'home/img/BRANCA.png' %}" alt="Salão Glamour">
+                <h1></h1>
+                <p>Faça login para continuar</p>
+            </div>
+
+            {% if erro %}
+            <div class="error-msg">
+                <i class="fas fa-circle-exclamation"></i>
+                {{ erro }}
+            </div>
+            {% endif %}
+
+            <form method="POST" class="login-form">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="username">Usuário</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="username" name="username" class="form-input"
+                            placeholder="Digite seu usuário" autocomplete="username" autofocus required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="password" name="password" class="form-input"
+                            placeholder="Digite sua senha" autocomplete="current-password" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login">
+                    <i class="fas fa-arrow-right-to-bracket"></i>
+                    Entrar
+                </button>
+            </form>
+
+            <div class="login-footer">Desenvolvido por Fernando Pereira &copy; 2026</div>
+
+        </div>
+
+    </div>
