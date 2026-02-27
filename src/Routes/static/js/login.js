@@ -1,13 +1,15 @@
 document.addEventListener('DOMContentLoaded', function () {
     // Variável para controlar se deve mostrar o modal
     const shouldShowModal = document.body.dataset.showStarModal === 'true';
+    // true = criando senha pela primeira vez; false = autenticando com senha existente
+    const isCreatePassword = document.body.dataset.createPassword === 'true';
+
     // Controle do modal Star
     const starPasswordModal = new bootstrap.Modal(document.getElementById('starPasswordModal'));
     const confirmStarPassword = document.getElementById('confirmStarPassword');
     const starPasswordInput = document.getElementById('starPasswordInput');
-    const confirmPasswordInput = document.getElementById('confirmPasswordInput');
+    const confirmPasswordInput = document.getElementById('confirmPasswordInput'); // pode ser null no modo autenticação
     const starPasswordForm = document.getElementById('starPasswordForm');
-    const mainForm = document.querySelector('form[action=""]');
 
     // Mostrar modal automaticamente se necessário (após tentativa de login)
     if (shouldShowModal) {
@@ -16,39 +18,22 @@ document.addEventListener('DOMContentLoaded', function () {
         if (usernameFromBackend) {
             document.getElementById('username').value = usernameFromBackend;
         }
-
-        // Verificar se é definição de nova senha ou validação de senha existente
-        const errorMessage = document.body.dataset.errorMessage || '';
-        const isExistingPassword = errorMessage.includes('Digite sua senha administrativa') || errorMessage.includes('Senha admin incorreta');
-
-        if (isExistingPassword) {
-            // Usuário já tem senha - apenas solicitar
-            document.getElementById('modalMessage').textContent = 'Digite sua senha administrativa para continuar.';
-            document.getElementById('starPasswordModalLabel').innerHTML = '<i class="fas fa-key me-2"></i>Senha Administrativa';
-            document.getElementById('starPasswordInput').placeholder = 'Senha Administrativa';
-            document.querySelector('label[for="starPasswordInput"]').innerHTML = '<i class="fas fa-key me-2"></i>Senha Administrativa';
-            document.getElementById('confirmPasswordInput').style.display = 'none';
-            document.querySelector('label[for="confirmPasswordInput"]').style.display = 'none';
-            document.getElementById('confirmStarPassword').innerHTML = '<i class="fas fa-sign-in-alt me-2"></i>Entrar';
-        }
-
         starPasswordModal.show();
     }
 
-    // Confirmar criação de senha Star
+    // Confirmar criação/digitação de senha
     confirmStarPassword.addEventListener('click', function () {
         const password = starPasswordInput.value.trim();
-        const confirmPassword = confirmPasswordInput.value.trim();
-        const errorMessage = document.body.dataset.errorMessage || '';
-        const isExistingPassword = errorMessage.includes('Digite sua senha administrativa') || errorMessage.includes('Senha admin incorreta');
 
         if (!password) {
-            alert(isExistingPassword ? 'Por favor, digite sua senha administrativa.' : 'Por favor, digite a nova senha administrativa.');
+            alert(isCreatePassword
+                ? 'Por favor, digite a nova senha administrativa.'
+                : 'Por favor, digite sua senha administrativa.');
             starPasswordInput.focus();
             return;
         }
 
-        if (!isExistingPassword) {
+        if (isCreatePassword) {
             // Validações apenas para nova senha
             if (password.length < 6) {
                 alert('A senha deve ter pelo menos 6 caracteres.');
@@ -56,10 +41,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            if (password !== confirmPassword) {
-                alert('As senhas não coincidem. Por favor, verifique.');
-                confirmPasswordInput.focus();
-                return;
+            if (confirmPasswordInput) {
+                const confirmPassword = confirmPasswordInput.value.trim();
+                if (password !== confirmPassword) {
+                    alert('As senhas não coincidem. Por favor, verifique.');
+                    confirmPasswordInput.focus();
+                    return;
+                }
             }
         }
 
@@ -67,12 +55,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const username = document.getElementById('username').value.trim();
         const setor = document.getElementById('setor').value;
 
-        // Debug: verificar se os valores estão sendo capturados
-        console.log('Username capturado:', username);
-        console.log('Setor capturado:', setor);
-
         if (!username) {
-            alert('Por favor, digite seu nome antes de definir a senha.');
+            alert('Por favor, digite seu nome antes de continuar.');
             document.getElementById('username').focus();
             starPasswordModal.hide();
             return;
@@ -85,35 +69,39 @@ document.addEventListener('DOMContentLoaded', function () {
         starPasswordForm.submit();
     });
 
-    // Enter nos campos de senha
+    // Enter no campo de senha principal
     starPasswordInput.addEventListener('keypress', function (e) {
         if (e.key === 'Enter') {
-            confirmPasswordInput.focus();
+            if (isCreatePassword && confirmPasswordInput) {
+                confirmPasswordInput.focus();
+            } else {
+                confirmStarPassword.click();
+            }
         }
     });
 
-    confirmPasswordInput.addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-            confirmStarPassword.click();
-        }
-    });
+    // Enter no campo de confirmação (só existe no modo criação)
+    if (confirmPasswordInput) {
+        confirmPasswordInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                confirmStarPassword.click();
+            }
+        });
+    }
 
     // Limpar senhas ao fechar modal
     document.getElementById('starPasswordModal').addEventListener('hidden.bs.modal', function () {
         starPasswordInput.value = '';
-        confirmPasswordInput.value = '';
+        if (confirmPasswordInput) confirmPasswordInput.value = '';
     });
 
     // Corrigir comportamento dos form-floating labels
     const floatingInputs = document.querySelectorAll('.form-floating input, .form-floating select');
 
     floatingInputs.forEach(input => {
-        // Verificar se já tem valor ao carregar
         if (input.value) {
             input.classList.add('filled');
         }
-
-        // Adicionar/remover classe quando o valor muda
         input.addEventListener('input', function () {
             if (this.value) {
                 this.classList.add('filled');

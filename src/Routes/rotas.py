@@ -109,11 +109,12 @@ def login():
                 if not current_password_hash:
                     # Primeira vez: definir senha
                     if not lvl10_password:
-                        # Senha não foi fornecida ainda, mostrar modal
+                        # Senha não foi fornecida ainda, mostrar modal de CRIAÇÃO
                         return render_template(
                             "login.html",
                             error="Defina uma senha administrativa para continuar.",
                             show_star_modal=True,
+                            create_password=True,
                             username=nome_completo,
                         )
 
@@ -123,6 +124,7 @@ def login():
                             "login.html",
                             error="A senha deve ter pelo menos 6 caracteres.",
                             show_star_modal=True,
+                            create_password=True,
                             username=nome_completo,
                         )
 
@@ -142,13 +144,19 @@ def login():
                 else:
                     # Usuário já tem senha definida - verificar se foi fornecida
                     if not lvl10_password:
-                        # Senha não foi fornecida, solicitar
+                        # Senha não foi fornecida, solicitar (modal de LOGIN)
                         return render_template(
                             "login.html",
                             error="Digite sua senha administrativa.",
                             show_star_modal=True,
+                            create_password=False,
                             username=nome_completo,
                         )
+
+                    # Garantir que o hash seja bytes (MongoDB pode retornar str)
+                    if isinstance(current_password_hash, str):
+                        current_password_hash = current_password_hash.encode("utf-8")
+
                     # Validar senha existente usando bcrypt
                     if not bcrypt.checkpw(
                         lvl10_password.encode("utf-8"), current_password_hash
@@ -157,6 +165,7 @@ def login():
                             "login.html",
                             error="Senha admin incorreta.",
                             show_star_modal=True,
+                            create_password=False,
                             username=nome_completo,
                         )
 

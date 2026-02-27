@@ -1,6 +1,6 @@
 services:
   web:
-    image: fernandopereira3/sisuni:latest
+    image: fernandopereira3/sisuni:dev
     ports:
       - "80:5000"
     networks:
