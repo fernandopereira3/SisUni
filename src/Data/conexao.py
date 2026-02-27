@@ -7,6 +7,7 @@ app = Flask(__name__)
 # URI vem do docker compose!
 app.config["MONGO_URI"] = os.getenv("MONGO_URI", "mongodb://localhost:27017/cpppac")
 # string de conexao para o mongo com compose
+# TESTE DO ACTIONS NA DEV
 
 
 class MockResult:
