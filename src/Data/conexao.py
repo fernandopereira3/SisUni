@@ -4,6 +4,7 @@ from flask_pymongo import PyMongo
 app = Flask(__name__)
 # MongoDB connection via Docker: Flask container talks to MongoDB container named 'mongo'
 # app.config["MONGO_URI"] = "mongodb://localhost:27017/cpppac"
+# URI vem do docker compose!
 app.config["MONGO_URI"] = os.getenv("MONGO_URI", "mongodb://localhost:27017/cpppac")
 # string de conexao para o mongo com compose
 
