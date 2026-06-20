@@ -1,13 +1,12 @@
 from flask import render_template, request, Blueprint
 import datetime
 import re
-from Data.conexao import conexao_mongo, conexao_sql
+from Data.conexao import conexao_mongo
 from Funcoes.funcoes import PesquisaForm, construir_tabela
 
 # Criar o blueprint
 pesquisas_bp = Blueprint("pesquisas", __name__)
 db = conexao_mongo()
-conexao_sql = conexao_sql()
 
 
 @pesquisas_bp.route("/pesquisas/dia-de-visita", methods=["GET"])

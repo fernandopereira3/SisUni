@@ -1,6 +1,6 @@
 import pandas as pd
 from datetime import datetime
-from data.conexao import conexao_sql, conexao_mongo
+from Data.conexao import conexao_sql, conexao_mongo
 
 
 def sincronizar():
@@ -79,14 +79,11 @@ def sincronizar():
 
         documentos = df.to_dict(orient="records")
 
-        client = conexao_mongo()
-        db_mongo = client["cpppac"]
+        db_mongo = conexao_mongo()
         collection = db_mongo["sentenciados"]
 
         collection.drop()
         collection.insert_many(documentos)
-
-        client.close()
         print(
             f"[{datetime.now().strftime('%d/%m/%Y %H:%M:%S')}] ✓ {len(documentos)} registros sincronizados."
         )
