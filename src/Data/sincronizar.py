@@ -1,7 +1,6 @@
 import pandas as pd
-from sqlalchemy import create_engine
-from pymongo import MongoClient
 from datetime import datetime
+from data.conexao import conexao_sql, conexao_mongo
 
 
 def sincronizar():
@@ -10,9 +9,7 @@ def sincronizar():
     )
 
     try:
-        engine = create_engine(
-            "mysql+mysqlconnector://root:futuro07@10.14.180.254:3309/siscar"
-        )
+        engine = conexao_sql()
 
         query = """
         SELECT
@@ -82,7 +79,7 @@ def sincronizar():
 
         documentos = df.to_dict(orient="records")
 
-        client = MongoClient("mongodb://mongo:27017/cpppac")
+        client = conexao_mongo()
         db_mongo = client["cpppac"]
         collection = db_mongo["sentenciados"]
 
