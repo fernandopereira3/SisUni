@@ -3,7 +3,7 @@ from flask_pymongo import PyMongo
 import os
 
 app = Flask(__name__)
-app.config["MONGO_URI"] = os.getenv("MONGO_URI", "mongodb://localhost:27017/cpppac")
+app.config["MONGO_URI"] = os.getenv("MONGO_URI", "mongodb://mongo:27017/cpppac")
 
 
 def conexao_mongo():
@@ -17,5 +17,7 @@ def conexao_mongo():
 def conexao_sql():
     from sqlalchemy import create_engine
 
-    engine = create_engine("mysql+mysqlconnector://root:futuro07@10.0.0.2:3309/siscar")
+    engine = create_engine(
+        "mysql+mysqlconnector://root:futuro07@10.14.180.254:3309/siscar"
+    )
     return engine
