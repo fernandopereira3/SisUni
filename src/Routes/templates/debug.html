@@ -35,6 +35,15 @@
                     </div>
                     <div class="card-body p-0">
                         <div class="debug-actions">
+                            <!-- Sincronizar SQL → MongoDB -->
+                            <div class="action-item border-bottom">
+                                <a href="/debug/sincronizar"
+                                   class="d-block p-3 text-decoration-none text-success hover-bg fw-bold"
+                                   onclick="return confirm('Isso vai apagar e reimportar todos os sentenciados do SQL para o MongoDB.\n\nDeseja continuar?')">
+                                    <i class="fas fa-sync-alt me-2"></i> Sincronizar SQL → MongoDB
+                                </a>
+                            </div>
+
                             <!-- Normalizar Banco -->
                             <div class="action-item border-bottom">
                                 <a href="/normalizar_banco" class="d-block p-3 text-decoration-none text-dark hover-bg" data-bs-toggle="modal" data-bs-target="#confirmModal">

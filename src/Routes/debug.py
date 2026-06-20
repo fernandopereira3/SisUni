@@ -8,7 +8,9 @@ from flask import (
     abort,
 )
 import json
+import time
 from Data.conexao import conexao_mongo as conexao
+from Data.sincronizar import sincronizar
 
 db = conexao()
 
@@ -226,6 +228,42 @@ def generate_db_error_html(error):
         </div>
     </div>
     """
+
+
+@debug_bp.route("/debug/sincronizar", methods=["GET"])
+def debug_sincronizar():
+    verificar_acesso_debug()
+    inicio = time.time()
+    try:
+        sincronizar()
+        duracao = round(time.time() - inicio, 1)
+        count = db.sentenciados.count_documents({})
+        return render_template(
+            "debug.html",
+            debug_content=f"""
+            <div class="alert alert-success">
+                <h5><i class="fas fa-check-circle me-2"></i>Sincronização concluída!</h5>
+                <p class="mb-1"><strong>{count}</strong> registros no MongoDB após a sincronização.</p>
+                <small class="text-muted">Tempo: {duracao}s</small>
+            </div>
+            <a href="/debug" class="btn btn-secondary btn-sm">
+                <i class="fas fa-arrow-left me-1"></i>Voltar
+            </a>
+        """,
+        )
+    except Exception as e:
+        return render_template(
+            "debug.html",
+            debug_content=f"""
+            <div class="alert alert-danger">
+                <h5><i class="fas fa-times-circle me-2"></i>Erro na sincronização</h5>
+                <p>{str(e)}</p>
+            </div>
+            <a href="/debug" class="btn btn-secondary btn-sm">
+                <i class="fas fa-arrow-left me-1"></i>Voltar
+            </a>
+        """,
+        )
 
 
 ######### Fim Estatistica das colecoes ############
