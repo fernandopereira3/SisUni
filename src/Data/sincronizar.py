@@ -82,7 +82,7 @@ def sincronizar():
 
         documentos = df.to_dict(orient="records")
 
-        client = MongoClient("mongodb://mongo:27017/")
+        client = MongoClient("mongodb://mongo:27017/cpppac")
         db_mongo = client["cpppac"]
         collection = db_mongo["sentenciados"]
 
