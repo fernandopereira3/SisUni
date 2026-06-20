@@ -13,7 +13,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from io import BytesIO
 import datetime
-from Data.conexao import conexao
+from Data.conexao import conexao_mongo as conexao
 from Funcoes.funcoes import PesquisaForm
 
 jumbo_bp = Blueprint("jumbo", __name__)

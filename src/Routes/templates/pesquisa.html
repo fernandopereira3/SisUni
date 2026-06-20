@@ -22,7 +22,7 @@
             </li>
             </ul>            
               <ul>
-                <a href="/"><img src="{{ url_for('static', filename='img/logo3.png') }}" class="rounded" alt="Logo"></a>
+                <a href="/"><img src="{{ url_for('static', filename='img/penpol_logo.png') }}" class="rounded" alt="Logo"></a>
             </ul>
         </div>
     </nav>
@@ -179,226 +179,212 @@
 
        
     <!-- Modal para exibir detalhes do sentenciado -->
-    <div class="modal fade" id="detalhesSentenciadoModal" tabindex="-1" aria-labelledby="detalhesSentenciadoModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-info text-white">
-                    <h5 class="modal-title" id="detalhesSentenciadoModalLabel">Detalhes</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="detalhesSentenciadoConteudo">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Matrícula:</label>
-                                <div id="matricula" class="form-control-plaintext"></div>
+    <div class="modal fade" id="detalhesSentenciadoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg">
+
+                <!-- Cabeçalho com nome e matrícula -->
+                <div class="modal-header p-0 border-0" id="modal-header-container">
+                    <div class="w-100 px-4 py-3" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="text-white-50 small mb-1" id="modal-subtitulo">Sentenciado</div>
+                                <h4 class="text-white fw-bold mb-0" id="modal-nome-header">—</h4>
+                                <div class="mt-1" id="modal-badges-header"></div>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">Nome:</label>
-                                <div id="nome" class="form-control-plaintext"></div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Data de Nascimento:</label>
-                                <div id="data_nascimento" class="form-control-plaintext"></div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Status:</label>
-                                <div id="status" class="form-control-plaintext"></div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Unidade:</label>
-                                <div id="unidade" class="form-control-plaintext"></div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Regime:</label>
-                                <div id="regime" class="form-control-plaintext"></div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">OBS:</label>
-                                <label></label>
-                            </div>
+                            <button type="button" class="btn-close btn-close-white mt-1" data-bs-dismiss="modal"></button>
                         </div>
                     </div>
-                    <div class="text-center loading-spinner" style="display: none;">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Carregando...</span>
-                        </div>
-                        <p>Carregando detalhes...</p>
+                </div>
+
+                <div class="modal-body p-0" id="detalhesSentenciadoConteudo">
+                    <!-- spinner inicial -->
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="text-muted mt-2">Carregando...</p>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+
+                <div class="modal-footer border-top bg-light">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Fechar
+                    </button>
                 </div>
             </div>
         </div>
     </div>
+
     <style>
-        /* Forçar visibilidade dos labels no modal */
-        .modal .form-label {
-            color: #212529 !important;
-            font-weight: 600 !important;
-            margin-bottom: 0.5rem !important;
-            display: block !important;
-            font-size: 14px !important;
-        }
-        
-        .modal .form-control-plaintext {
-            color: #212529 !important;
-            font-weight: bold !important;
-            padding: 0.375rem 0 !important;
-        }
-        
-        .modal-body {
-            color: #212529 !important;
-        }
-        
-        .modal-title {
-            color: #212529 !important;
-        }
-        
-        .modal-content {
-            background-color: #ffffff !important;
-        }
-        
-        .modal .form-control {
-            color: #212529 !important;
-            background-color: #ffffff !important;
-            border: 1px solid #ced4da !important;
-        }
+        .detalhe-label { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: #6c757d; }
+        .detalhe-valor { font-size: 0.9rem; color: #212529; font-weight: 500; }
+        .detalhe-item { border-bottom: 1px solid #f0f0f0; padding: 6px 0; }
+        .detalhe-item:last-child { border-bottom: none; }
+        .nav-tabs .nav-link { font-size: 0.82rem; font-weight: 600; color: #495057; }
+        .nav-tabs .nav-link.active { color: #0d6efd; }
+        .tab-section-title { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #adb5bd; margin: 12px 0 6px; }
     </style>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Função para carregar os detalhes do sentenciado via AJAX
     function carregarDetalhes(matricula, isExcluidos = false) {
-    console.log('Iniciando carregamento para matricula:', matricula, 'isExcluidos:', isExcluidos);
-    
-    // Mostrar a modal
-    var myModal = new bootstrap.Modal(document.getElementById('detalhesSentenciadoModal'));
-    
-    // Atualizar o título da modal baseado no tipo
-    const modalTitle = document.getElementById('detalhesSentenciadoModalLabel');
-    modalTitle.textContent = isExcluidos ? 'Detalhes do Excluído' : 'Detalhes do Sentenciado';
-    
-    myModal.show();
-    
-    // Determinar a rota baseada no tipo
-    const rota = isExcluidos ? `/excluido_detalhes/${matricula}` : `/sentenciado_detalhes/${matricula}`;
-    
-    // Fazer a requisição AJAX para obter os detalhes
-    fetch(rota)
-        .then(response => {
-            console.log('Status da resposta:', response.status);
-            console.log('Response OK:', response.ok);
-            
-            if (!response.ok) {
-                throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Dados recebidos completos:', data);
-            console.log('Tipo dos dados:', typeof data);
-            
-            // Verificação mais robusta
-            if (!data || (typeof data === 'object' && Object.keys(data).length === 0)) {
-                throw new Error('Nenhum dado válido recebido do servidor');
-            }
-            
-            // Se há erro na resposta
-            if (data.erro) {
-                throw new Error(data.erro);
-            }
-            
-            // Preencher a modal com os detalhes
-            const conteudo = criarConteudoDetalhes(data, isExcluidos);
-            document.getElementById('detalhesSentenciadoConteudo').innerHTML = conteudo;
-        })
-        .catch(error => {
-            console.error('Erro completo:', error);
-            document.getElementById('detalhesSentenciadoConteudo').innerHTML = 
-                `<div class="alert alert-danger">
-                    <h5>Erro ao carregar detalhes:</h5>
-                    <p>${error.message}</p>
-                    <small>Matrícula solicitada: ${matricula}</small>
-                </div>`;
-        });
-}
+        const modal = new bootstrap.Modal(document.getElementById('detalhesSentenciadoModal'));
+
+        // reset header e spinner
+        document.getElementById('modal-nome-header').textContent = '—';
+        document.getElementById('modal-badges-header').innerHTML = '';
+        document.getElementById('modal-subtitulo').textContent = isExcluidos ? 'Excluído' : 'Sentenciado';
+        document.getElementById('detalhesSentenciadoConteudo').innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="text-muted mt-2">Carregando...</p>
+            </div>`;
+
+        modal.show();
+
+        const rota = isExcluidos ? `/excluido_detalhes/${matricula}` : `/sentenciado_detalhes/${matricula}`;
+
+        fetch(rota)
+            .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+            .then(data => {
+                if (!data || data.erro) throw new Error(data?.erro || 'Sem dados');
+
+                // preenche header
+                document.getElementById('modal-nome-header').textContent = data.nome || '—';
+                const badges = document.getElementById('modal-badges-header');
+                badges.innerHTML = '';
+                if (data.matricula) badges.innerHTML += `<span class="badge bg-light text-dark me-1">${data.matricula}</span>`;
+                if (data.regime)    badges.innerHTML += `<span class="badge bg-info me-1">${data.regime}</span>`;
+                if (data.pavilhao)  badges.innerHTML += `<span class="badge bg-secondary me-1">${data.pavilhao} — Cela ${data.cela || '?'}</span>`;
+                if (data.reincidente === 'SIM') badges.innerHTML += `<span class="badge bg-warning text-dark me-1">Reincidente</span>`;
+                if (data.hediondo == 1)         badges.innerHTML += `<span class="badge bg-danger me-1">Hediondo</span>`;
+
+                document.getElementById('detalhesSentenciadoConteudo').innerHTML = criarConteudoDetalhes(data, isExcluidos);
+            })
+            .catch(err => {
+                document.getElementById('detalhesSentenciadoConteudo').innerHTML = `
+                    <div class="alert alert-danger m-3">
+                        <i class="fas fa-exclamation-circle me-2"></i><strong>Erro ao carregar:</strong> ${err.message}
+                    </div>`;
+            });
+    }
 
     
-    // Função para criar o HTML dos detalhes
-    function criarConteudoDetalhes(sentenciado, isExcluidos = false) {
-        // Seção de destaque para data de exclusão
-        const dataExclusaoDestaque = isExcluidos && sentenciado.exclusao ? `
-            <div class="alert alert-danger border-danger mb-4" style="border-width: 3px !important;">
-                <div class="row align-items-center">
-                    <div class="col-auto">
-                        <i class="fas fa-exclamation-triangle fa-2x text-danger"></i>
-                    </div>
-                    <div class="col">
-                        <h5 class="alert-heading mb-1 text-danger">REGISTRO EXCLUÍDO</h5>
-                        <p class="mb-1"><strong>Data de Exclusão:</strong> <span class="badge bg-danger fs-6">${sentenciado.exclusao}</span></p>
-                        ${sentenciado.motivo_exclusao ? `<p class="mb-0"><strong>Motivo:</strong> ${sentenciado.motivo_exclusao}</p>` : ''}
-                        ${sentenciado.destino ? `<p class="mb-0"><strong>Destino:</strong> ${sentenciado.destino}</p>` : ''}
-                    </div>
-                </div>
-            </div>
-        ` : '';
-        
+    function criarConteudoDetalhes(s, isExcluidos = false) {
+        const v = f => (s[f] !== null && s[f] !== undefined && s[f] !== '') ? s[f] : '—';
+
+        const pena = [
+            s.anos_de_prisao  ? s.anos_de_prisao  + ' ano(s)'  : '',
+            s.meses_de_prisao ? s.meses_de_prisao + ' mês(es)' : '',
+            s.dias_de_prisao  ? s.dias_de_prisao  + ' dia(s)'  : '',
+        ].filter(Boolean).join(' ') || '—';
+
+        const c = (label, val, col=6) => `
+            <div class="col-${col} detalhe-item px-3">
+                <div class="detalhe-label">${label}</div>
+                <div class="detalhe-valor">${val}</div>
+            </div>`;
+
+        const exclusaoHtml = isExcluidos && s.exclusao ? `
+            <div class="alert alert-danger rounded-0 mb-0 py-2 px-3">
+                <i class="fas fa-exclamation-triangle me-1"></i>
+                <strong>EXCLUÍDO em ${s.exclusao}</strong>
+                ${s.motivo_exclusao ? ' — ' + s.motivo_exclusao : ''}
+                ${s.destino ? ' → ' + s.destino : ''}
+            </div>` : '';
+
         return `
-            ${dataExclusaoDestaque}
-            <div class="row">
-                <div class="col-md-6">
-                    <h4 class="border-bottom pb-2">Informações Pessoais</h4>
-                    <div class="mb-3">
-                        <strong>Matrícula:</strong> ${sentenciado.matricula || 'N/A'}
+            ${exclusaoHtml}
+            <ul class="nav nav-tabs px-3 pt-3 bg-light border-bottom" id="modal-tabs">
+                <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tab-pessoal"><i class="fas fa-id-card me-1"></i>Pessoal</a></li>
+                <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-judicial"><i class="fas fa-gavel me-1"></i>Judicial</a></li>
+                <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-fisico"><i class="fas fa-user me-1"></i>Físico</a></li>
+                <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-familia"><i class="fas fa-home me-1"></i>Família</a></li>
+            </ul>
+
+            <div class="tab-content px-2 py-3">
+
+                <div class="tab-pane fade show active" id="tab-pessoal">
+                    <div class="tab-section-title px-3">Identificação</div>
+                    <div class="row g-0">
+                        ${c('Matrícula', `<code>${v('matricula')}</code>`, 3)}
+                        ${c('Vulgo', v('vulgo'), 4)}
+                        ${c('Sexo', v('sexo'), 2)}
+                        ${c('SAP / Controle', v('controle_interno'), 3)}
+                        ${c('Nome Completo', `<strong>${v('nome')}</strong>`, 12)}
+                        ${c('Nascimento', v('nascimento'), 3)}
+                        ${c('Naturalidade', v('naturalidade') + ' — ' + v('uf'), 4)}
+                        ${c('Nacionalidade', v('nacionalidade'), 3)}
+                        ${c('RG', v('rg'), 3)}
+                        ${c('CPF', v('cpf'), 3)}
                     </div>
-                    <div class="mb-3">
-                        <strong>Nome:</strong> ${sentenciado.nome || 'N/A'}
-                    </div>
-                    <div class="mb-3">
-                        <strong>Alojamento/Pavilhão:</strong> ${sentenciado.alojamento || sentenciado.pavilhao || 'N/A'}
-                    </div>
-                    <div class="mb-3">
-                        <strong>RG:</strong> ${sentenciado.rg || 'N/A'}
-                    </div>
-                    <div class="mb-3">
-                        <strong>Data de Nascimento:</strong> ${sentenciado.nascimento || 'N/A'}
+                    <div class="tab-section-title px-3">Situação Atual</div>
+                    <div class="row g-0">
+                        ${c('Pavilhão', v('pavilhao'), 4)}
+                        ${c('Cela', v('cela'), 2)}
+                        ${c('Inclusão', v('inclusao'), 3)}
+                        ${c('Procedência', v('procedencia'), 3)}
+                        ${c('Escolaridade', v('grau_escolaridade'), 6)}
+                        ${c('Profissão', v('profissao'), 6)}
                     </div>
                 </div>
-                
-                <div class="col-md-6">
-                    <h4 class="border-bottom pb-2">Informações Processuais</h4>
-                    <div class="mb-3">
-                        <strong>Data de Inclusão:</strong> ${sentenciado.inclusao || 'N/A'}
-                    </div>
-                    <div class="mb-3">
-                        <strong>Procedência:</strong> ${sentenciado.procedencia || 'N/A'}
-                    </div>
-                    <div class="mb-3">
-                        <strong>Processo:</strong> ${sentenciado.processo || 'N/A'}
-                    </div>
-                    <div class="mb-3">
-                        <strong>Artigo:</strong> ${sentenciado.artigo || 'N/A'}
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">OBS:</label>
-                        <p style="font-size: 16px; font-style: bold; color: red">Estas informações estao limitadas aos disponibilizados pelo Siscar/Sia.
-                        Este programa ainda nao tem Banco de Dados proprio.</p>
 
+                <div class="tab-pane fade" id="tab-judicial">
+                    <div class="tab-section-title px-3">Processo</div>
+                    <div class="row g-0">
+                        ${c('Regime', `<span class="badge bg-primary">${v('regime')}</span>`, 3)}
+                        ${c('Reincidente', s.reincidente === 'SIM' ? '<span class="badge bg-warning text-dark">SIM</span>' : 'Não', 3)}
+                        ${c('Hediondo', s.hediondo == 1 ? '<span class="badge bg-danger">SIM</span>' : 'Não', 3)}
+                        ${c('Advogado', v('possui_advogado'), 3)}
+                        ${c('Artigo', v('artigo'), 12)}
+                        ${c('Nº Processo', v('deecrim'), 6)}
+                        ${c('Região', v('regiao_processo'), 6)}
+                    </div>
+                    <div class="tab-section-title px-3">Pena</div>
+                    <div class="row g-0">
+                        ${c('Total da Pena', pena, 6)}
+                        ${c('Data da Prisão', v('prisao'), 3)}
+                        ${c('Situação Criminal', v('situacao_criminal'), 3)}
+                        ${s.observacoes && s.observacoes !== '—' ? c('Observações', s.observacoes, 12) : ''}
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="tab-fisico">
+                    <div class="tab-section-title px-3">Características</div>
+                    <div class="row g-0">
+                        ${c('Cutis', v('cutis'), 3)}
+                        ${c('Cabelos', v('cabelos'), 3)}
+                        ${c('Olhos', v('olhos'), 3)}
+                        ${c('Estatura', v('estatura') !== '—' ? v('estatura') + ' m' : '—', 3)}
+                        ${c('Peso', v('peso') !== '—' ? v('peso') + ' kg' : '—', 3)}
+                        ${c('Defeito Físico', v('defeito_fisico'), 9)}
+                    </div>
+                    <div class="tab-section-title px-3">Sinais</div>
+                    <div class="row g-0">
+                        ${c('Tatuagens', v('sinais_tatuagens'), 12)}
+                        ${c('Cicatrizes', v('sinais_cicatrizes'), 12)}
+                        ${c('Sinais de Nascimento', v('sinais_nascimento'), 12)}
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="tab-familia">
+                    <div class="tab-section-title px-3">Filiação</div>
+                    <div class="row g-0">
+                        ${c('Pai', v('pai'), 6)}
+                        ${c('Mãe', v('mae'), 6)}
+                        ${c('Esposa / Companheira', v('esposa'), 6)}
+                        ${c('Estado Civil', v('estado_civil'), 3)}
+                        ${c('Nº de Filhos', v('numero_de_filhos'), 3)}
+                    </div>
+                    <div class="tab-section-title px-3">Endereço</div>
+                    <div class="row g-0">
+                        ${c('Endereço', v('endereco_familiar'), 8)}
+                        ${c('Bairro', v('bairro_familiar'), 4)}
+                        ${c('Cidade / UF', v('cidade_familiar') + ' / ' + v('uf_familiar'), 6)}
+                        ${c('CEP', v('cep_familiar'), 3)}
+                        ${c('Contato', v('contato'), 12)}
                     </div>
                 </div>
             </div>
-            
-            ${sentenciado.observacoes ? `
-            <div class="row mt-4">
-                <div class="col-12">
-                    <h4 class="border-bottom pb-2">Observações</h4>
-                    <p>${sentenciado.observacoes}</p>
-                </div>
-            </div>` : ''}
         `;
     }
 </script>

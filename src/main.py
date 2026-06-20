@@ -7,7 +7,9 @@ from Routes.trabalho import trabalho_bp as BPtrabalho
 from Routes.pesquisas import pesquisas_bp as BPpesquisas
 from Routes.funcionarios import funcionarios_bp as BPfuncionarios
 from Tests.test import bp_test
-from Data.conexao import conexao
+from Data.conexao import conexao_mongo as conexao
+from apscheduler.schedulers.background import BackgroundScheduler
+from Data.sincronizar import sincronizar
 
 
 db = conexao()
@@ -59,4 +61,11 @@ def not_found(error):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    scheduler = BackgroundScheduler(timezone="America/Sao_Paulo")
+    scheduler.add_job(sincronizar, "cron", hour=6, minute=0)  # 06:00
+    scheduler.add_job(sincronizar, "cron", hour=12, minute=0)  # 12:00
+    scheduler.add_job(sincronizar, "cron", hour=18, minute=0)  # 18:00
+    scheduler.start()
+    print("Scheduler iniciado: sincronização às 06:00, 12:00 e 18:00.")
+
+    app.run(host="0.0.0.0", port=5000, debug=False)

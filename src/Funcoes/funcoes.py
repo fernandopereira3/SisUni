@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 import datetime
 from wtforms import StringField, SubmitField
-from Data.conexao import conexao
+from Data.conexao import conexao_mongo as conexao
 
 db = conexao()
 

@@ -10,7 +10,7 @@ from flask import (
 import datetime
 from functools import wraps
 from bson import ObjectId
-from Data.conexao import conexao
+from Data.conexao import conexao_mongo as conexao
 
 # Criar o blueprint
 funcionarios_bp = Blueprint("funcionarios", __name__)

@@ -1,7 +1,6 @@
 services:
   web:
-    #image: fernandopereira3/sisuni:latest
-    build: .
+    image: fernandopereira3/sisuni:latest
     ports:
       - "80:5000"
     networks:
@@ -13,8 +12,7 @@ services:
     restart: always
 
   mongo:
-    #image: fernandopereira3/sisuni_db:latest
-    build: ./src/Data
+    image: fernandopereira3/sisuni_db:latest
     container_name: mongo
     ports:
       - "27017:27017"
@@ -34,4 +32,4 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /Users/fernando/Repositorio/volumeSisuni/mongo_data
+      device: C:\sisuniVOL\

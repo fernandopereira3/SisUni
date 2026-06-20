@@ -8,7 +8,7 @@ from flask import (
     abort,
 )
 import json
-from Data.conexao import conexao
+from Data.conexao import conexao_mongo as conexao
 
 db = conexao()
 
@@ -29,7 +29,39 @@ def verificar_acesso_debug():
 @debug_bp.route("/debug", methods=["GET"])
 def debug_trabalho():
     verificar_acesso_debug()
-    return render_template("debug.html")
+    try:
+        colecoes = db.list_collection_names()
+
+        def count(col):
+            return db[col].count_documents({}) if col in colecoes else 0
+
+        def ultima_insercao(col):
+            if col not in colecoes:
+                return None
+            doc = db[col].find_one({}, sort=[("_id", -1)])
+            return (
+                doc["_id"].generation_time.strftime("%d/%m/%Y %H:%M:%S")
+                if doc
+                else None
+            )
+
+        stats = {
+            "sentenciados": count("sentenciados"),
+            "trab": count("trab"),
+            "visitas": count("visitas"),
+            "excluidos": count("excluidos"),
+            "aux": count("aux"),
+        }
+        ultima_atualizacao = {
+            "sentenciados": ultima_insercao("sentenciados"),
+            "trab": ultima_insercao("trab"),
+            "visitas": ultima_insercao("visitas"),
+        }
+        return render_template(
+            "debug.html", stats=stats, ultima_atualizacao=ultima_atualizacao
+        )
+    except Exception:
+        return render_template("debug.html", stats={}, ultima_atualizacao={})
 
 
 ######### Estatistica das colecoes ############

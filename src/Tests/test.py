@@ -1,5 +1,5 @@
 from flask import render_template, Blueprint
-from Data.conexao import conexao
+from Data.conexao import conexao_mongo as conexao
 
 bp_test = Blueprint(
     "test",
