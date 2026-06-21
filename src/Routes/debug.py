@@ -9,7 +9,13 @@ from flask import (
 )
 import json
 import time
-from Data.conexao import conexao_mongo as conexao
+from Data.conexao import (
+    conexao_mongo as conexao,
+    conexao_sql,
+    MONGO_URI,
+    MONGO_DB,
+    MYSQL_URI,
+)
 from Funcoes.exportar_banco import sincronizar
 
 db = conexao()
@@ -59,8 +65,27 @@ def debug_trabalho():
             "trab": ultima_insercao("trab"),
             "visitas": ultima_insercao("visitas"),
         }
+        try:
+            db.command("ping")
+            mongo_ok = True
+        except Exception:
+            mongo_ok = False
+
+        try:
+            with conexao_sql().connect():
+                pass
+            mysql_ok = True
+        except Exception:
+            mysql_ok = False
+
         return render_template(
-            "debug.html", stats=stats, ultima_atualizacao=ultima_atualizacao
+            "debug.html",
+            stats=stats,
+            ultima_atualizacao=ultima_atualizacao,
+            mongo_uri=f"{MONGO_URI}{MONGO_DB}",
+            mysql_uri=MYSQL_URI,
+            mongo_ok=mongo_ok,
+            mysql_ok=mysql_ok,
         )
     except Exception:
         return render_template("debug.html", stats={}, ultima_atualizacao={})

@@ -1,5 +1,5 @@
 APScheduler==3.11.2
-mysql-connector==2.2.9
+mysql-connector-python
 ruff==0.15.2
 SQLAlchemy==2.0.51
 annotated-types==0.7.0

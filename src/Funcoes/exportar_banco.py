@@ -1,11 +1,11 @@
 import pandas as pd
-from datetime import datetime
+import datetime as dt
 from Data.conexao import conexao_mongo, conexao_sql
 
 
 def sincronizar():
     print(
-        f"[{datetime.now().strftime('%d/%m/%Y %H:%M:%S')}] Iniciando sincronização SQL → MongoDB..."
+        f"[{dt.datetime.now().strftime('%d/%m/%Y %H:%M:%S')}] Iniciando sincronização SQL → MongoDB..."
     )
 
     try:
@@ -70,9 +70,18 @@ def sincronizar():
         df = pd.read_sql(query, con=engine)
         df = df.where(pd.notnull(df), None)
 
+        # converter datetime.date e datetime64 para string
         for col in df.columns:
-            if hasattr(df[col], "dt"):
-                df[col] = df[col].astype(str).where(df[col].notna(), None)
+            if df[col].dtype == "object":
+                df[col] = df[col].apply(
+                    lambda x: (
+                        x.strftime("%d/%m/%Y")
+                        if isinstance(x, (dt.date, dt.datetime))
+                        else x
+                    )
+                )
+            elif hasattr(df[col], "dt"):
+                df[col] = df[col].dt.strftime("%d/%m/%Y").where(df[col].notna(), None)
 
         documentos = df.to_dict(orient="records")
 
@@ -81,12 +90,12 @@ def sincronizar():
         db["sentenciados"].insert_many(documentos)
 
         print(
-            f"[{datetime.now().strftime('%d/%m/%Y %H:%M:%S')}] ✓ {len(documentos)} registros sincronizados."
+            f"[{dt.datetime.now().strftime('%d/%m/%Y %H:%M:%S')}] ✓ {len(documentos)} registros sincronizados."
         )
 
     except Exception as e:
         print(
-            f"[{datetime.now().strftime('%d/%m/%Y %H:%M:%S')}] ✗ Erro na sincronização: {e}"
+            f"[{dt.datetime.now().strftime('%d/%m/%Y %H:%M:%S')}] ✗ Erro na sincronização: {e}"
         )
 
 

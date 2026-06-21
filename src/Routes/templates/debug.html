@@ -199,12 +199,14 @@
                                 <div class="card border-0 bg-light">
                                     <div class="card-body py-2">
                                         <div class="d-flex align-items-center gap-2 mb-1">
-                                            <span class="badge bg-success">●</span>
-                                            <small class="text-muted">MongoDB — <code>10.14.180.115:27017 / cpppac</code></small>
+                                            <span class="badge {{ 'bg-success' if mongo_ok else 'bg-danger' }}">●</span>
+                                            <small class="text-muted">MongoDB — <code>{{ mongo_uri }}</code></small>
+                                            <span class="badge {{ 'bg-success' if mongo_ok else 'bg-danger' }} ms-1" style="font-size:0.65rem">{{ 'ON' if mongo_ok else 'OFF' }}</span>
                                         </div>
                                         <div class="d-flex align-items-center gap-2">
-                                            <span class="badge bg-success">●</span>
-                                            <small class="text-muted">MySQL 5.5 — <code>10.14.180.254:3309 / siscar</code></small>
+                                            <span class="badge {{ 'bg-success' if mysql_ok else 'bg-danger' }}">●</span>
+                                            <small class="text-muted">MySQL — <code>{{ mysql_uri }}</code></small>
+                                            <span class="badge {{ 'bg-success' if mysql_ok else 'bg-danger' }} ms-1" style="font-size:0.65rem">{{ 'ON' if mysql_ok else 'OFF' }}</span>
                                         </div>
                                     </div>
                                 </div>
