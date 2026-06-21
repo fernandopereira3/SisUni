@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>SisUni - CPPPAC - Frequência</title>
+    <link rel="shortcut icon" href="{{ url_for('rotas.static', filename='img/sp.png') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('rotas.static', filename='style.css') }}">
+    <style>
+        .foto-container {
+            width: 200px;
+            height: 250px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8f9fa;
+            overflow: hidden;
+        }
+
+        .foto-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+        }
+
+        .foto-placeholder {
+            color: #6c757d;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .info-section {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .info-value {
+            color: #212529;
+            font-size: 16px;
+            padding: 8px;
+            background-color: white;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+            min-height: 38px;
+        }
+
+        .header-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px 8px 0 0;
+            margin: -15px -15px 20px -15px;
+        }
+
+        .section-divider {
+            border-top: 2px solid #dee2e6;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- HEADER -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-nav">
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a href="/" class="nav-link"><i class="bi bi-arrow-left-circle-fill"></i> VOLTAR</a>
+                </li>
+            </ul>
+            <div class="d-flex align-items-center gap-3">
+                <a href="/"><img src="{{ url_for('rotas.static', filename='img/logo3.png') }}" class="rounded"
+                        alt="Logo"></a>
+            </div>
+        </div>
+    </nav>
+    <!-- FIM DO HEADER -->
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="header-title">
+                            <h4 class="mb-0"><i class="fas fa-clipboard-check"></i> FREQUENCIA - REEDUCANDO(A)
+                            </h4>
+                        </div>
+
+                        <div class="row">
+                            <!-- Coluna da Foto -->
+                            <div class="col-md-3">
+                                <div class="text-center mb-3">
+                                    <div class="foto-container mx-auto" id="fotoContainer">
+                                        <div class="foto-placeholder">
+                                            <i class="bi bi-person-circle" style="font-size: 80px;"></i>
+                                            <p>Foto</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Localização Atual -->
+                                <div class="info-section">
+                                    <div class="info-label">LOCALIZAÇÃO ATUAL</div>
+                                    <div class="info-value" id="localizacaoAtual">-</div>
+                                </div>
+
+                                <!-- Local de Trabalho / Estudo Permitido -->
+                                <div class="info-section">
+                                    <div class="info-label">LOCAL DE TRABALHO / ESTUDO PERMITIDO</div>
+                                    <div class="info-value" id="localTrabalho">-</div>
+                                </div>
+                            </div>
+
+                            <!-- Coluna de Informações -->
+                            <div class="col-md-9">
+                                <div class="row">
+                                    <!-- Linha 1: Matrícula -->
+                                    <div class="col-md-12">
+                                        <div class="info-section">
+                                            <div class="info-label">MATRÍCULA</div>
+                                            <div class="info-value" id="matricula">-</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <!-- Linha 2: Nome e Nascimento -->
+                                    <div class="col-md-8">
+                                        <div class="info-section">
+                                            <div class="info-label">NOME</div>
+                                            <div class="info-value" id="nome">-</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="info-section">
+                                            <div class="info-label">NASCIMENTO</div>
+                                            <div class="info-value" id="nascimento">-</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <!-- Linha 3: Inclusão e Procedência -->
+                                    <div class="col-md-6">
+                                        <div class="info-section">
+                                            <div class="info-label">INCLUSÃO</div>
+                                            <div class="info-value" id="inclusao">-</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="info-section">
+                                            <div class="info-label">PROCEDÊNCIA</div>
+                                            <div class="info-value" id="procedencia">-</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <!-- Linha 4: Localização Habitacional e Última Movimentação -->
+                                    <div class="col-md-6">
+                                        <div class="info-section">
+                                            <div class="info-label">LOCALIZAÇÃO HABITACIONAL</div>
+                                            <div class="info-value" id="localizacaoHabitacional">-</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="info-section">
+                                            <div class="info-label">ÚLTIMA MOVIMENTAÇÃO</div>
+                                            <div class="info-value" id="ultimaMovimentacao">-</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section-divider"></div>
+
+                        <!-- Seção de Contagem -->
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card bg-light">
+                                    <div class="card-header bg-secondary text-white">
+                                        <h5 class="mb-0"><i class="fas fa-calculator"></i> CONTAGEM</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="info-section">
+                                                    <div class="info-label">PRESENTES</div>
+                                                    <div class="info-value text-center"
+                                                        style="font-size: 24px; font-weight: bold; color: #28a745;">
+                                                        <span id="presentes">0</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="info-section">
+                                                    <div class="info-label">FALTAS</div>
+                                                    <div class="info-value text-center"
+                                                        style="font-size: 24px; font-weight: bold; color: #dc3545;">
+                                                        <span id="faltas">0</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="info-section">
+                                                    <div class="info-label">RETORNO</div>
+                                                    <div class="info-value text-center"
+                                                        style="font-size: 24px; font-weight: bold; color: #007bff;">
+                                                        <span id="retorno">0</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botões de Ação -->
+                        <div class="row mt-4">
+                            <div class="col-md-12 text-center">
+                                <button class="btn btn-success btn-lg me-2" id="btnMarcarPresenca">
+                                    <i class="bi bi-check-circle-fill"></i> Marcar Presença
+                                </button>
+                                <button class="btn btn-danger btn-lg me-2" id="btnMarcarFalta">
+                                    <i class="bi bi-x-circle-fill"></i> Marcar Falta
+                                </button>
+                                <button class="btn btn-warning btn-lg" id="btnMarcarRetorno">
+                                    <i class="bi bi-arrow-return-left"></i> Marcar Retorno
+                                </button>
+                                <button class="btn btn-secondary btn-lg" id="btnAbrirPesquisa">
+                                    <i class="bi bi-search"></i> Pesquisar Reeducando
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Pesquisa -->
+    <div class="modal fade" id="pesquisaModal" tabindex="-1" aria-labelledby="pesquisaModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="pesquisaModalLabel">Pesquisar Reeducando</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formPesquisa">
+                        <div class="mb-3">
+                            <label for="pesquisaMatricula" class="form-label">Matrícula</label>
+                            <input type="text" class="form-control" id="pesquisaMatricula"
+                                placeholder="Digite a matrícula">
+                        </div>
+                        <div class="mb-3">
+                            <label for="pesquisaNome" class="form-label">Nome</label>
+                            <input type="text" class="form-control" id="pesquisaNome" placeholder="Digite o nome">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="pesquisarReeducando()">
+                        <i class="bi bi-search"></i> Pesquisar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('rotas.static', filename='js/freguencia.js') }}"></script>
+</body>
+
+</html>

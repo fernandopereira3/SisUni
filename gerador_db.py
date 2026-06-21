@@ -11,6 +11,22 @@ from datetime import datetime, timedelta
 import time
 
 # Arrays de nomes e sobrenomes brasileiros
+setores = [
+    "Cozinha",
+    "Limpeza",
+    "Manutenção",
+    "Lavanderia",
+    "Horta",
+    "Marcenaria",
+    "Serralheria",
+    "Padaria",
+    "Costura",
+    "Biblioteca",
+    "Almoxarifado",
+    "Enfermaria",
+    "Barbearia",
+]
+
 nomes = [
     "JOSÉ",
     "JOÃO",
@@ -62,56 +78,6 @@ nomes = [
     "VICTOR",
     "EVERTON",
     "CÍCERO",
-    "MARIA",
-    "ANA",
-    "FRANCISCA",
-    "ANTÔNIA",
-    "ADRIANA",
-    "JULIANA",
-    "MARCIA",
-    "FERNANDA",
-    "PATRÍCIA",
-    "ALINE",
-    "SANDRA",
-    "CAMILA",
-    "AMANDA",
-    "BRUNA",
-    "JÉSSICA",
-    "LETÍCIA",
-    "FABIANA",
-    "DANIELA",
-    "GABRIELA",
-    "ALESSANDRA",
-    "SIMONE",
-    "ELAINE",
-    "CARLA",
-    "LUCIANA",
-    "TATIANE",
-    "RAQUEL",
-    "DÉBORA",
-    "BIANCA",
-    "VANESSA",
-    "LARISSA",
-    "MICHELE",
-    "CLÁUDIA",
-    "RENATA",
-    "SHEILA",
-    "SÔNIA",
-    "RITA",
-    "ROSA",
-    "CÍNTIA",
-    "VIVIANE",
-    "REGINA",
-    "CRISTIANE",
-    "MÔNICA",
-    "ELISÂNGELA",
-    "KELLY",
-    "TÂNIA",
-    "NATÁLIA",
-    "PAULA",
-    "SOLANGE",
-    "VERÔNICA",
-    "ISABEL",
 ]
 
 sobrenomes = [
@@ -279,17 +245,37 @@ def generate_registro():
     }
 
 
+def generate_trabalho():
+    return {
+        "matricula": generate_matricula(),
+        "nome": generate_nome(),
+        "pavilhao": random.choice(pavilhoes),
+        "setor": random.choice(setores),
+    }
+
+
 def main():
     """Função principal"""
     lista = []
     start_time = time.time()
     quantidade = int(input("Digite a quantidade de registros a ser gerada: "))
+    banco = input("Digite o tipo de banco de dados: \n 1 - Nomes\n 2 - Trabalho\n")
+    if banco == "1":
+        for i in range(quantidade):
+            registro = generate_registro()
+            lista.append(registro)
 
-    for i in range(quantidade):
-        registro = generate_registro()
-        lista.append(registro)
+            # Mostrar progresso a cada 10.000 registros
+        if (i + 1) % (quantidade // 10) == 0:
+            elapsed = time.time() - start_time
+            print(f"Gerados {i + 1:,} registros... ({elapsed:.1f}s)")
 
-        # Mostrar progresso a cada 10.000 registros
+    elif banco == "2":
+        for i in range(quantidade):
+            trabalho = generate_trabalho()
+            lista.append(trabalho)
+
+            # Mostrar progresso a cada 10.000 registros
         if (i + 1) % (quantidade // 10) == 0:
             elapsed = time.time() - start_time
             print(f"Gerados {i + 1:,} registros... ({elapsed:.1f}s)")
@@ -314,8 +300,6 @@ def main():
     print("- Arquivo salvo: db_modelo.json")
     print(f"- Registros gerados: {len(lista):,}")
     print(f"- Tempo de execução: {end_time - start_time:.2f} segundos")
-    print(f"- Procedências diferentes: {len(set(r['procedencia'] for r in lista))}")
-    print(f"- Pavilhões diferentes: {len(set(r['pavilhao'] for r in lista))}")
 
 
 if __name__ == "__main__":

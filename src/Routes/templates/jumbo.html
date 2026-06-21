@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,7 +15,7 @@
 </head>
 
 <body>
-      <!---HEADER-->
+    <!---HEADER-->
     <nav class="navbar navbar-expand-lg navbar-light bg-nav">
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
@@ -23,208 +24,122 @@
                 </li>
             </ul>
             <div class="d-flex align-items-center">
-                <a href="/"><img src="{{ url_for('static', filename='img/penpol_logo.png') }}" class="rounded" alt="Logo"></a>
+                <a href="/"><img src="{{ url_for('static', filename='img/logo3.png') }}" class="rounded" alt="Logo"></a>
             </div>
         </div>
     </nav>
     <!----FIM DO HEADER-->
     <!----FORM-->
     <div class="col-6">
-    <form method="POST" class="form-row box-shadow" style="width: 80%; margin-left: 100px; border: 1px solid #ccc; padding: 20px; border-radius: 10px;">
-        {{ form.csrf_token }}
-        <div class="d-flex flex-column gap-2">
-            <div class="d-flex gap-2">
-                <div class="col-2 form-floating">
-                    <input type="text" class="form-control" id="matricula" 
-                        placeholder="Matricula" name="matricula" 
-                        value="{{ form.matricula.data if form.matricula.data }}"
-                        style="height: 60px;">
-                    <label for="matricula" style="color: #000;">{{ form.matricula.label }}</label>
+        <form method="POST" class="form-row box-shadow"
+            style="width: 80%; margin-left: 100px; border: 1px solid #ccc; padding: 20px; border-radius: 10px;">
+            {{ form.csrf_token }}
+            <div class="d-flex flex-column gap-2">
+                <div class="d-flex gap-2">
+                    <div class="col-2 form-floating">
+                        <input type="text" class="form-control" id="matricula" placeholder="Matricula" name="matricula"
+                            value="{{ form.matricula.data if form.matricula.data }}" style="height: 60px;">
+                        <label for="matricula" style="color: #000;">{{ form.matricula.label }}</label>
+                    </div>
+                    <div class="col form-floating">
+                        <input type="text" class="form-control" id="nome" placeholder="Nome" name="nome"
+                            value="{{ form.nome.data if form.nome.data }}" style="height: 60px;">
+                        <label for="nome" style="color: #000;">{{ form.nome.label }}</label>
+                    </div>
                 </div>
-                <div class="col form-floating">
-                    <input type="text" class="form-control" id="nome" 
-                        placeholder="Nome" name="nome" 
-                        value="{{ form.nome.data if form.nome.data }}"
-                        style="height: 60px;">
-                    <label for="nome" style="color: #000;">{{ form.nome.label }}</label>   
+                <div class="d-flex gap-3">
+                    <div class="col form-floating">
+                        <input type="text" class="form-control" id="visita" placeholder="Visitante" name="visita"
+                            style="height: 60px;">
+                        <label for="visita" style="color: #000;">Nome do Visitante</label>
+                    </div>
+                    <div class="col-3 form-floating">
+                        <select class="form-select" id="parentesco" name="parentesco" style="height: 60px;">
+                            <option selected>Amasia</option>
+                            <option value="Mae">Mae</option>
+                            <option value="Pai">Pai</option>
+                            <option value="Filho(a)">Filho(a)</option>
+                            <option value="Esposa">Esposa</option>
+                        </select>
+                        <label for="parentesco" style="color: #000;">Parentesco</label>
+                    </div>
+                </div>
+                <div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" name="pesquisar" class="btn btn-primary">Pesquisar</button>
+                        <button type="submit" name="adicionar" class="btn btn-success">Adicionar Visita</button>
+                    </div>
                 </div>
             </div>
-            <div class="d-flex gap-3">
-                <div class="col form-floating">
-                    <input type="text" class="form-control" id="visita" placeholder="Visitante" name="visita" style="height: 60px;">
-                    <label for="visita" style="color: #000;">Nome do Visitante</label>
-                </div>
-                <div class="col-3 form-floating">
-                    <select class="form-select" id="parentesco" name="parentesco" style="height: 60px;">
-                        <option selected>Amasia</option>
-                        <option value="Mae">Mae</option>
-                        <option value="Pai">Pai</option>
-                        <option value="Filho(a)">Filho(a)</option>
-                        <option value="Esposa">Esposa</option>
-                    </select>
-                    <label for="parentesco" style="color: #000;">Parentesco</label>
-                </div>
+            <div class="mt-3">
+                <!---ESPACAMENTO-->
             </div>
-            <div><div class="d-flex gap-2">
-                <button type="submit" name="pesquisar" class="btn btn-primary">Pesquisar</button>
-                <button type="submit" name="adicionar" class="btn btn-success">Adicionar Visita</button>
-            </div>
-            </div>
-        </div>
-        <div class="mt-3">
-            <!---ESPACAMENTO-->
-        </div>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
             {% for category, message in messages %}
-                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
             {% endfor %}
-        {% endif %}
-        {% endwith %}
+            {% endif %}
+            {% endwith %}
 
-    </form>
-</div>
-<!--FIM DO FORM--->
-<!----TABELA--->
-<div class="mt-4">
-    <table class="table table-striped" style="width: 96%; margin-left: 20px;">
-         <style>
-                    .table-striped th{
-                        text-align: center;
-                    }
-                    .table-striped td{
-                        border: 1px solid #ccc;
-                        text-align: center;
-                    }
-                    .table-striped{
-                        border: 1px solid #ccc;
-                        overflow: hidden;
-                    }
-                </style>
-        <thead>
-        <tr>
-            <th>Matrícula</th>
-            <th>Nome</th>
-            <th>Visitante</th>
-            <th>Parentesco</th>
-            <th>Ações</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for visita in visitas %}
-        <tr>
-            <td>{{ visita.matricula }}</td>
-            <td>{{ visita.nome }}</td>
-            <td>{{ visita.visitante }}</td>
-            <td>{{ visita.parentesco }}</td>
-            <td>
-                <form method="POST" style="display: inline;">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                    <input type="hidden" name="index" value="{{ loop.index0 }}">
-                    <button type="submit" name="remover" class="btn btn-danger btn-sm">
-                        <i class="fas fa-trash"></i> Remover
-                    </button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-</div>
-<!--FIM DA TABELA--->
-
-
-    <script>
-        // Corrigir comportamento dos form-floating labels
-        document.addEventListener('DOMContentLoaded', function() {
-            const floatingInputs = document.querySelectorAll('.form-floating input, .form-floating select');
-            
-            floatingInputs.forEach(input => {
-                // Função para verificar se o input tem valor e ajustar o label
-                function checkFloatingLabel() {
-                    const parent = input.closest('.form-floating');
-                    const label = parent.querySelector('label');
-                    
-                    if (input.value && input.value.trim() !== '' && input.value !== '0') {
-                        parent.classList.add('has-value');
-                        // Forçar o label para cima
-                        if (label) {
-                            label.style.transform = 'scale(0.85) translateY(-0.5rem) translateX(0.15rem)';
-                            label.style.opacity = '0.65';
-                        }
-                    } else {
-                        parent.classList.remove('has-value');
-                        // Resetar o label
-                        if (label && input.value === '') {
-                            label.style.transform = '';
-                            label.style.opacity = '';
-                        }
-                    }
+        </form>
+    </div>
+    <!--FIM DO FORM--->
+    <!----TABELA--->
+    <div class="mt-4">
+        <table class="table table-striped" style="width: 96%; margin-left: 20px;">
+            <style>
+                .table-striped th {
+                    text-align: center;
                 }
-                
-                // Verificar no carregamento da página
-                checkFloatingLabel();
-                
-                // Verificar quando o usuário digita
-                input.addEventListener('input', checkFloatingLabel);
-                input.addEventListener('focus', function() {
-                    const parent = input.closest('.form-floating');
-                    const label = parent.querySelector('label');
-                    if (label) {
-                        label.style.transform = 'scale(0.85) translateY(-0.5rem) translateX(0.15rem)';
-                        label.style.opacity = '0.65';
-                    }
-                });
-                input.addEventListener('blur', checkFloatingLabel);
-                input.addEventListener('change', checkFloatingLabel);
-            });
-        });
-    </script>
-    
-    <style>
-        /* Forçar labels para cima quando há valor */
-        .form-floating.has-value > label,
-        .form-floating > input:focus ~ label,
-        .form-floating > select:focus ~ label,
-        .form-floating > input:not(:placeholder-shown) ~ label,
-        .form-floating > input[value]:not([value=""]) ~ label {
-            opacity: 0.65;
-            transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem) !important;
-        }
-        
-        /* Garantir que labels sempre se movam quando há texto */
-        .form-floating > input:not(:placeholder-shown) ~ label {
-            transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem) !important;
-            opacity: 0.65 !important;
-        }
-        
-        .form-floating > input,
-        .form-floating > select {
-            padding-top: 1.625rem !important;
-            padding-bottom: 0.625rem !important;
-        }
-        
-        .form-floating > label {
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 100%;
-            padding: 1rem 0.75rem;
-            pointer-events: none;
-            border: 1px solid transparent;
-            transform-origin: 0 0;
-            transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
-            z-index: 2;
-        }
-        
-        /* Forçar comportamento quando input tem qualquer conteúdo */
-        .form-floating input:not(:placeholder-shown) + label {
-            transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem) !important;
-            opacity: 0.65 !important;
-        }
-    </style>
+
+                .table-striped td {
+                    border: 1px solid #ccc;
+                    text-align: center;
+                }
+
+                .table-striped {
+                    border: 1px solid #ccc;
+                    overflow: hidden;
+                }
+            </style>
+            <thead>
+                <tr>
+                    <th>Matrícula</th>
+                    <th>Nome</th>
+                    <th>Visitante</th>
+                    <th>Parentesco</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for visita in visitas %}
+                <tr>
+                    <td>{{ visita.matricula }}</td>
+                    <td>{{ visita.nome }}</td>
+                    <td>{{ visita.visitante }}</td>
+                    <td>{{ visita.parentesco }}</td>
+                    <td>
+                        <form method="POST" style="display: inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                            <input type="hidden" name="index" value="{{ loop.index0 }}">
+                            <button type="submit" name="remover" class="btn btn-danger btn-sm">
+                                <i class="fas fa-trash"></i> Remover
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <!--FIM DA TABELA--->
+
+
+    <script src="../static/js/jumbo.js"></script>
 </body>
+
 </html>

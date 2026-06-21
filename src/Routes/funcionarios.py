@@ -10,15 +10,15 @@ from flask import (
 import datetime
 from functools import wraps
 from bson import ObjectId
-from Data.conexao import conexao_mongo as conexao
+from Data.conexao import cpppac
 
 # Criar o blueprint
 funcionarios_bp = Blueprint("funcionarios", __name__)
-db = conexao()
+cpppac = cpppac()
 
 
 # Decorador para verificar autenticação e autorização
-def require_turno1(f):
+def require(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         # Verificar se o usuário está logado
@@ -29,13 +29,15 @@ def require_turno1(f):
 
         # Buscar o usuário na coleção usuarios
         username = session["user"]
-        user = db.usuarios.find_one({"username": username})
+        user = cpppac.usuarios.find_one({"username": username})
 
-        # Verificar se o usuário existe e tem turno 1
-        if not user or user.get("turno") != "1":
+        # Verificar se o usuário existe e tem setor administrativo
+        if not user or user.get("lvl") != "administrativo":
             if request.is_json or "/api/" in request.path:
                 return jsonify({"status": "error", "message": "Acesso negado"})
-            return render_template("401.html", message="Acesso restrito ao turno 1")
+            return render_template(
+                "401.html", message="Acesso restrito ao setor administrativo"
+            )
 
         return f(*args, **kwargs)
 
@@ -43,26 +45,29 @@ def require_turno1(f):
 
 
 @funcionarios_bp.route("/funcionarios", methods=["GET"])
-@require_turno1
 def funcionarios():
-    return render_template("funcionarios.html")
+    # Buscar dados do usuário logado
+    username = session.get("user")
+    usuario = cpppac.usuarios.find_one({"username": username})
+    return render_template("funcionarios.html", usuario=usuario)
 
 
 @funcionarios_bp.route("/funcionarios/folgas", methods=["GET"])
-@require_turno1
 def folgas():
     """Página de gerenciamento de folgas"""
     username = session["user"]
 
     try:
         # Buscar usuário e suas folgas
-        usuario = db.usuarios.find_one({"username": username})
+        usuario = cpppac.usuarios.find_one({"username": username})
         folgas_agendadas = []
 
         if usuario:
             # Garantir que o usuário tem o campo folgas inicializado
             if "folgas" not in usuario:
-                db.usuarios.update_one({"username": username}, {"$set": {"folgas": []}})
+                cpppac.usuarios.update_one(
+                    {"username": username}, {"$set": {"folgas": []}}
+                )
                 folgas_agendadas = []
             else:
                 folgas_agendadas = usuario["folgas"]
@@ -89,7 +94,6 @@ def folgas():
 
 
 @funcionarios_bp.route("/api/folgas_mes", methods=["GET"])
-@require_turno1
 def folgas_mes():
     """Buscar todas as folgas de um mês específico"""
     try:
@@ -112,7 +116,7 @@ def folgas_mes():
 
         # Buscar todos os usuários que têm folgas no mês
         usuarios = list(
-            db.usuarios.find(
+            cpppac.usuarios.find(
                 {
                     "folgas": {
                         "$elemMatch": {
@@ -155,68 +159,42 @@ def folgas_mes():
 
 
 @funcionarios_bp.route("/api/listar_funcionarios", methods=["GET"])
-@require_turno1
 def listar_funcionarios():
-    """API para listar funcionários baseado nas permissões do usuário"""
+    """API para listar funcionários - acesso restrito ao setor RH"""
     try:
-        # Verificar se o usuário tem permissão (star = true)
+        # Verificar autenticação
         username = session.get("user")
         if not username:
             return jsonify({"success": False, "message": "Usuário não autenticado"})
 
-        usuario_atual = db.usuarios.find_one({"username": username})
-        if not usuario_atual or not usuario_atual.get("star", False):
-            return jsonify(
-                {
-                    "success": False,
-                    "message": "Acesso negado. Permissões insuficientes.",
-                }
+        # Verificar permissão
+        usuario_atual = cpppac.usuarios.find_one({"username": username})
+        if not usuario_atual:
+            return jsonify({"success": False, "message": "Usuário não encontrado"})
+
+        if (
+            usuario_atual.get("setor") != "rh"
+            or usuario_atual.get("username") != "fernandopereira"
+        ):
+            return jsonify({"success": False, "message": "Acesso negado"})
+
+        # Buscar todos os funcionários
+        funcionarios = list(cpppac.usuarios.find({}, {"_id": 0, "password": 0}))
+
+        # Processar dados básicos
+        for func in funcionarios:
+            # Login info
+            login_times = func.get("login_times", [])
+            func["total_logins"] = (
+                len(login_times) if isinstance(login_times, list) else 0
             )
+            func["ultimo_login"] = login_times[-1] if login_times else "Nunca"
+            func.pop("login_times", None)
 
-        # Definir filtro baseado no usuário
-        filtro = {}
-
-        # Se o usuário é fernandopereira, pode ver todos os funcionários
-        if username == "fernandopereira":
-            filtro = {}  # Sem filtro, vê todos
-        else:
-            # Usuários com star = true veem apenas funcionários do mesmo turno
-            turno_usuario = usuario_atual.get("turno")
-            if turno_usuario:
-                filtro = {"turno": turno_usuario}
-            else:
-                # Se não tem turno definido, não vê ninguém
-                filtro = {"turno": "__turno_inexistente__"}
-
-        # Buscar funcionários baseado no filtro
-        funcionarios = list(db.usuarios.find(filtro, {"_id": 0}))
-
-        # Processar dados para melhor visualização
-        for funcionario in funcionarios:
-            # Processar login_times
-            if "login_times" in funcionario and isinstance(
-                funcionario["login_times"], list
-            ):
-                funcionario["total_logins"] = len(funcionario["login_times"])
-                if funcionario["login_times"]:
-                    # Pegar o último login (mais recente)
-                    funcionario["ultimo_login"] = funcionario["login_times"][-1]
-                else:
-                    funcionario["ultimo_login"] = "Nunca"
-                # Remover o array completo para economizar dados
-                del funcionario["login_times"]
-            else:
-                funcionario["total_logins"] = 0
-                funcionario["ultimo_login"] = "Nunca"
-
-            # Processar folgas (opcional, para não sobrecarregar)
-            if "folgas" in funcionario:
-                if isinstance(funcionario["folgas"], list):
-                    funcionario["total_folgas"] = len(funcionario["folgas"])
-                # Remover folgas detalhadas para economizar dados
-                del funcionario["folgas"]
-            else:
-                funcionario["total_folgas"] = 0
+            # Folgas info
+            folgas = func.get("folgas", [])
+            func["total_folgas"] = len(folgas) if isinstance(folgas, list) else 0
+            func.pop("folgas", None)
 
         return jsonify(
             {"success": True, "funcionarios": funcionarios, "total": len(funcionarios)}
@@ -228,7 +206,6 @@ def listar_funcionarios():
 
 
 @funcionarios_bp.route("/api/editar_funcionario/<username>", methods=["PUT"])
-@require_turno1
 def editar_funcionario(username):
     """API para editar dados de um funcionário"""
     try:
@@ -237,12 +214,12 @@ def editar_funcionario(username):
         if not username_editor:
             return jsonify({"message": "Usuário não autenticado"}), 401
 
-        usuario_editor = db.usuarios.find_one({"username": username_editor})
-        if not usuario_editor or not usuario_editor.get("star", False):
+        usuario_editor = cpppac.usuarios.find_one({"username": username_editor})
+        if not usuario_editor or not usuario_editor.get("lvl") != 0:
             return jsonify({"message": "Acesso negado. Permissões insuficientes."}), 403
 
         # Buscar o funcionário a ser editado
-        funcionario = db.usuarios.find_one({"username": username})
+        funcionario = cpppac.usuarios.find_one({"username": username})
         if not funcionario:
             return jsonify({"message": "Funcionário não encontrado"}), 404
 
@@ -258,20 +235,20 @@ def editar_funcionario(username):
         data = request.get_json()
         nome = data.get("nome", "").strip()
         turno = data.get("turno", "")
-        star = data.get("star", False)
+        lvl = data.get("lvl")
 
         # Validação básica
         if not nome or not turno:
             return jsonify({"message": "Nome e turno são obrigatórios"}), 400
 
         # Atualizar dados do funcionário
-        resultado = db.usuarios.update_one(
+        resultado = cpppac.usuarios.update_one(
             {"username": username},
             {
                 "$set": {
                     "nome_completo": nome,
                     "turno": turno,
-                    "star": star,
+                    "lvl": lvl,
                     "editado_em": datetime.datetime.now(),
                     "editado_por": username_editor,
                 }
@@ -289,7 +266,6 @@ def editar_funcionario(username):
 
 
 @funcionarios_bp.route("/api/excluir_funcionario/<username>", methods=["DELETE"])
-@require_turno1
 def excluir_funcionario(username):
     """API para excluir um funcionário"""
     try:
@@ -298,12 +274,12 @@ def excluir_funcionario(username):
         if not username_editor:
             return jsonify({"message": "Usuário não autenticado"}), 401
 
-        usuario_editor = db.usuarios.find_one({"username": username_editor})
+        usuario_editor = cpppac.usuarios.find_one({"username": username_editor})
         if not usuario_editor or not usuario_editor.get("star", False):
             return jsonify({"message": "Acesso negado. Permissões insuficientes."}), 403
 
         # Buscar o funcionário a ser excluído
-        funcionario = db.usuarios.find_one({"username": username})
+        funcionario = cpppac.usuarios.find_one({"username": username})
         if not funcionario:
             return jsonify({"message": "Funcionário não encontrado"}), 404
 
@@ -323,7 +299,7 @@ def excluir_funcionario(username):
         nome_funcionario = funcionario.get("nome_completo", username)
 
         # Excluir funcionário
-        resultado = db.usuarios.delete_one({"username": username})
+        resultado = cpppac.usuarios.delete_one({"username": username})
 
         if resultado.deleted_count > 0:
             return jsonify(
@@ -340,15 +316,14 @@ def excluir_funcionario(username):
 
 
 @funcionarios_bp.route("/api/aprovar_folga", methods=["POST"])
-@require_turno1
 def aprovar_folga():
     """Aprovar uma folga"""
     try:
         # Verificar se o usuário tem permissão (star = true)
         username_aprovador = session["user"]
-        user_aprovador = db.usuarios.find_one({"username": username_aprovador})
+        user_aprovador = cpppac.usuarios.find_one({"username": username_aprovador})
 
-        if not user_aprovador or not user_aprovador.get("star", False):
+        if not user_aprovador or not user_aprovador.get("lvl") != 0:
             return jsonify({"status": "error", "message": "Acesso negado"})
 
         data = request.get_json()
@@ -364,7 +339,7 @@ def aprovar_folga():
         data_obj = datetime.datetime.strptime(data_folga, "%Y-%m-%d")
 
         # Atualizar status da folga para aprovada
-        resultado = db.usuarios.update_one(
+        resultado = cpppac.usuarios.update_one(
             {
                 "username": username,
                 "folgas.data": data_obj,
@@ -393,13 +368,12 @@ def aprovar_folga():
 
 
 @funcionarios_bp.route("/api/criar_funcionario", methods=["POST"])
-@require_turno1
 def criar_funcionario():
     """Criar novo funcionário"""
     try:
         # Verificar se o usuário tem permissão (star = true)
         username_criador = session["user"]
-        user_criador = db.usuarios.find_one({"username": username_criador})
+        user_criador = cpppac.usuarios.find_one({"username": username_criador})
 
         if not user_criador or not user_criador.get("star", False):
             return jsonify({"status": "error", "message": "Acesso negado"})
@@ -408,7 +382,7 @@ def criar_funcionario():
         nome_completo = data.get("nome_completo", "").strip()
         username = data.get("username", "").strip().lower().replace(" ", "")
         turno = data.get("turno")
-        star = data.get("star", False)
+        lvl = data.get("lvl")
 
         # Validação
         if not nome_completo or not username or not turno:
@@ -420,7 +394,7 @@ def criar_funcionario():
             )
 
         # Verificar se o username já existe
-        usuario_existente = db.usuarios.find_one({"username": username})
+        usuario_existente = cpppac.usuarios.find_one({"username": username})
         if usuario_existente:
             return jsonify(
                 {"status": "error", "message": f"Username '{username}' já existe"}
@@ -431,7 +405,7 @@ def criar_funcionario():
             "username": username,
             "nome_completo": nome_completo,
             "turno": turno,
-            "star": star,
+            "lvl": lvl,
             "login_times": [datetime.datetime.now()],
             "folgas": [],
             "data_criacao": datetime.datetime.now(),
@@ -439,7 +413,7 @@ def criar_funcionario():
         }
 
         # Inserir no banco
-        resultado = db.usuarios.insert_one(novo_funcionario)
+        resultado = cpppac.usuarios.insert_one(novo_funcionario)
 
         if resultado.inserted_id:
             return jsonify(
@@ -449,7 +423,7 @@ def criar_funcionario():
                     "username": username,
                     "nome_completo": nome_completo,
                     "turno": turno,
-                    "star": star,
+                    "lvl": lvl,
                 }
             )
         else:
@@ -461,15 +435,14 @@ def criar_funcionario():
 
 
 @funcionarios_bp.route("/api/editar_folga", methods=["POST"])
-@require_turno1
 def editar_folgas():
     """Edita folgas de terceiros"""
     try:
         # Verificar se o usuário tem permissão (star = true)
         username_editor = session["user"]
-        user_editor = db.usuarios.find_one({"username": username_editor})
+        user_editor = cpppac.usuarios.find_one({"username": username_editor})
 
-        if not user_editor or not user_editor.get("star", False):
+        if not user_editor or not user_editor.get("lvl") != 0:
             return jsonify({"status": "error", "message": "Acesso negado"})
 
         data = request.get_json()
@@ -492,7 +465,7 @@ def editar_folgas():
 
         if acao == "apagar":
             # Apagar a folga
-            resultado = db.usuarios.update_one(
+            resultado = cpppac.usuarios.update_one(
                 {"username": username}, {"$pull": {"folgas": {"data": data_antiga_obj}}}
             )
 
@@ -515,7 +488,7 @@ def editar_folgas():
             data_nova_obj = datetime.datetime.strptime(data_folga_nova, "%Y-%m-%d")
 
             # Editar a folga existente
-            resultado = db.usuarios.update_one(
+            resultado = cpppac.usuarios.update_one(
                 {"username": username, "folgas.data": data_antiga_obj},
                 {
                     "$set": {
@@ -546,7 +519,7 @@ def editar_folgas():
             data_nova_obj = datetime.datetime.strptime(data_folga_nova, "%Y-%m-%d")
 
             # Verificar se já existe folga nesta data
-            usuario_existente = db.usuarios.find_one(
+            usuario_existente = cpppac.usuarios.find_one(
                 {"username": username, "folgas.data": data_nova_obj}
             )
 
@@ -567,7 +540,7 @@ def editar_folgas():
                 "data_criacao": datetime.datetime.now(),
             }
 
-            resultado = db.usuarios.update_one(
+            resultado = cpppac.usuarios.update_one(
                 {"username": username}, {"$push": {"folgas": nova_folga}}
             )
 
@@ -592,14 +565,13 @@ def editar_folgas():
 
 
 @funcionarios_bp.route("/api/folgas_pendentes", methods=["GET"])
-@require_turno1
 def folgas_pendentes():
     """Buscar todas as folgas pendentes de aprovação"""
     try:
         # Verificar se o usuário tem permissão (star = true)
         username = session["user"]
         print(f"DEBUG: Username da sessão: {username}")
-        user = db.usuarios.find_one({"username": username})
+        user = cpppac.usuarios.find_one({"username": username})
         print(f"DEBUG: Usuário encontrado: {user}")
 
         if not user or not user.get("star", False):
@@ -624,7 +596,7 @@ def folgas_pendentes():
             {"$sort": {"data": 1}},
         ]
 
-        folgas_pendentes = list(db.usuarios.aggregate(pipeline))
+        folgas_pendentes = list(cpppac.usuarios.aggregate(pipeline))
 
         # Converter ObjectIds e datas para string
         for folga in folgas_pendentes:
@@ -643,7 +615,6 @@ def folgas_pendentes():
 
 
 @funcionarios_bp.route("/api/agendar_folga", methods=["POST"])
-@require_turno1
 def agendar_folga():
     """Agendar folga para um funcionário"""
     username = session["user"]
@@ -660,13 +631,13 @@ def agendar_folga():
         data_obj = datetime.datetime.strptime(data_folga, "%Y-%m-%d")
 
         # Buscar o usuário
-        usuario = db.usuarios.find_one({"username": username})
+        usuario = cpppac.usuarios.find_one({"username": username})
         if not usuario:
             return jsonify({"status": "error", "message": "Usuário não encontrado"})
 
         # Garantir que o usuário tem o campo folgas inicializado
         if "folgas" not in usuario:
-            db.usuarios.update_one({"username": username}, {"$set": {"folgas": []}})
+            cpppac.usuarios.update_one({"username": username}, {"$set": {"folgas": []}})
             usuario["folgas"] = []
 
         # Verificar se já existe folga agendada para esta data
@@ -691,7 +662,7 @@ def agendar_folga():
         }
 
         # Adicionar folga ao array do usuário
-        resultado = db.usuarios.update_one(
+        resultado = cpppac.usuarios.update_one(
             {"username": username}, {"$push": {"folgas": nova_folga}}
         )
 
@@ -712,7 +683,6 @@ def agendar_folga():
 
 
 @funcionarios_bp.route("/api/cancelar_folga", methods=["POST"])
-@require_turno1
 def cancelar_folga():
     """Cancelar folga de um funcionário"""
     username = session["user"]
@@ -730,7 +700,7 @@ def cancelar_folga():
         data_obj = datetime.datetime.strptime(data_folga, "%Y-%m-%d")
 
         # Buscar o usuário e verificar se a folga existe
-        usuario = db.usuarios.find_one({"username": username})
+        usuario = cpppac.usuarios.find_one({"username": username})
         if not usuario:
             return jsonify({"status": "error", "message": "Usuário não encontrado"})
 
@@ -755,7 +725,7 @@ def cancelar_folga():
             )
 
         # Remover a folga do array
-        resultado = db.usuarios.update_one(
+        resultado = cpppac.usuarios.update_one(
             {"username": username}, {"$pull": {"folgas": {"data": data_obj}}}
         )
 

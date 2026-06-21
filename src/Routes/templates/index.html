@@ -12,7 +12,7 @@
     <!-- Font Awesome (já estava carregado) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='analytics.css') }}">
 </head>
 
 <body>
@@ -20,137 +20,222 @@
     <nav class="navbar navbar-expand-lg bg-nav">
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
+                <!-- ADMINISTRATIVO -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="administrativoDropdown" role="button"
+                        aria-expanded="false">
+                        <i class="fas fa-calculator"></i> ADMINISTRATIVO
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="administrativoDropdown">
+                        <li><a class="dropdown-item" href="/at_work">Pecúlio</a></li>
+                        <li><a class="dropdown-item" href="/at_work">Finanças</a></li>
+                        <li><a class="dropdown-item" href="/at_work">Infraestrutura</a></li>
+                        <li><a class="dropdown-item" href="/funcionarios">Recursos Humanos (RH)</a></li>
+                    </ul>
+                </li>
+
+                <!-- CRAS/SAUDE -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="crasDropdown" role="button" aria-expanded="false">
+                        <i class="fas fa-heartbeat"></i> CRAS
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="crasDropdown">
+                        <li><a class="dropdown-item" href="/at_work">Enfermaria</a></li>
+                        <li><a class="dropdown-item" href="/at_work">Farmacia</a></li>
+                    </ul>
+                </li>
+
+                <!-- PRODUÇÃO -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="producaoDropdown" role="button"
+                        aria-expanded="false">
+                        <i class="fas fa-tools"></i> PRODUÇÃO
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="producaoDropdown">
+                        <li><a class="dropdown-item" href="/trabalho">Trabalho</a></li>
+                        <li><a class="dropdown-item" href="/at_work">Educação</a></li>
+                    </ul>
+                </li>
+
+                <!-- SEGURANCA -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="segurancaDropdown" role="button"
+                        aria-expanded="false">
+                        <i class="fas fa-shield-alt"></i> SEGURANÇA
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="segurancaDropdown">
+                        <li class="dropdown-submenu">
+                            <a class="dropdown-item dropdown-toggle" href="#">Turno</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/funcionarios/folgas">Folgas</a></li>
+                            </ul>
+                        </li>
+                        <li><a class="dropdown-item" href="/at_work">Portaria</a></li>
+                        <li class="dropdown-submenu">
+                            <a class="dropdown-item dropdown-toggle" href="#">Rol de Visitas</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/at_work">Incluir Visitante</a></li>
+                                <li><a class="dropdown-item" href="/at_work">Lista de Visitantes</a></li>
+                            </ul>
+                        </li>
+                        <li class="dropdown-submenu">
+                            <a class="dropdown-item dropdown-toggle" href="#">Inclusão</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/at_work">Novo Sentenciado</a></li>
+                                <li><a class="dropdown-item" href="/at_work">Exclusão</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- SENTENCIADOS -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="sentenciadosDropdown" role="button"
                         aria-expanded="false">
-                        <i class="fas fa-user"></i> SENTENCIADOS
+                        <i class="fas fa-users"></i> GAIOLA
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="sentenciadosDropdown">
-                        <li><a class="dropdown-item" href="/trabalho">Trabalho</a></li>
-                        <li><a class="dropdown-item" href="/pesquisas/sentenciados">Pesquisar</a></li>
+                        <li><a class="dropdown-item" href="/pesquisas/sentenciados">Pesquisa</a></li>
+                        <li class="dropdown-submenu">
+                            <a class="dropdown-item dropdown-toggle" href="#">Trabalho</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/freguencia">Entrada/Saída</a></li>
+                            </ul>
+                        </li>
+                        <li class="dropdown-submenu">
+                            <a class="dropdown-item dropdown-toggle" href="#">Visitas</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/entrada_saida">Entrada/Saída</a></li>
+                                <li><a class="dropdown-item" href="/jumbo">Jumbo</a></li>
+                            </ul>
+                        </li>
                     </ul>
                 </li>
-                <li class="nav-item">
 
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="visitasDropdown" role="button"
-                        aria-expanded="false">
-                        <i class="fas fa-users"></i> VISITAS
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="visitasDropdown">
-                        <li><a class="dropdown-item" href="/entrada_saida">Entrada/Saida</a></li>
-                        <li><a class="dropdown-item" href="/jumbo">Jumbo</a></li>
-                    </ul>
-                </li>
+                <!-- SIMIC -->
                 <li class="nav-item">
-                    <a class="nav-link" href="/funcionarios">
-                        <i class="bi bi-person-bounding-box"></i> FUNCIONÁRIOS
+                    <a class="nav-link" href="/simic">
+                        <i class="fas fa-star"></i> SIMIC
                     </a>
+                </li>
+
+                <!-- SUPERVISAO -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="supervisaoDropdown" role="button"
+                        aria-expanded="false">
+                        <i class="fas fa-gavel"></i> SUPERVISÃO
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="supervisaoDropdown">
+                        <li><a class="dropdown-item" href="/at_work">Sindicância</a></li>
+                        <li><a class="dropdown-item" href="/at_work">Judiciário</a></li>
+                    </ul>
                 </li>
             </ul>
-            <div class="navbar-brand d-flex align-items-center gap-2">
-                <a href="/"><img src="{{ url_for('static', filename='img/penpol_logo.png') }}" class="rounded" alt="Logo"></a>
+
+            <!-- Logo -->
+            <div class="navbar-brand">
+                <a href="/"><img src="{{ url_for('rotas.static', filename='img/logo3.png') }}" class="rounded"
+                        alt="Logo"></a>
             </div>
         </div>
     </nav>
     <!----FIM DO HEADER-->
-    <p></p>
-    <div class="container-fluid mt-4">
-        <div class="card totals-card border-0">
-            <div class="row">
-                <!-- Coluna 1 - Alojamentos -->
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1><i class="bi bi-bar-chart-fill me-2"></i>Visão Geral</h1>
+            <p>Métricas do sistema - Atualizado em tempo real</p>
+        </div>
+        <p></p>
+        <div class="container-fluid mt-4">
+            <!-- Card 1: Ocupação por Pavilhão -->
+            <div class="row mb-4">
                 <div class="col-md-4">
-                    <!-- Card Alojamentos -->
                     <div class="card box-shadow" style="border: 1px solid #ccc; border-radius: 10px;">
                         <div class="card-header">
-                            <h5 class="mb-0">ALOJAMENTOS</h5>
+                            <h5 class="mb-0"><i class="bi bi-building me-2"></i>OCUPAÇÃO POR PAVILHÃO</h5>
                         </div>
-                        <div class="card-body">
+                        <div class="card-body" style="padding: 1.25rem;">
+                            <!-- Gráfico de Barras Verticais -->
+                            <div class="vertical-chart-container">
+                                <!-- Pavilhão 1A -->
+                                <div class="chart-bar-vertical">
+                                    <div class="bar-value">{{ totals.aloj_1a|default(0) }}</div>
+                                    <div class="bar-column bar-1a"
+                                        style="height: {{ totals.aloj_1a|default(0) * 1.5 }}px;"></div>
+                                    <div class="bar-label">1A</div>
+                                </div>
 
-                            <!-- Gráfico de Alojamentos -->
-                            <div class="row mt-3">
-                                <div class="col">
-                                    <canvas id="graficoAlojamentos" height="180"></canvas>
+                                <!-- Pavilhão 1B -->
+                                <div class="chart-bar-vertical">
+                                    <div class="bar-value">{{ totals.aloj_1b|default(0) }}</div>
+                                    <div class="bar-column bar-1b"
+                                        style="height: {{ totals.aloj_1b|default(0) * 1.5 }}px;"></div>
+                                    <div class="bar-label">1B</div>
+                                </div>
+
+                                <!-- Pavilhão 2A -->
+                                <div class="chart-bar-vertical">
+                                    <div class="bar-value">{{ totals.aloj_2a|default(0) }}</div>
+                                    <div class="bar-column bar-2a"
+                                        style="height: {{ totals.aloj_2a|default(0) * 1.5 }}px;"></div>
+                                    <div class="bar-label">2A</div>
+                                </div>
+
+                                <!-- Pavilhão 2B -->
+                                <div class="chart-bar-vertical">
+                                    <div class="bar-value">{{ totals.aloj_2b|default(0) }}</div>
+                                    <div class="bar-column bar-2b"
+                                        style="height: {{ totals.aloj_2b|default(0) * 1.5 }}px;"></div>
+                                    <div class="bar-label">2B</div>
+                                </div>
+
+                                <!-- Pavilhão 3A -->
+                                <div class="chart-bar-vertical">
+                                    <div class="bar-value">{{ totals.aloj_3a|default(0) }}</div>
+                                    <div class="bar-column bar-3a"
+                                        style="height: {{ totals.aloj_3a|default(0) * 1.5 }}px;"></div>
+                                    <div class="bar-label">3A</div>
+                                </div>
+
+                                <!-- Pavilhão 3B -->
+                                <div class="chart-bar-vertical">
+                                    <div class="bar-value">{{ totals.aloj_3b|default(0) }}</div>
+                                    <div class="bar-column bar-3b"
+                                        style="height: {{ totals.aloj_3b|default(0) * 1.5 }}px;"></div>
+                                    <div class="bar-label">3B</div>
+                                </div>
+
+                                <!-- Pavilhão 4A -->
+                                <div class="chart-bar-vertical">
+                                    <div class="bar-value">{{ totals.aloj_4a|default(0) }}</div>
+                                    <div class="bar-column bar-4a"
+                                        style="height: {{ totals.aloj_4a|default(0) * 1.5 }}px;"></div>
+                                    <div class="bar-label">4A</div>
+                                </div>
+
+                                <!-- Pavilhão 4B -->
+                                <div class="chart-bar-vertical">
+                                    <div class="bar-value">{{ totals.aloj_4b|default(0) }}</div>
+                                    <div class="bar-column bar-4b"
+                                        style="height: {{ totals.aloj_4b|default(0) * 1.5 }}px;"></div>
+                                    <div class="bar-label">4B</div>
                                 </div>
                             </div>
 
-                            <!-- TOTAL -->
-                            <div class="row mt-2">
-                                <div class="col">
-                                    <div class="card text-center">
-                                        <div class="card-header">TOTAL NA CASA</div>
-                                        <div class="card-body">
-                                            <h3>{{ totals.total|default(0) }}</h3>
-                                        </div>
-                                    </div>
-                                </div>
+                            <!-- Total -->
+                            <div class="total-pavilion">
+                                <div class="total-label">TOTAL NA CASA</div>
+                                <div class="total-value">{{ totals.total|default(0) }}</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Coluna 2 - Presos Trabalhando e Visitas -->
-                <div class="col-md-8">
-              
-
-                    <!-- Card Visitas -->
-                    <div class="card mb-4 box-shadow" style="border: 1px solid #ccc; border-radius: 10px;">
+                <!-- Card 2: Aptos ao Trabalho -->
+                <div class="col-md-4">
+                    <div class="card box-shadow h-100" style="border: 1px solid #ccc; border-radius: 10px;">
                         <div class="card-header">
-                            <h5 class="mb-0">Visitantes</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col">
-                                    <div class="card text-center">
-                                        <div class="card-header"><i class="fas fa-users"></i> Preso com Visita</div>
-                                        <div class="card-body">
-                                            <h3>{{ resumo.matriculas }}</h3>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col">
-                                    <div class="card text-center">
-                                        <div class="card-header"><i class="fas fa-flask"></i> PET</div>
-                                        <div class="card-body">
-                                            <h3>{{ resumo.garrafas }}</h3>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Homens, Mulheres e Crianças -->
-                            <div class="row">
-                                <div class="col">
-                                    <div class="card text-center">
-                                        <div class="card-header"><i class="fas fa-male"></i> Homens</div>
-                                        <div class="card-body">
-                                            <h3>{{ resumo.homens }}</h3>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col">
-                                    <div class="card text-center">
-                                        <div class="card-header"><i class="fas fa-female"></i> Mulheres</div>
-                                        <div class="card-body">
-                                            <h3>{{ resumo.mulheres }}</h3>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col">
-                                    <div class="card text-center">
-                                        <div class="card-header"><i class="fas fa-child"></i> Crianças</div>
-                                        <div class="card-body">
-                                            <h3>{{ resumo.criancas }}</h3>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                          <!-- Presos Trabalhando -->
-                    <div class="card mb-4 box-shadow" style="border: 1px solid #ccc; border-radius: 10px;">
-                        <div class="card-header">
-                            <h5 class="mb-0">Presos aptos a trabalhar (NÃO SIGNIFICA QUE ESTÃO TRABALHANDO HOJE!)</h5>
+                            <h5 class="mb-0"><i class="bi bi-briefcase me-2"></i>Aptos ao Trabalho</h5>
                         </div>
                         <div class="card-body">
                             <div class="table-overflow">
@@ -165,62 +250,134 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Card 3: Distribuição por Setor -->
+                <div class="col-md-4">
+                    <div class="card box-shadow h-100" style="border: 1px solid #ccc; border-radius: 10px;">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>Distribuição por Setor</h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Lista de Setores -->
+                            <div style="padding: 1rem;">
+                                {% if trabalho_setores %}
+                                {% set total_trabalho = trabalho_setores.values()|sum %}
+                                <div style="margin-bottom: 1.5rem; text-align: center;">
+                                    <div style="font-size: 2.5rem; font-weight: 700; color: #000000;">{{
+                                        total_trabalho }}</div>
+                                    <div style="font-size: 0.875rem; color: #8c8b8a; font-weight: 600;">
+                                        TOTAL TRABALHANDO</div>
+                                </div>
+
+                                <!-- Lista de setores com barras -->
+                                <div style="max-height: 200px; overflow-y: auto;">
+                                    {% set cores = ['#c59e4f', '#dc2828', '#8c8b8a', '#000000'] %}
+                                    {% for setor, count in trabalho_setores.items() %}
+                                    {% set percentual = (count / total_trabalho * 100)|round|int %}
+                                    {% set cor = cores[loop.index0 % 4] %}
+                                    <div style="margin-bottom: 1rem;">
+                                        <div
+                                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                                            <div style="font-size: 0.875rem; font-weight: 600; color: #000000;">
+                                                {{ setor }}</div>
+                                            <div style="font-size: 0.875rem; font-weight: 700; color: {{ cor }};">
+                                                {{ count }} ({{ percentual }}%)</div>
+                                        </div>
+                                        <!-- Barra de progresso -->
+                                        <div
+                                            style="width: 100%; height: 8px; background: #f0f0f0; border-radius: 4px; overflow: hidden;">
+                                            <div
+                                                style="width: {{ percentual }}%; height: 100%; background: {{ cor }}; transition: width 0.3s ease;">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <div class="alert alert-info mb-0" role="alert">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    Nenhum dado de trabalho disponível.
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 4: Visitantes (Largura Total) -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card box-shadow" style="border: 1px solid #ccc; border-radius: 10px;">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-people me-2"></i>Visitantes</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <div class="card text-center">
+                                        <div class="card-header"><i class="fas fa-users"></i> Preso com Visita</div>
+                                        <div class="card-body">
+                                            <h3>{{ resumo.matriculas }}</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="card text-center">
+                                        <div class="card-header"><i class="fas fa-flask"></i> PET</div>
+                                        <div class="card-body">
+                                            <h3>{{ resumo.garrafas }}</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="card text-center">
+                                        <div class="card-header"><i class="fas fa-male"></i> Homens</div>
+                                        <div class="card-body">
+                                            <h3>{{ resumo.homens }}</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="card text-center">
+                                        <div class="card-header"><i class="fas fa-female"></i> Mulheres</div>
+                                        <div class="card-body">
+                                            <h3>{{ resumo.mulheres }}</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="card text-center">
+                                        <div class="card-header"><i class="fas fa-child"></i> Crianças</div>
+                                        <div class="card-body">
+                                            <h3>{{ resumo.criancas }}</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="card text-center"
+                                        style="background: linear-gradient(135deg, #c59e4f 0%, #dc2828 100%); color: white;">
+                                        <div class="card-header"
+                                            style="background: transparent; border-bottom: 1px solid rgba(255,255,255,0.2); color: white;">
+                                            <i class="fas fa-users"></i> Total
+                                        </div>
+                                        <div class="card-body">
+                                            <h3 style="color: white;">{{ resumo.matriculas|default(0) +
+                                                resumo.homens|default(0) + resumo.mulheres|default(0) +
+                                                resumo.criancas|default(0) }}</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            console.log("Verificando tabela de trabalho...");
-            const tableElement = document.querySelector('#tabela-trabalho, .table');
-            if (tableElement) {
-                console.log("Tabela encontrada:", tableElement);
-                console.log("Número de linhas na tabela:", tableElement.querySelectorAll('tbody tr').length);
-            } else {
-                console.log("Tabela não encontrada!");
-                console.log("Conteúdo do container:", document.querySelector('.container').innerHTML);
-            }
 
-            // Forçar comportamento hover nos dropdowns
-            const dropdowns = document.querySelectorAll('.dropdown');
-            dropdowns.forEach(dropdown => {
-                const toggle = dropdown.querySelector('.dropdown-toggle');
-                const menu = dropdown.querySelector('.dropdown-menu');
-                let timeoutId;
-
-                if (toggle && menu) {
-                    // Remover qualquer evento de click
-                    toggle.removeAttribute('data-bs-toggle');
-                    toggle.addEventListener('click', function (e) {
-                        e.preventDefault();
-                        return false;
-                    });
-
-                    // Forçar hover com delay
-                    dropdown.addEventListener('mouseenter', function () {
-                        clearTimeout(timeoutId);
-                        menu.classList.add('show');
-                    });
-
-                    dropdown.addEventListener('mouseleave', function () {
-                        timeoutId = setTimeout(function () {
-                            menu.classList.remove('show');
-                        }, 300); // 300ms de delay
-                    });
-
-                    // Manter aberto quando mouse está sobre o menu
-                    menu.addEventListener('mouseenter', function () {
-                        clearTimeout(timeoutId);
-                    });
-
-                    menu.addEventListener('mouseleave', function () {
-                        timeoutId = setTimeout(function () {
-                            menu.classList.remove('show');
-                        }, 300);
-                    });
-                }
-            });
-        });
-    </script>
+    <!-- JavaScript externo -->
+    <script src="{{ url_for('rotas.static', filename='js/index.js') }}"></script>
 
 
     <!-- Footer com Logout -->
@@ -229,11 +386,11 @@
             <div class="row py-3">
                 <div class="col-12 text-center">
                     <a href="/debug" class="nav-link px-2 text-muted" onclick="return promptPassword()">
-                        <span class="text-muted" style="font-size: 0.875rem;" {% if session.user
-                            %}data-username="{{ session.user }}" {% endif %}>
-                            &copy; 2025 Fernando Pereira | Versão: 1.6 Flask
+                        <span class="text-muted" style="font-size: 0.875rem;">
+                            &copy; 2025 Fernando Pereira | Versão do sistema: DEV
                             {% if session.user %}
-                            | Usuario: {{ session.user }}
+                            | Usuário: {{ session.user }} - {{ session.setor|default('N/A')|upper }}: {{
+                            session.lvl|default('N/A') }}
                             {% endif %}
                         </span>
                     </a>
@@ -285,68 +442,6 @@
 
     <!-- Bootstrap JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script>
-        const ctxAloj = document.getElementById('graficoAlojamentos').getContext('2d');
-        new Chart(ctxAloj, {
-            type: 'bar',
-            data: {
-                labels: ['1A', '1B', '2A', '2B', '3A', '3B', '4A', '4B'],
-                datasets: [{
-                    label: 'Sentenciados por Alojamento',
-                    data: [
-                        {{ totals.aloj_1a|default(0) }},
-                        {{ totals.aloj_1b|default(0) }},
-                        {{ totals.aloj_2a|default(0) }},
-                        {{ totals.aloj_2b|default(0) }},
-                        {{ totals.aloj_3a|default(0) }},
-                        {{ totals.aloj_3b|default(0) }},
-                        {{ totals.aloj_4a|default(0) }},
-                        {{ totals.aloj_4b|default(0) }},
-                    ],
-                    backgroundColor: [
-                        'rgba(54, 162, 235, 0.7)',
-                        'rgba(54, 162, 235, 0.4)',
-                        'rgba(255, 99, 132, 0.7)',
-                        'rgba(255, 99, 132, 0.4)',
-                        'rgba(75, 192, 192, 0.7)',
-                        'rgba(75, 192, 192, 0.4)',
-                        'rgba(255, 159, 64, 0.7)',
-                        'rgba(255, 159, 64, 0.4)',
-                    ],
-                    borderColor: [
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(255, 159, 64, 1)',
-                        'rgba(255, 159, 64, 1)',
-                    ],
-                    borderWidth: 1,
-                    borderRadius: 4,
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: ctx => ` ${ctx.parsed.y} sentenciados`
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { stepSize: 1 }
-                    }
-                }
-            }
-        });
-    </script>
 </body>
 
 </html>

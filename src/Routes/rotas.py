@@ -12,8 +12,8 @@ import pandas as pd
 import re
 import datetime
 import io
+import bcrypt
 from bson import json_util
-from Data.conexao import conexao_mongo as conexao
 from reportlab.platypus import Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
@@ -25,6 +25,7 @@ from Funcoes.funcoes import (
     resumo_visitas,
     construir_tabela_trabalho,
 )
+from Data.conexao import cpppac
 
 # Criar o blueprint com configuração para templates e static
 rotas_bp = Blueprint(
@@ -36,20 +37,32 @@ rotas_bp = Blueprint(
 )
 
 # Conexão com o banco
-db = conexao()
+cpppac = cpppac()
 
 
-# Context processor para injetar tabela de trabalho
+@rotas_bp.route("/at_work", methods=["GET", "POST"])
+def at_work():
+    return render_template("at_work.html")
+
+
+# Context processor para injetar tabela de trabalho e estatísticas
 @rotas_bp.context_processor
 def inject_tabela_trabalho():
     try:
         # Buscar documentos da coleção trab
-        documentos = list(db.trab.find({}))
+        documentos = list(cpppac.trabalho.find({}))
         # Gerar tabela HTML
         tabela_html = construir_tabela_trabalho(documentos)
-        return {"tab_trabalho": tabela_html}
+
+        # Contar por setor
+        setores_count = {}
+        for doc in documentos:
+            setor = doc.get("setor", "Não especificado")
+            setores_count[setor] = setores_count.get(setor, 0) + 1
+
+        return {"tab_trabalho": tabela_html, "trabalho_setores": setores_count}
     except Exception:
-        return {"tab_trabalho": ""}
+        return {"tab_trabalho": "", "trabalho_setores": {}}
 
 
 # DataFrame global
@@ -72,74 +85,111 @@ def login():
     if request.method == "POST":
         nome_completo = request.form["username"].strip()
         username = nome_completo.lower().replace(" ", "")
-        turno = request.form.get("turno")
-        star_password = request.form.get("star_password", "")
+        setor = request.form.get("setor")
+        lvl10_password = request.form.get("lvl10_password", "")
         login_time = datetime.datetime.now()
+
+        print(
+            f"[DEBUG] POST recebido - username: {username}, lvl10_password presente: {bool(lvl10_password)}"
+        )
 
         # Validação básica
         if not nome_completo:
             return render_template("login.html", error="Digite um nome válido.")
 
         # Buscar usuário existente
-        user = db.usuarios.find_one({"username": username})
+        user = cpppac.usuarios.find_one({"username": username})
 
         if user:
             # Usuário existe
-            if user.get("star"):
+            if user.get("lvl") == "10" or user.get("lvl") == "0":
                 # Admin: verificar/definir senha
-                current_password = user.get("star_password")
+                current_password_hash = user.get("lvl10_password")
 
-                if not current_password:
+                if not current_password_hash:
                     # Primeira vez: definir senha
-                    if not star_password or len(star_password) < 6:
+                    if not lvl10_password:
+                        # Senha não foi fornecida ainda, mostrar modal de CRIAÇÃO
                         return render_template(
                             "login.html",
-                            error="Defina uma senha admin com pelo menos 6 caracteres.",
+                            error="Defina uma senha administrativa para continuar.",
                             show_star_modal=True,
+                            create_password=True,
                             username=nome_completo,
                         )
-                    # Salvar nova senha
-                    db.usuarios.update_one(
-                        {"username": username},
-                        {"$set": {"star_password": star_password}},
+
+                    # Senha foi fornecida, validar tamanho
+                    if len(lvl10_password) < 6:
+                        return render_template(
+                            "login.html",
+                            error="A senha deve ter pelo menos 6 caracteres.",
+                            show_star_modal=True,
+                            create_password=True,
+                            username=nome_completo,
+                        )
+
+                    # Criptografar e salvar nova senha
+                    password_hash = bcrypt.hashpw(
+                        lvl10_password.encode("utf-8"), bcrypt.gensalt()
                     )
+                    print(f"[DEBUG] Salvando senha para usuário: {username}")
+                    print(f"[DEBUG] Hash gerado: {password_hash}")
+
+                    result = cpppac.usuarios.update_one(
+                        {"username": username},
+                        {"$set": {"lvl10_password": password_hash}},
+                    )
+                    print(f"[DEBUG] Documentos modificados: {result.modified_count}")
+                    print(f"[DEBUG] Documentos encontrados: {result.matched_count}")
                 else:
                     # Usuário já tem senha definida - verificar se foi fornecida
-                    if not star_password:
-                        # Senha não foi fornecida, solicitar
+                    if not lvl10_password:
+                        # Senha não foi fornecida, solicitar (modal de LOGIN)
                         return render_template(
                             "login.html",
                             error="Digite sua senha administrativa.",
                             show_star_modal=True,
+                            create_password=False,
                             username=nome_completo,
                         )
-                    # Validar senha existente
-                    if star_password != current_password:
+
+                    # Garantir que o hash seja bytes (MongoDB pode retornar str)
+                    if isinstance(current_password_hash, str):
+                        current_password_hash = current_password_hash.encode("utf-8")
+
+                    # Validar senha existente usando bcrypt
+                    if not bcrypt.checkpw(
+                        lvl10_password.encode("utf-8"), current_password_hash
+                    ):
                         return render_template(
                             "login.html",
                             error="Senha admin incorreta.",
                             show_star_modal=True,
+                            create_password=False,
                             username=nome_completo,
                         )
 
             # Login bem-sucedido: registrar e redirecionar
-            db.usuarios.update_one(
+            cpppac.usuarios.update_one(
                 {"username": username}, {"$push": {"login_times": login_time}}
             )
         else:
             # Usuário novo: criar
-            db.usuarios.insert_one(
+            cpppac.usuarios.insert_one(
                 {
                     "username": username,
                     "nome_completo": nome_completo,
-                    "turno": turno,
+                    "setor": setor,
                     "login_times": [login_time],
-                    "star": False,
+                    "lvl": "1",
                 }
             )
 
-        # Finalizar login
+        # Finalizar login - buscar dados atualizados do usuário
+        usuario_atualizado = cpppac.usuarios.find_one({"username": username})
         session["user"] = username
+        session["lvl"] = usuario_atualizado.get("lvl")
+        session["setor"] = usuario_atualizado.get("setor", "N/A")
         return redirect(url_for("rotas.index"))
 
     return render_template("login.html")
@@ -151,26 +201,60 @@ def login():
 @rotas_bp.route("/sentenciado_detalhes/<matricula>", methods=["GET"])
 def sentenciado_detalhes(matricula):
     try:
-        doc = db.sentenciados.find_one({"matricula": matricula})
-        if not doc:
+        sentenciados_collection = cpppac.sentenciados
+
+        # Buscar o sentenciado
+        sentenciado = sentenciados_collection.find_one({"matricula": matricula})
+
+        if not sentenciado:
             return jsonify({"erro": "Sentenciado não encontrado"}), 404
-        doc["_id"] = str(doc["_id"])
-        return (json_util.dumps(doc), 200, {"Content-Type": "application/json"})
+
+        # Converter ObjectId para string se existir
+        if "_id" in sentenciado:
+            sentenciado["_id"] = str(sentenciado["_id"])
+
+        # Garantir que matricula seja string
+        sentenciado["matricula"] = str(sentenciado["matricula"])
+
+        # Retornar dados usando json_util para lidar com tipos MongoDB
+        return (
+            json_util.dumps(sentenciado),
+            200,
+            {"Content-Type": "application/json"},
+        )
+
     except Exception as e:
-        print(f"Erro em sentenciado_detalhes: {e}")
+        print(f"Erro na rota sentenciado_detalhes: {str(e)}")  # Debug
         return jsonify({"erro": f"Erro interno: {str(e)}"}), 500
 
 
 @rotas_bp.route("/excluido_detalhes/<matricula>", methods=["GET"])
 def excluido_detalhes(matricula):
     try:
-        doc = db.excluidos.find_one({"matricula": matricula})
-        if not doc:
+        excluidos_collection = cpppac.excluidos
+
+        # Buscar o excluido
+        excluido = excluidos_collection.find_one({"matricula": matricula})
+
+        if not excluido:
             return jsonify({"erro": "Excluído não encontrado"}), 404
-        doc["_id"] = str(doc["_id"])
-        return (json_util.dumps(doc), 200, {"Content-Type": "application/json"})
+
+        # Converter ObjectId para string se existir
+        if "_id" in excluido:
+            excluido["_id"] = str(excluido["_id"])
+
+        # Garantir que matricula seja string
+        excluido["matricula"] = str(excluido["matricula"])
+
+        # Retornar dados usando json_util para lidar com tipos MongoDB
+        return (
+            json_util.dumps(excluido),
+            200,
+            {"Content-Type": "application/json"},
+        )
+
     except Exception as e:
-        print(f"Erro em excluido_detalhes: {e}")
+        print(f"Erro na rota excluido_detalhes: {str(e)}")  # Debug
         return jsonify({"erro": f"Erro interno: {str(e)}"}), 500
 
 
@@ -207,7 +291,7 @@ def entrada_saida():
 def adicionar_lista(matricula):
     global df_lista_sentenciados
 
-    sentenciado = db.sentenciados.find_one({"matricula": matricula})
+    sentenciado = cpppac.sentenciados.find_one({"matricula": matricula})
 
     if sentenciado:
         data = request.get_json()
@@ -215,10 +299,10 @@ def adicionar_lista(matricula):
         # Verificar se existe na coleção trab
         setor_trabalho = None
         try:
-            trabalho = db.trab.find_one({"matricula": matricula})
+            trabalho = cpppac.trabalho.find_one({"matricula": matricula})
             if not trabalho:
                 # Tentar buscar pelo nome se não encontrou pela matrícula
-                trabalho = db.trab.find_one({"nome": sentenciado["nome"]})
+                trabalho = cpppac.trabalho.find_one({"nome": sentenciado["nome"]})
 
             if trabalho:
                 setor_trabalho = trabalho.get("setor", "Setor não especificado")
@@ -232,7 +316,7 @@ def adicionar_lista(matricula):
         criancas = data.get("criancas", 0)
 
         try:
-            db.sentenciados.update_one(
+            cpppac.sentenciados.update_one(
                 {"matricula": matricula},
                 {
                     "$push": {
@@ -276,7 +360,7 @@ def visualizar_lista():
 
     # Buscar apenas documentos que têm visitas de hoje E ordenar por nome
     documentos = list(
-        db.sentenciados.find(
+        cpppac.sentenciados.find(
             {"visitas": {"$elemMatch": {"$gte": hoje_inicio, "$lte": hoje_fim}}},
             {"_id": 0},
         ).sort("nome", 1)
@@ -317,7 +401,7 @@ def api_lista_dados():
 
     # Buscar apenas documentos que têm visitas de hoje E ordenar por nome
     documentos = list(
-        db.sentenciados.find(
+        cpppac.sentenciados.find(
             {"visitas": {"$elemMatch": {"$gte": hoje_inicio, "$lte": hoje_fim}}},
             {"_id": 0},
         ).sort("nome", 1)
@@ -356,7 +440,7 @@ def editar_marcadores(matricula):
         criancas = int(data.get("criancas", 0))
 
         # Atualizar os marcadores no banco
-        resultado = db.sentenciados.update_one(
+        resultado = cpppac.sentenciados.update_one(
             {"matricula": matricula},
             {"$set": {"marcadores": [garrafas, homens, mulheres, criancas]}},
         )
@@ -405,7 +489,7 @@ def remover_visita_hoje(matricula):
         )
 
         # Remover apenas as visitas de hoje
-        resultado = db.sentenciados.update_one(
+        resultado = cpppac.sentenciados.update_one(
             {"matricula": matricula},
             {"$pull": {"visitas": {"$gte": hoje_inicio, "$lte": hoje_fim}}},
         )
@@ -444,7 +528,7 @@ def download_pdf():
 
     # Buscar apenas documentos que têm visitas de hoje E ordenar por nome
     documentos = list(
-        db.sentenciados.find(
+        cpppac.sentenciados.find(
             {"visitas": {"$elemMatch": {"$gte": hoje_inicio, "$lte": hoje_fim}}},
             {"_id": 0},
         ).sort("nome", 1)
@@ -629,15 +713,15 @@ def index():
 
     # Calculate totals for each pavilion from your data
     totals = {
-        "aloj_1a": db.sentenciados.count_documents({"pavilhao": "1A"}),
-        "aloj_1b": db.sentenciados.count_documents({"pavilhao": "1B"}),
-        "aloj_2a": db.sentenciados.count_documents({"pavilhao": "2A"}),
-        "aloj_2b": db.sentenciados.count_documents({"pavilhao": "2B"}),
-        "aloj_3a": db.sentenciados.count_documents({"pavilhao": "3A"}),
-        "aloj_3b": db.sentenciados.count_documents({"pavilhao": "3B"}),
-        "aloj_4a": db.sentenciados.count_documents({"pavilhao": "4A"}),
-        "aloj_4b": db.sentenciados.count_documents({"pavilhao": "4B"}),
-        "total": db.sentenciados.count_documents({}),
+        "aloj_1a": cpppac.sentenciados.count_documents({"pavilhao": "1A"}),
+        "aloj_1b": cpppac.sentenciados.count_documents({"pavilhao": "1B"}),
+        "aloj_2a": cpppac.sentenciados.count_documents({"pavilhao": "2A"}),
+        "aloj_2b": cpppac.sentenciados.count_documents({"pavilhao": "2B"}),
+        "aloj_3a": cpppac.sentenciados.count_documents({"pavilhao": "3A"}),
+        "aloj_3b": cpppac.sentenciados.count_documents({"pavilhao": "3B"}),
+        "aloj_4a": cpppac.sentenciados.count_documents({"pavilhao": "4A"}),
+        "aloj_4b": cpppac.sentenciados.count_documents({"pavilhao": "4B"}),
+        "total": cpppac.sentenciados.count_documents({}),
     }
 
     # Usar a função para obter o resumo

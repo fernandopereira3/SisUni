@@ -5,20 +5,16 @@ from flask import (
     render_template,
     Blueprint,
     session,
+    redirect,
+    url_for,
     abort,
 )
 import json
 import time
-from Data.conexao import (
-    conexao_mongo as conexao,
-    conexao_sql,
-    MONGO_URI,
-    MONGO_DB,
-    MYSQL_URI,
-)
+from Data.conexao import cpppac, conexao_sql, MONGO_URI, MONGO_DB, MYSQL_URI
 from Funcoes.exportar_banco import sincronizar
 
-db = conexao()
+cpppac = cpppac()
 
 debug_bp = Blueprint("debug", __name__)
 
@@ -38,15 +34,15 @@ def verificar_acesso_debug():
 def debug_trabalho():
     verificar_acesso_debug()
     try:
-        colecoes = db.list_collection_names()
+        colecoes = cpppac.list_collection_names()
 
         def count(col):
-            return db[col].count_documents({}) if col in colecoes else 0
+            return cpppac[col].count_documents({}) if col in colecoes else 0
 
         def ultima_insercao(col):
             if col not in colecoes:
                 return None
-            doc = db[col].find_one({}, sort=[("_id", -1)])
+            doc = cpppac[col].find_one({}, sort=[("_id", -1)])
             return (
                 doc["_id"].generation_time.strftime("%d/%m/%Y %H:%M:%S")
                 if doc
@@ -65,8 +61,9 @@ def debug_trabalho():
             "trab": ultima_insercao("trab"),
             "visitas": ultima_insercao("visitas"),
         }
+
         try:
-            db.command("ping")
+            cpppac.command("ping")
             mongo_ok = True
         except Exception:
             mongo_ok = False
@@ -88,7 +85,15 @@ def debug_trabalho():
             mysql_ok=mysql_ok,
         )
     except Exception:
-        return render_template("debug.html", stats={}, ultima_atualizacao={})
+        return render_template(
+            "debug.html",
+            stats={},
+            ultima_atualizacao={},
+            mongo_ok=False,
+            mysql_ok=False,
+            mongo_uri=MONGO_URI,
+            mysql_uri=MYSQL_URI,
+        )
 
 
 ######### Estatistica das colecoes ############
@@ -97,9 +102,9 @@ def debug_sentenciados_db():
     """Debug route to view sentenciados collection data"""
     verificar_acesso_debug()
     try:
-        count = db.sentenciados.count_documents({})
-        documentos = list(db.sentenciados.find({}).limit(100))
-        primeiro_doc = db.sentenciados.find_one({})
+        count = cpppac.sentenciados.count_documents({})
+        documentos = list(cpppac.sentenciados.find({}).limit(100))
+        primeiro_doc = cpppac.sentenciados.find_one({})
 
         df_temp = pd.DataFrame(documentos)
         if "_id" in df_temp.columns:
@@ -124,9 +129,9 @@ def debug_trabalho_db():
     """Debug route to view trabalho collection data"""
     verificar_acesso_debug()
     try:
-        count = db.trab.count_documents({})
-        documentos = list(db.trab.find({}).limit(100))
-        primeiro_doc = db.trab.find_one({})
+        count = cpppac.trabalho.count_documents({})
+        documentos = list(cpppac.trabalho.find({}).limit(100))
+        primeiro_doc = cpppac.trabalho.find_one({})
 
         df_temp = pd.DataFrame(documentos)
         if "_id" in df_temp.columns:
@@ -151,9 +156,9 @@ def debug_visitas_db():
     """Debug route to view visitas collection data"""
     verificar_acesso_debug()
     try:
-        count = db.visitas.count_documents({})
-        documentos = list(db.visitas.find({}).limit(100))
-        primeiro_doc = db.visitas.find_one({})
+        count = cpppac.visitas.count_documents({})
+        documentos = list(cpppac.visitas.find({}).limit(100))
+        primeiro_doc = cpppac.visitas.find_one({})
 
         df_temp = pd.DataFrame(documentos)
         if "_id" in df_temp.columns:
@@ -255,42 +260,6 @@ def generate_db_error_html(error):
     """
 
 
-@debug_bp.route("/debug/sincronizar", methods=["GET"])
-def debug_sincronizar():
-    verificar_acesso_debug()
-    inicio = time.time()
-    try:
-        sincronizar()
-        duracao = round(time.time() - inicio, 1)
-        count = db.sentenciados.count_documents({})
-        return render_template(
-            "debug.html",
-            debug_content=f"""
-            <div class="alert alert-success">
-                <h5><i class="fas fa-check-circle me-2"></i>Sincronização concluída!</h5>
-                <p class="mb-1"><strong>{count}</strong> registros no MongoDB após a sincronização.</p>
-                <small class="text-muted">Tempo: {duracao}s</small>
-            </div>
-            <a href="/debug" class="btn btn-secondary btn-sm">
-                <i class="fas fa-arrow-left me-1"></i>Voltar
-            </a>
-        """,
-        )
-    except Exception as e:
-        return render_template(
-            "debug.html",
-            debug_content=f"""
-            <div class="alert alert-danger">
-                <h5><i class="fas fa-times-circle me-2"></i>Erro na sincronização</h5>
-                <p>{str(e)}</p>
-            </div>
-            <a href="/debug" class="btn btn-secondary btn-sm">
-                <i class="fas fa-arrow-left me-1"></i>Voltar
-            </a>
-        """,
-        )
-
-
 ######### Fim Estatistica das colecoes ############
 
 
@@ -325,7 +294,7 @@ def normalizar_banco():
 
         # 1. NORMALIZAR SENTENCIADOS
         print("Normalizando sentenciados...")
-        for doc in db.sentenciados.find():
+        for doc in cpppac.sentenciados.find():
             try:
                 updates = {}
 
@@ -343,7 +312,9 @@ def normalizar_banco():
                             updates[campo] = valor_novo
 
                 if updates:
-                    db.sentenciados.update_one({"_id": doc["_id"]}, {"$set": updates})
+                    cpppac.sentenciados.update_one(
+                        {"_id": doc["_id"]}, {"$set": updates}
+                    )
                     total_atualizados += 1
 
             except Exception as e:
@@ -351,8 +322,8 @@ def normalizar_banco():
 
         # 2. NORMALIZAR VISITAS
         print("Normalizando visitas...")
-        if "visita" in db.list_collection_names():
-            for doc in db.visita.find():
+        if "visita" in cpppac.list_collection_names():
+            for doc in cpppac.visita.find():
                 try:
                     updates = {}
 
@@ -363,7 +334,7 @@ def normalizar_banco():
                                 updates[campo] = valor_novo
 
                     if updates:
-                        db.visita.update_one({"_id": doc["_id"]}, {"$set": updates})
+                        cpppac.visita.update_one({"_id": doc["_id"]}, {"$set": updates})
                         total_atualizados += 1
 
                 except Exception as e:
@@ -371,8 +342,8 @@ def normalizar_banco():
 
         # 3. NORMALIZAR TRABALHO
         print("Normalizando trabalho...")
-        if "trab" in db.list_collection_names():
-            for doc in db.trab.find():
+        if "trabalho" in cpppac.list_collection_names():
+            for doc in cpppac.trabalho.find():
                 try:
                     updates = {}
 
@@ -383,7 +354,9 @@ def normalizar_banco():
                                 updates[campo] = valor_novo
 
                     if updates:
-                        db.trab.update_one({"_id": doc["_id"]}, {"$set": updates})
+                        cpppac.trabalho.update_one(
+                            {"_id": doc["_id"]}, {"$set": updates}
+                        )
                         total_atualizados += 1
 
                 except Exception as e:
@@ -446,7 +419,7 @@ def preview_normalizacao():
         contadores = {"sentenciados": 0, "visitas": 0, "trabalho": 0}
 
         # Contar sentenciados que precisam normalização
-        for doc in db.sentenciados.find().limit(100):
+        for doc in cpppac.sentenciados.find().limit(100):
             if (
                 "nome" in doc
                 and doc["nome"]
@@ -455,8 +428,8 @@ def preview_normalizacao():
                 contadores["sentenciados"] += 1
 
         # Contar visitas que precisam normalização
-        if "visita" in db.list_collection_names():
-            for doc in db.visita.find().limit(100):
+        if "visita" in cpppac.list_collection_names():
+            for doc in cpppac.visita.find().limit(100):
                 for campo in ["nome", "visitante", "parentesco"]:
                     if (
                         campo in doc
@@ -467,8 +440,8 @@ def preview_normalizacao():
                         break
 
         # Contar trabalho que precisa normalização
-        if "trab" in db.list_collection_names():
-            for doc in db.trab.find().limit(100):
+        if "trabalho" in cpppac.list_collection_names():
+            for doc in cpppac.trabalho.find().limit(100):
                 for campo in ["nome", "setor"]:
                     if (
                         campo in doc
@@ -490,7 +463,7 @@ def preview_normalizacao():
 def clean_matricula_complete():
     verificar_acesso_debug()
     count = 0
-    for doc in db.sentenciados.find():
+    for doc in cpppac.sentenciados.find():
         if "matricula" in doc and isinstance(doc["matricula"], str):
             original = doc["matricula"]
 
@@ -502,7 +475,7 @@ def clean_matricula_complete():
                 clean_matricula = clean_matricula[:-1]
 
             if clean_matricula != original:
-                db.sentenciados.update_one(
+                cpppac.sentenciados.update_one(
                     {"_id": doc["_id"]},
                     {"$set": {"matricula": clean_matricula}},
                 )
@@ -522,7 +495,7 @@ def clean_matricula_complete():
 @debug_bp.route("/clear/trab", methods=["GET"])
 def clean_trab():
     count = 0
-    for doc in db.trab.find():
+    for doc in cpppac.trabalho.find():
         if "matricula" in doc and isinstance(doc["matricula"], str):
             original = doc["matricula"]
 
@@ -534,7 +507,7 @@ def clean_trab():
                 clean_matricula = clean_matricula[:-1]
 
             if clean_matricula != original:
-                db.trab.update_one(
+                cpppac.trabalho.update_one(
                     {"_id": doc["_id"]},
                     {"$set": {"matricula": clean_matricula}},
                 )
@@ -554,7 +527,7 @@ def clean_trab():
 @debug_bp.route("/clear/aux", methods=["GET"])
 def clean_banco_aux():
     count = 0
-    for doc in db.aux.find():
+    for doc in cpppac.aux.find():
         if "matricula" in doc and isinstance(doc["matricula"], str):
             original = doc["matricula"]
 
@@ -566,7 +539,7 @@ def clean_banco_aux():
                 clean_matricula = clean_matricula[:-1]
 
             if clean_matricula != original:
-                db.aux.update_one(
+                cpppac.aux.update_one(
                     {"_id": doc["_id"]},
                     {"$set": {"matricula": clean_matricula}},
                 )
@@ -586,7 +559,7 @@ def clean_banco_aux():
 @debug_bp.route("/clear/excluidos", methods=["GET"])
 def clean_excluidos():
     count = 0
-    for doc in db.excluidos.find():
+    for doc in cpppac.excluidos.find():
         if "matricula" in doc and isinstance(doc["matricula"], str):
             original = doc["matricula"]
 
@@ -598,7 +571,7 @@ def clean_excluidos():
                 clean_matricula = clean_matricula[:-1]
 
             if clean_matricula != original:
-                db.excluidos.update_one(
+                cpppac.excluidos.update_one(
                     {"_id": doc["_id"]},
                     {"$set": {"matricula": clean_matricula}},
                 )
@@ -676,7 +649,7 @@ def export_aux():
         )
 
     # Export aux collection to JSON
-    aux_docs = list(db.aux.find({}, {"_id": 0}))  # Exclude _id field
+    aux_docs = list(cpppac.aux.find({}, {"_id": 0}))  # Exclude _id field
 
     if not aux_docs:
         return render_template(
@@ -833,12 +806,14 @@ def import_sentenciados():
         try:
             # Check if matricula exists
             if "matricula" in record:
-                existing = db.sentenciados.find_one({"matricula": record["matricula"]})
+                existing = cpppac.sentenciados.find_one(
+                    {"matricula": record["matricula"]}
+                )
                 if existing:
                     duplicates += 1
                     continue
 
-                db.sentenciados.insert_one(record)
+                cpppac.sentenciados.insert_one(record)
                 inserted += 1
             else:
                 errors += 1
@@ -895,7 +870,7 @@ def import_excluidos():
     # Handle POST request - perform exclusion
     try:
         # Get all matriculas from excluidos collection
-        excluidos_docs = list(db.excluidos.find({}, {"matricula": 1, "_id": 0}))
+        excluidos_docs = list(cpppac.excluidos.find({}, {"matricula": 1, "_id": 0}))
 
         if not excluidos_docs:
             return render_template(
@@ -915,7 +890,9 @@ def import_excluidos():
             )
 
         # Delete records from sentenciados collection
-        result = db.sentenciados.delete_many({"matricula": {"$in": matriculas_excluir}})
+        result = cpppac.sentenciados.delete_many(
+            {"matricula": {"$in": matriculas_excluir}}
+        )
 
         deleted_count = result.deleted_count
         total_matriculas = len(matriculas_excluir)

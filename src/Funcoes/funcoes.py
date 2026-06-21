@@ -97,9 +97,10 @@ def construir_tabela(
                 # Coluna de ações (se solicitada)
                 acoes_cell = ""
                 if incluir_acoes:
-                    acoes_cell = """
+                    is_excluidos = "true" if colecao == "excluidos" else "false"
+                    acoes_cell = f"""
                         <td>
-                            
+                            <button class="btn btn-sm btn-info" onclick="carregarDetalhes('{matricula}', {is_excluidos})">Detalhes</button>
                         </td>
                     """
 

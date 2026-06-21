@@ -3,6 +3,7 @@ mysql-connector-python
 ruff==0.15.2
 SQLAlchemy==2.0.51
 annotated-types==0.7.0
+bcrypt==4.2.1
 blinker==1.9.0
 chardet==5.2.0
 click==8.2.1

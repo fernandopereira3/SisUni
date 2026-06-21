@@ -8,10 +8,16 @@ MYSQL_URI = os.getenv(
     "MYSQL_URI", "mysql+mysqlconnector://root:futuro07@10.0.0.2:3309/siscar"
 )
 
+# Cliente único — todos os módulos compartilham o mesmo pool de conexões
+_client = MongoClient(MONGO_URI)
+_db = _client[MONGO_DB]
+
 
 def conexao_mongo():
-    client = MongoClient(MONGO_URI)
-    return client[MONGO_DB]
+    return _db
+
+
+cpppac = conexao_mongo
 
 
 def conexao_sql():

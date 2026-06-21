@@ -1,12 +1,12 @@
 from flask import render_template, request, Blueprint
 import datetime
 import re
-from Data.conexao import conexao_mongo
+from Data.conexao import cpppac
 from Funcoes.funcoes import PesquisaForm, construir_tabela
 
 # Criar o blueprint
 pesquisas_bp = Blueprint("pesquisas", __name__)
-db = conexao_mongo()
+cpppac = cpppac()
 
 
 @pesquisas_bp.route("/pesquisas/dia-de-visita", methods=["GET"])
@@ -24,7 +24,7 @@ def lista_pesquisas():
 
             # Buscar documentos que têm visitas na data especificada
             documentos = list(
-                db.sentenciados.find(
+                cpppac.sentenciados.find(
                     {
                         "visitas": {
                             "$elemMatch": {"$gte": data_inicio, "$lte": data_fim}
