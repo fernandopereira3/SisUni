@@ -1,3 +1,5 @@
+name: sisuni
+
 services:
   web:
     image: fernandopereira3/sisuni:latest

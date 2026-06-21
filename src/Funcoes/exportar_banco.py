@@ -86,11 +86,26 @@ def sincronizar():
         documentos = df.to_dict(orient="records")
 
         db = conexao_mongo()
-        db["sentenciados"].drop()
-        db["sentenciados"].insert_many(documentos)
+        collection = db["sentenciados"]
+        collection.drop()
+        collection.insert_many(documentos)
+
+        # limpar matrículas: remove espaços, pontos, hífens e o último dígito
+        count = 0
+        for doc in collection.find():
+            if "matricula" in doc and isinstance(doc["matricula"], str):
+                original = doc["matricula"]
+                limpa = original.replace(" ", "").replace(".", "").replace("-", "")
+                if len(limpa) > 0:
+                    limpa = limpa[:-1]
+                if limpa != original:
+                    collection.update_one(
+                        {"_id": doc["_id"]}, {"$set": {"matricula": limpa}}
+                    )
+                    count += 1
 
         print(
-            f"[{dt.datetime.now().strftime('%d/%m/%Y %H:%M:%S')}] ✓ {len(documentos)} registros sincronizados."
+            f"[{dt.datetime.now().strftime('%d/%m/%Y %H:%M:%S')}] ✓ {len(documentos)} registros sincronizados, {count} matrículas limpas."
         )
 
     except Exception as e:
