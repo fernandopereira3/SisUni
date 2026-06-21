@@ -83,7 +83,7 @@ cpppac = cpppac()  # reatribui a variável para o objeto db
 | `sentenciados` | Ficha completa — sincronizada do MySQL `siscar`. **Somente leitura no fluxo de visitas.** |
 | `excluidos` | Sentenciados transferidos ou liberados |
 | `usuarios` | Funcionários: login, setor, lvl, folgas[] |
-| `trab` | Alocação de trabalho. Campos: `matricula`, `nome`, `setor`, `alojamento`. Não tem sync MySQL — populada via import. Documentos sem `matricula` são inválidos. |
+| `trabalho` | Alocação de trabalho. Campos: `matricula`, `nome`, `setor`, `alojamento`. Não tem sync MySQL — populada via import. Documentos sem `matricula` são inválidos. |
 | `visitas_dia` | Registro de visitas do dia (ver abaixo) |
 | `visitas` | Histórico permanente de visitas do Jumbo |
 | `logs` | Log de eventos (login etc.) — TTL 60 dias |
@@ -209,7 +209,7 @@ Blueprints com controle implementado: `simic`, `producao` (trabalho), `administr
 
 `Funcoes/exportar_banco.py` — função `sincronizar()`:
 - Conecta no MySQL `siscar` via `conexao_sql()`
-- Lê **apenas sentenciados** (tabela `sen` + join `pav`) — `trab` e `excluidos` não são sincronizados
+- Lê **apenas sentenciados** (tabela `sen` + join `pav`) — `trabalho` e `excluidos` não são sincronizados
 - Faz `drop` + `insert_many` na coleção `sentenciados` a cada sync
 - Limpa matrículas (remove espaços, pontos, hífens e último dígito)
 - Roda automaticamente pelo scheduler (06h, 12h, 18h)
@@ -267,6 +267,6 @@ Imagem MongoDB: `fernandopereira3/sisuni_db:latest`
 - O blueprint `debug` é isento de CSRF (`csrf.exempt(BPdebug)`)
 - `form-floating` não funciona com `type="number"` no Bootstrap — usar `form-label` acima
 - `dropdown-toggle::after { display: none }` no CSS remove o triângulo do navbar
-- A coleção `trab` pode acumular documentos vazios (só `_id`) — limpar com `delete_many({"matricula": {"$exists": False}})`
+- A coleção `trabalho` pode acumular documentos vazios (só `_id`) — limpar com `delete_many({"matricula": {"$exists": False}})`
 - **Não tocar em `sentenciados.visitas` nem `sentenciados.marcadores`** — legado, não usados. Todo fluxo de visitas usa `visitas_dia`.
 - A branch `dev` foi deletada — só existe `main`

@@ -14,7 +14,31 @@ document.addEventListener('DOMContentLoaded', function () {
         const pesquisaModal = new bootstrap.Modal(document.getElementById('pesquisaModal'));
         pesquisaModal.show();
     });
+
+    // Busca direto pelo campo MATRÍCULA da tela principal (Enter)
+    const inputMatricula = document.getElementById('matricula');
+    // Mantém apenas dígitos (até 8) enquanto digita
+    inputMatricula.addEventListener('input', function () {
+        this.value = this.value.replace(/\D/g, '').slice(0, 8);
+    });
+    inputMatricula.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            buscarMatriculaPrincipal();
+        }
+    });
 });
+
+function buscarMatriculaPrincipal() {
+    const input = document.getElementById('matricula');
+    const digitos = input.value.replace(/\D/g, '');
+    if (!digitos) {
+        alert('Por favor, informe a matrícula.');
+        return;
+    }
+    // aceita com ou sem zeros à esquerda — o backend resolve as duas formas
+    carregarDadosReeducando(digitos);
+}
 
 function inicializarPagina() {
     // Verificar se há dados na sessão ou URL
@@ -110,7 +134,7 @@ function preencherDados(data) {
     // Preencher informações pessoais
     document.getElementById('nome').textContent = data.nome || '-';
     document.getElementById('nascimento').textContent = formatarData(data.nascimento) || '-';
-    document.getElementById('matricula').textContent = data.matricula || '-';
+    document.getElementById('matricula').value = data.matricula || '';
     document.getElementById('inclusao').textContent = formatarData(data.inclusao) || '-';
     document.getElementById('procedencia').textContent = data.procedencia || '-';
     document.getElementById('localizacaoHabitacional').textContent = data.localizacao_habitacional || '-';
@@ -133,9 +157,9 @@ function carregarFrequencia(matricula) {
 }
 
 function marcarPresenca() {
-    const matricula = document.getElementById('matricula').textContent;
+    const matricula = document.getElementById('matricula').value.trim();
 
-    if (matricula === '-') {
+    if (!matricula) {
         alert('Por favor, pesquise um reeducando primeiro.');
         return;
     }
@@ -148,9 +172,9 @@ function marcarPresenca() {
 }
 
 function marcarFalta() {
-    const matricula = document.getElementById('matricula').textContent;
+    const matricula = document.getElementById('matricula').value.trim();
 
-    if (matricula === '-') {
+    if (!matricula) {
         alert('Por favor, pesquise um reeducando primeiro.');
         return;
     }
@@ -163,9 +187,9 @@ function marcarFalta() {
 }
 
 function marcarRetorno() {
-    const matricula = document.getElementById('matricula').textContent;
+    const matricula = document.getElementById('matricula').value.trim();
 
-    if (matricula === '-') {
+    if (!matricula) {
         alert('Por favor, pesquise um reeducando primeiro.');
         return;
     }

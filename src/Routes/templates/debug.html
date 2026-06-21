@@ -58,7 +58,7 @@
                                     <i class="fas fa-chevron-down float-end mt-1"></i>
                                 </div>
                                 <div class="dropdown-content" id="clear-dropdown">
-                                    <a href="/clear/trab" class="dropdown-link p-3 d-block text-decoration-none" onclick="return confirm('Tem certeza que deseja limpar as matrículas do trabalho?')">
+                                    <a href="/clear/trabalho" class="dropdown-link p-3 d-block text-decoration-none" onclick="return confirm('Tem certeza que deseja limpar as matrículas do trabalho?')">
                                         <i class="fas fa-briefcase me-2"></i> Limpar Matrículas do Trabalho
                                     </a>
                                     <a href="/clear/aux" class="dropdown-link p-3 d-block text-decoration-none" onclick="return confirm('Tem certeza que deseja limpar as matrículas das atividades?')">
@@ -141,10 +141,10 @@
                                     </div>
                                     <div class="col-6 col-md-4">
                                         <div class="card border-0 bg-success text-white text-center py-3 shadow-sm">
-                                            <div class="fs-2 fw-bold">{{ stats.trab|default(0) }}</div>
+                                            <div class="fs-2 fw-bold">{{ stats.trabalho|default(0) }}</div>
                                             <div class="small"><i class="fas fa-hard-hat me-1"></i>Trabalhando</div>
-                                            {% if ultima_atualizacao.trab %}
-                                            <div class="text-white-50" style="font-size:0.7rem;">últ. reg: {{ ultima_atualizacao.trab }}</div>
+                                            {% if ultima_atualizacao.trabalho %}
+                                            <div class="text-white-50" style="font-size:0.7rem;">últ. reg: {{ ultima_atualizacao.trabalho }}</div>
                                             {% endif %}
                                         </div>
                                     </div>
@@ -171,7 +171,7 @@
                                     </div>
                                     <div class="col-6 col-md-4">
                                         <div class="card border-0 bg-secondary text-white text-center py-3 shadow-sm">
-                                            <div class="fs-2 fw-bold">{{ (stats.sentenciados|default(0)) + (stats.trab|default(0)) + (stats.visitas|default(0)) + (stats.excluidos|default(0)) + (stats.aux|default(0)) }}</div>
+                                            <div class="fs-2 fw-bold">{{ (stats.sentenciados|default(0)) + (stats.trabalho|default(0)) + (stats.visitas|default(0)) + (stats.excluidos|default(0)) + (stats.aux|default(0)) }}</div>
                                             <div class="small"><i class="fas fa-database me-1"></i>Total no Banco</div>
                                         </div>
                                     </div>
@@ -188,7 +188,7 @@
                                                 </tr>
                                                 <tr>
                                                     <td class="text-muted"><i class="fas fa-hard-hat me-1"></i> Trabalho</td>
-                                                    <td><strong>{{ ultima_atualizacao.trab or '—' }}</strong></td>
+                                                    <td><strong>{{ ultima_atualizacao.trabalho or '—' }}</strong></td>
                                                 </tr>
                                                 <tr>
                                                     <td class="text-muted"><i class="fas fa-handshake me-1"></i> Visitas</td>

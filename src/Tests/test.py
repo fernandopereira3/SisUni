@@ -11,6 +11,6 @@ bp_test = Blueprint(
 cpppac = cpppac()
 
 
-@bp_test.route("/test/trab")
-def test_trab():
+@bp_test.route("/test/trabalho")
+def test_trabalho():
     return render_template("404.html")

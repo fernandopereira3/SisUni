@@ -52,14 +52,14 @@ def debug_trabalho():
 
         stats = {
             "sentenciados": count("sentenciados"),
-            "trab": count("trab"),
+            "trabalho": count("trabalho"),
             "visitas": count("visitas"),
             "excluidos": count("excluidos"),
             "aux": count("aux"),
         }
         ultima_atualizacao = {
             "sentenciados": ultima_insercao("sentenciados"),
-            "trab": ultima_insercao("trab"),
+            "trabalho": ultima_insercao("trabalho"),
             "visitas": ultima_insercao("visitas"),
         }
 
@@ -493,8 +493,8 @@ def clean_matricula_complete():
     )
 
 
-@debug_bp.route("/clear/trab", methods=["GET"])
-def clean_trab():
+@debug_bp.route("/clear/trabalho", methods=["GET"])
+def clean_trabalho():
     count = 0
     for doc in cpppac.trabalho.find():
         if "matricula" in doc and isinstance(doc["matricula"], str):

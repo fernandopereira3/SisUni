@@ -49,7 +49,7 @@ def at_work():
 @rotas_bp.context_processor
 def inject_tabela_trabalho():
     try:
-        # Buscar documentos da coleção trab
+        # Buscar documentos da coleção trabalho
         documentos = list(cpppac.trabalho.find({}))
         # Gerar tabela HTML
         tabela_html = construir_tabela_trabalho(documentos)
