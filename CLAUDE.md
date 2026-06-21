@@ -31,15 +31,15 @@ Não incluir `Co-Authored-By: Claude ...` em nenhuma mensagem de commit.
 
 ```
 src/
-├── main.py                      # Entry point — blueprints + scheduler
+├── main.py                      # Entry point — blueprints + scheduler + índices MongoDB
 ├── Data/
 │   └── conexao.py               # Singleton MongoClient + SQLAlchemy engine
 ├── Funcoes/
 │   ├── funcoes.py               # PesquisaForm, construir_tabela, resumo_visitas
-│   └── exportar_banco.py        # Sync MySQL → MongoDB
+│   └── exportar_banco.py        # Sync MySQL → MongoDB (só sentenciados)
 ├── Routes/
 │   ├── rotas.py                 # Core: login, index, entrada_saida, lista, download PDF
-│   ├── debug.py                 # Admin: stats, coleções, sync manual, export/import ZIP
+│   ├── debug.py                 # Admin: stats, sync, export/import ZIP, logs
 │   ├── administrativo/
 │   │   └── rh.py                # CRUD de funcionários (setor: cpd/administrativo/rh)
 │   ├── seguranca/
@@ -48,7 +48,7 @@ src/
 │   │   ├── pesquisas.py         # Pesquisa sentenciados + histórico visitas por data
 │   │   └── visitas.py           # Jumbo — rol de visitas diário + PDF
 │   ├── producao/
-│   │   ├── trabalho.py          # Gestão de trabalho dos sentenciados
+│   │   ├── trabalho.py          # Gestão de trabalho (setor: cpd/producao)
 │   │   └── frequencia.py        # Frequência/entrada-saída de trabalho
 │   └── simic/
 │       └── simic.py             # Cadastro SIMIC (setor: cpd/simic)
@@ -83,9 +83,10 @@ cpppac = cpppac()  # reatribui a variável para o objeto db
 | `sentenciados` | Ficha completa — sincronizada do MySQL `siscar`. **Somente leitura no fluxo de visitas.** |
 | `excluidos` | Sentenciados transferidos ou liberados |
 | `usuarios` | Funcionários: login, setor, lvl, folgas[] |
-| `trab` | Alocação de trabalho dos sentenciados |
+| `trab` | Alocação de trabalho. Campos: `matricula`, `nome`, `setor`, `alojamento`. Não tem sync MySQL — populada via import. Documentos sem `matricula` são inválidos. |
 | `visitas_dia` | Registro de visitas do dia (ver abaixo) |
 | `visitas` | Histórico permanente de visitas do Jumbo |
+| `logs` | Log de eventos (login etc.) — TTL 60 dias |
 | `aux` | Dados auxiliares |
 
 ## Coleção `visitas_dia` — IMPORTANTE
@@ -136,6 +137,29 @@ def _hoje():                        # retorna (inicio, fim) do dia atual
 def _lista_visitas_dia(inicio, fim): # find + formata data_visita como última string
 ```
 
+## Coleção `logs` — TTL 60 dias
+
+Registra eventos do sistema. Índices criados no startup em `main.py`:
+```python
+db.logs.create_index("timestamp", expireAfterSeconds=5_184_000)  # TTL 60 dias
+db.logs.create_index("tipo")
+```
+
+Estrutura do documento:
+```json
+{
+  "tipo": "login",
+  "username": "fernandopereira",
+  "nome_completo": "Fernando Pereira",
+  "setor": "cpd",
+  "lvl": "10",
+  "novo_usuario": false,
+  "timestamp": ISODate
+}
+```
+
+Visualização em `GET /debug/logs` — filtro por tipo, limite padrão 100. Link no sidebar do debug.
+
 ## `construir_tabela()` — parâmetro `modo`
 
 A função `construir_tabela` em `funcoes.py` tem o parâmetro `modo`:
@@ -156,6 +180,7 @@ Cada usuário tem `setor` (string) e `lvl` (string):
 |---|---|
 | `cpd` | Tudo — admin geral |
 | `simic` | Cadastro SIMIC (`/simic`) |
+| `producao` | Trabalho (`/trabalho`, `/trabalho/api`) |
 | `administrativo` / `rh` | Gestão de funcionários |
 | `seguranca` | Folgas (qualquer logado pode ver as próprias) |
 | qualquer | Pesquisas, visitas, entrada/saída |
@@ -178,21 +203,23 @@ def verificar_acesso_simic():
         abort(403)
 ```
 
+Blueprints com controle implementado: `simic`, `producao` (trabalho), `administrativo` (rh), `seguranca` (folgas).
+
 ## Sync MySQL → MongoDB
 
 `Funcoes/exportar_banco.py` — função `sincronizar()`:
 - Conecta no MySQL `siscar` via `conexao_sql()`
-- Lê sentenciados, trabalho, excluídos etc.
-- Faz upsert no MongoDB **somente nas coleções de cadastro** (sentenciados, trab, excluidos)
+- Lê **apenas sentenciados** (tabela `sen` + join `pav`) — `trab` e `excluidos` não são sincronizados
+- Faz `drop` + `insert_many` na coleção `sentenciados` a cada sync
+- Limpa matrículas (remove espaços, pontos, hífens e último dígito)
 - Roda automaticamente pelo scheduler (06h, 12h, 18h)
 - Pode ser chamada manualmente via `/debug/sincronizar`
-- O modal de detalhes em `pesquisa.html` mostra os campos sincronizados (artigo, pena, regime, tatuagens, família etc.)
 
 ## Export/Import de banco (debug)
 
 `GET /debug/banco/export` → baixa `sisuni_backup_DD-MM-YYYY_HH-MM.zip` com todas as coleções como JSON.
 
-`GET /POST /debug/banco/import` → restaura a partir do ZIP (apaga e reimporta cada coleção).
+`GET/POST /debug/banco/import` → restaura a partir do ZIP (apaga e reimporta cada coleção).
 
 ## Modal de detalhes (pesquisa.html)
 
@@ -207,7 +234,18 @@ O modal tem 4 abas com campos vindos do sync MySQL:
 
 ## Formulário SIMIC (novo cadastro)
 
-`simic.html` — "Novo Cadastro" usa os **mesmos nomes de campo** do modal para consistência com o banco. Envia JSON via `fetch` para `POST /simic/cadastrar`. Os nomes exatos: `anos_de_prisao`, `meses_de_prisao`, `dias_de_prisao`, `numero_de_filhos`, `endereco_familiar`, `bairro_familiar`, `cidade_familiar`, `uf_familiar`, `cep_familiar`.
+`simic.html` — "Novo Cadastro" usa os **mesmos nomes de campo** do modal. Envia JSON via `fetch` para `POST /simic/cadastrar`. Nomes exatos: `anos_de_prisao`, `meses_de_prisao`, `dias_de_prisao`, `numero_de_filhos`, `endereco_familiar`, `bairro_familiar`, `cidade_familiar`, `uf_familiar`, `cep_familiar`.
+
+## Dashboard (index.html)
+
+Cards organizados em linhas de `col-md-4`. Todos usam a classe CSS `dashboard-card-body` (`height: 500px; overflow-y: auto`) exceto o card **Visitantes** (largura total `col-12`).
+
+Layout das linhas:
+1. Ocupação por Pavilhão | Atendimentos do dia | Liberdades
+2. Chegada Agendada | Aptos ao Trabalho | Distribuição por Setor
+3. Visitantes (col-12 — 6 mini-cards: Preso com Visita, PET, Homens, Mulheres, Crianças, Total)
+
+Cards "Chegada Agendada", "Liberdades" e "Atendimentos do dia" mostram `—` por enquanto — sem backend conectado.
 
 ## Deploy
 
@@ -227,8 +265,8 @@ Imagem MongoDB: `fernandopereira3/sisuni_db:latest`
 - `global df_visitas` deve estar no **topo** da função em `visitas.py`, nunca dentro de `if`/`elif`
 - CSS e templates ficam em `src/Routes/static/` e `src/Routes/templates/`
 - O blueprint `debug` é isento de CSRF (`csrf.exempt(BPdebug)`)
-- `jumbo.py` foi movido para `sentenciados/visitas.py` (blueprint `visitas`) — URLs não mudaram
-- `funcionarios.py` foi dividido: RH → `administrativo/rh.py`, folgas → `seguranca/folgas.py`
-- `pesquisas.py` foi movido para `sentenciados/pesquisas.py`
+- `form-floating` não funciona com `type="number"` no Bootstrap — usar `form-label` acima
+- `dropdown-toggle::after { display: none }` no CSS remove o triângulo do navbar
+- A coleção `trab` pode acumular documentos vazios (só `_id`) — limpar com `delete_many({"matricula": {"$exists": False}})`
+- **Não tocar em `sentenciados.visitas` nem `sentenciados.marcadores`** — legado, não usados. Todo fluxo de visitas usa `visitas_dia`.
 - A branch `dev` foi deletada — só existe `main`
-- **Não tocar em `sentenciados.visitas` nem `sentenciados.marcadores`** — esses campos existem como legado mas não são usados pelo sistema atual. Todo o fluxo de visitas usa `visitas_dia`.
