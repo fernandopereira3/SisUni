@@ -279,7 +279,7 @@ def entrada_saida():
         if nome:
             query["nome"] = {"$regex": nome, "$options": "i"}
 
-        resultados = construir_tabela(query=query, incluir_acoes=True)
+        resultados = construir_tabela(query=query, incluir_acoes=True, modo="adicionar")
 
     return render_template(
         "entrada_saida.html", form=form, resultados=resultados, resumo=resumo

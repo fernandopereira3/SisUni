@@ -1,4 +1,6 @@
 import pandas as pd
+import io
+import zipfile
 from flask import (
     jsonify,
     request,
@@ -6,8 +8,11 @@ from flask import (
     Blueprint,
     session,
     abort,
+    send_file,
 )
 import json
+import datetime
+from bson import json_util
 from Data.conexao import cpppac, conexao_sql, MONGO_URI, MONGO_DB, MYSQL_URI
 
 cpppac = cpppac()
@@ -584,7 +589,159 @@ def clean_excluidos():
     )
 
 
-@debug_bp.route("/debug/banco/export", methods=["GET", "POST"])
+@debug_bp.route("/debug/banco/export", methods=["GET"])
+def export_banco():
+    """Exporta todas as coleções do MongoDB como ZIP (uma colecao = um JSON)."""
+    verificar_acesso_debug()
+    try:
+        colecoes = cpppac.list_collection_names()
+        buffer = io.BytesIO()
+
+        with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+            metadata = {
+                "database": MONGO_DB,
+                "exported_at": datetime.datetime.now().isoformat(),
+                "collections": [],
+            }
+            for col_name in sorted(colecoes):
+                docs = list(cpppac[col_name].find())
+                zf.writestr(f"{col_name}.json", json_util.dumps(docs, indent=2))
+                metadata["collections"].append(
+                    {"name": col_name, "documents": len(docs)}
+                )
+
+            zf.writestr("metadata.json", json_util.dumps(metadata, indent=2))
+
+        buffer.seek(0)
+        date_str = datetime.datetime.now().strftime("%d-%m-%Y_%H-%M")
+        filename = f"sisuni_backup_{date_str}.zip"
+
+        return send_file(
+            buffer,
+            mimetype="application/zip",
+            as_attachment=True,
+            download_name=filename,
+        )
+
+    except Exception as e:
+        return render_template(
+            "debug.html",
+            debug_content=f'<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i><strong>Erro ao exportar:</strong> {str(e)}</div>',
+        )
+
+
+@debug_bp.route("/debug/banco/import", methods=["GET", "POST"])
+def import_banco():
+    """Restaura o banco a partir de um ZIP exportado por esta mesma rota."""
+    verificar_acesso_debug()
+
+    if request.method == "GET":
+        colecoes = cpppac.list_collection_names()
+        stats = {col: cpppac[col].count_documents({}) for col in sorted(colecoes)}
+        stats_html = "".join(
+            f'<tr><td><code>{col}</code></td><td class="text-end">{n:,}</td></tr>'
+            for col, n in stats.items()
+        )
+        return render_template(
+            "debug.html",
+            debug_content=f"""
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="card border-warning">
+                        <div class="card-header bg-warning text-dark fw-bold">
+                            <i class="fas fa-upload me-2"></i>Restaurar Backup (.zip)
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted small">Selecione um arquivo <code>.zip</code> gerado pelo botão <strong>Exportar Banco</strong>. Cada coleção será <strong>apagada e reimportada</strong>.</p>
+                            <div class="alert alert-danger py-2 small">
+                                <i class="fas fa-exclamation-triangle me-1"></i>
+                                <strong>Operação irreversível.</strong> Faça um backup antes de restaurar.
+                            </div>
+                            <form method="POST" enctype="multipart/form-data">
+                                <input type="hidden" name="csrf_token" value="{{{{ csrf_token() }}}}">
+                                <div class="mb-3">
+                                    <input type="file" name="backup_file" class="form-control" accept=".zip" required>
+                                </div>
+                                <button type="submit" class="btn btn-warning w-100"
+                                    onclick="return confirm('⚠️ Isso irá APAGAR e reimportar todas as coleções do backup.\\n\\nTem certeza?')">
+                                    <i class="fas fa-upload me-2"></i>Restaurar Backup
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-secondary text-white fw-bold">
+                            <i class="fas fa-table me-2"></i>Estado Atual do Banco
+                        </div>
+                        <div class="card-body p-0">
+                            <table class="table table-sm table-hover mb-0">
+                                <thead class="table-dark"><tr><th>Coleção</th><th class="text-end">Documentos</th></tr></thead>
+                                <tbody>{stats_html}</tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            """,
+        )
+
+    # POST — restaurar ZIP
+    backup_file = request.files.get("backup_file")
+    if not backup_file or not backup_file.filename.endswith(".zip"):
+        return render_template(
+            "debug.html",
+            debug_content='<div class="alert alert-danger">Envie um arquivo .zip válido.</div>',
+        )
+
+    try:
+        buffer = io.BytesIO(backup_file.read())
+        if not zipfile.is_zipfile(buffer):
+            return render_template(
+                "debug.html",
+                debug_content='<div class="alert alert-danger">Arquivo ZIP inválido ou corrompido.</div>',
+            )
+
+        buffer.seek(0)
+        restored = []
+
+        with zipfile.ZipFile(buffer, "r") as zf:
+            for name in zf.namelist():
+                if name == "metadata.json":
+                    continue
+                col_name = name.removesuffix(".json")
+                docs = json_util.loads(zf.read(name).decode("utf-8"))
+                if not isinstance(docs, list):
+                    continue
+                cpppac[col_name].drop()
+                if docs:
+                    cpppac[col_name].insert_many(docs)
+                restored.append(
+                    f"<li><code>{col_name}</code> — {len(docs):,} documentos</li>"
+                )
+
+        return render_template(
+            "debug.html",
+            debug_content=f"""
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle me-2"></i><strong>Restauração concluída!</strong>
+                <ul class="mt-2 mb-0">{"".join(restored)}</ul>
+            </div>
+            <a href="/debug/banco/import" class="btn btn-secondary mt-2">
+                <i class="fas fa-arrow-left me-1"></i>Voltar
+            </a>
+            """,
+        )
+
+    except Exception as e:
+        return render_template(
+            "debug.html",
+            debug_content=f'<div class="alert alert-danger"><strong>Erro ao restaurar:</strong> {str(e)}</div>',
+        )
+
+
+@debug_bp.route("/debug/banco/export_aux", methods=["GET", "POST"])
 def export_aux():
     import os
     from flask_wtf.csrf import CSRFError
@@ -689,56 +846,6 @@ def export_aux():
             </div>
         """,
         )
-
-
-@debug_bp.route("/debug/banco/import", methods=["GET"])
-def import_banco():
-    """Main import page with options for different import operations"""
-    return render_template(
-        "debug.html",
-        debug_content="""
-        <div class="container">
-            <h3>Importar / Gerenciar Banco de Dados</h3>
-            <p>Escolha uma das opções abaixo para importar ou gerenciar dados do banco:</p>
-            
-            <div class="row mt-4">
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header bg-primary text-white">
-                            <h5><i class="fas fa-upload"></i> Importar Sentenciados</h5>
-                        </div>
-                        <div class="card-body">
-                            <p>Importe dados para a coleção de sentenciados a partir de um arquivo JSON.</p>
-                            <a href="/debug/banco/import/sentenciados" class="btn btn-primary">
-                                <i class="fas fa-file-import"></i> Importar Sentenciados
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header bg-danger text-white">
-                            <h5><i class="fas fa-trash"></i> Excluir Sentenciados</h5>
-                        </div>
-                        <div class="card-body">
-                            <p>Exclua sentenciados baseado nas matrículas da coleção excluídos.</p>
-                            <a href="/debug/banco/import/excluidos" class="btn btn-danger">
-                                <i class="fas fa-user-minus"></i> Excluir Sentenciados
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="mt-4">
-                <a href="/debug" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Voltar ao Debug
-                </a>
-            </div>
-        </div>
-    """,
-    )
 
 
 @debug_bp.route("/debug/banco/import/sentenciados", methods=["GET", "POST"])

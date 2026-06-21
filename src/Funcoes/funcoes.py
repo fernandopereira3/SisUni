@@ -27,6 +27,7 @@ def construir_tabela(
     incluir_acoes=True,
     classe_css="table table-striped",
     colecao="sentenciados",
+    modo="detalhes",
 ):
     try:
         # Se não foram passados documentos, buscar no banco
@@ -97,12 +98,15 @@ def construir_tabela(
                 # Coluna de ações (se solicitada)
                 acoes_cell = ""
                 if incluir_acoes:
-                    is_excluidos = "true" if colecao == "excluidos" else "false"
-                    acoes_cell = f"""
-                        <td>
-                            <button class="btn btn-sm btn-info" onclick="carregarDetalhes('{matricula}', {is_excluidos})">Detalhes</button>
-                        </td>
-                    """
+                    if modo == "adicionar":
+                        acoes_cell = "<td></td>"
+                    else:
+                        is_excluidos = "true" if colecao == "excluidos" else "false"
+                        acoes_cell = f"""
+                            <td>
+                                <button class="btn btn-sm btn-info" onclick="carregarDetalhes('{matricula}', {is_excluidos})">Detalhes</button>
+                            </td>
+                        """
 
                 linha = f"""
                     <tr id="row-{matricula}">
