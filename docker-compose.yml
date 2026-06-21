@@ -8,7 +8,8 @@ services:
     depends_on:
       - mongo
     environment:
-      - MONGO_URI=mongodb://mongo:27017/cpppac
+      - MONGO_URI=mongodb://mongo:27017/
+      - MYSQL_URI=mysql+mysqlconnector://root:futuro07@10.14.180.254:3309/siscar
     restart: always
 
   mongo:

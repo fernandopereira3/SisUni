@@ -4,7 +4,9 @@ from sqlalchemy import create_engine
 
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://mongo:27017/")
 MONGO_DB = "cpppac"
-MYSQL_URI = "mysql+mysqlconnector://root:futuro07@10.14.180.254:3309/siscar"
+MYSQL_URI = os.getenv(
+    "MYSQL_URI", "mysql+mysqlconnector://root:futuro07@10.14.180.254:3309/siscar"
+)
 
 
 def conexao_mongo():
