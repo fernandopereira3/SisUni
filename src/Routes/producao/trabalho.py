@@ -1,9 +1,20 @@
-from flask import render_template, Blueprint
+from flask import render_template, Blueprint, session, abort
 from Data.conexao import cpppac
 
 cpppac = cpppac()
 
 trabalho_bp = Blueprint("trabalho", __name__, template_folder="templates")
+
+
+def verificar_acesso_producao():
+    if "user" not in session:
+        abort(403)
+    usuario = cpppac.usuarios.find_one({"username": session["user"]})
+    if not usuario:
+        abort(403)
+    setor = str(usuario.get("setor", "")).strip().lower()
+    if setor not in ("cpd", "producao"):
+        abort(403)
 
 
 def conf_trabalho(matricula):
@@ -18,12 +29,13 @@ def conf_trabalho(matricula):
 
 @trabalho_bp.route("/trabalho", methods=["GET"])
 def trabalho():
-    """Página principal de trabalho"""
+    verificar_acesso_producao()
     return render_template("trabalho.html")
 
 
 @trabalho_bp.route("/trabalho/api", methods=["GET"])
 def api_trabalho():
+    verificar_acesso_producao()
     """API para obter os dados em formato JSON"""
     try:
         if "trabalho" in cpppac.list_collection_names():

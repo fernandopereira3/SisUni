@@ -13,6 +13,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='analytics.css') }}">
+    <style>
+        .dashboard-card-body {
+            height: 500px;
+            overflow-y: auto;
+        }
+    </style>
 </head>
 
 <body>
@@ -142,7 +148,7 @@
     <!----FIM DO HEADER-->
     <div class="dashboard-container">
         <div class="dashboard-header">
-            <h1><i class="bi bi-bar-chart-fill me-2"></i>Visão Geral</h1>
+            <h1><i class="bi bi-bar-chart-fill me-2"></i>Complexo Penal I - CPP - Visão Geral</h1>
             <p>Métricas do sistema - Atualizado em tempo real</p>
         </div>
         <p></p>
@@ -154,7 +160,7 @@
                         <div class="card-header">
                             <h5 class="mb-0"><i class="bi bi-building me-2"></i>OCUPAÇÃO POR PAVILHÃO</h5>
                         </div>
-                        <div class="card-body" style="padding: 1.25rem;">
+                        <div class="card-body dashboard-card-body" style="padding: 1.25rem;">
                             <!-- Gráfico de Barras Verticais -->
                             <div class="vertical-chart-container">
                                 <!-- Pavilhão 1A -->
@@ -231,73 +237,88 @@
                     </div>
                 </div>
 
-                <!-- Card 2: Aptos ao Trabalho -->
+                <!-- Atendimentos do dia -->
                 <div class="col-md-4">
                     <div class="card box-shadow h-100" style="border: 1px solid #ccc; border-radius: 10px;">
                         <div class="card-header">
-                            <h5 class="mb-0"><i class="bi bi-briefcase me-2"></i>Aptos ao Trabalho</h5>
+                            <h5 class="mb-0"><i class="bi bi-clipboard2-check me-2"></i>Atendimentos do dia</h5>
                         </div>
-                        <div class="card-body">
-                            <div class="table-overflow">
-                                {{ tab_trabalho|safe }}
-                                <style>
-                                    .table-overflow {
-                                        max-height: 300px;
-                                        overflow-y: auto;
-                                    }
-                                </style>
-                            </div>
+                        <div class="card-body dashboard-card-body d-flex align-items-center justify-content-center">
+                            <h2 class="mb-0" id="card-atendimentos">—</h2>
                         </div>
                     </div>
                 </div>
 
-                <!-- Card 3: Distribuição por Setor -->
+                <!-- Liberdades -->
+                <div class="col-md-4">
+                    <div class="card box-shadow h-100" style="border: 1px solid #ccc; border-radius: 10px;">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-door-open me-2"></i>Liberdades de Hoje</h5>
+                        </div>
+                        <div class="card-body dashboard-card-body d-flex align-items-center justify-content-center">
+                            <h2 class="mb-0" id="card-liberdades">—</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cards: Chegada Agendada / Aptos ao Trabalho / Distribuição por Setor -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card box-shadow h-100" style="border: 1px solid #ccc; border-radius: 10px;">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-calendar-check me-2"></i>Chegada Agendada</h5>
+                        </div>
+                        <div class="card-body dashboard-card-body d-flex align-items-center justify-content-center">
+                            <h2 class="mb-0" id="card-chegada-agendada">—</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aptos ao Trabalho -->
+                <div class="col-md-4">
+                    <div class="card box-shadow" style="border: 1px solid #ccc; border-radius: 10px;">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-briefcase me-2"></i>Aptos ao Trabalho</h5>
+                        </div>
+                        <div class="card-body dashboard-card-body p-0">
+                            {{ tab_trabalho|safe }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Distribuição por Setor -->
                 <div class="col-md-4">
                     <div class="card box-shadow h-100" style="border: 1px solid #ccc; border-radius: 10px;">
                         <div class="card-header">
                             <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>Distribuição por Setor</h5>
                         </div>
-                        <div class="card-body">
-                            <!-- Lista de Setores -->
+                        <div class="card-body dashboard-card-body">
                             <div style="padding: 1rem;">
                                 {% if trabalho_setores %}
                                 {% set total_trabalho = trabalho_setores.values()|sum %}
                                 <div style="margin-bottom: 1.5rem; text-align: center;">
-                                    <div style="font-size: 2.5rem; font-weight: 700; color: #000000;">{{
-                                        total_trabalho }}</div>
-                                    <div style="font-size: 0.875rem; color: #8c8b8a; font-weight: 600;">
-                                        TOTAL TRABALHANDO</div>
+                                    <div style="font-size: 2.5rem; font-weight: 700; color: #000000;">{{ total_trabalho }}</div>
+                                    <div style="font-size: 0.875rem; color: #8c8b8a; font-weight: 600;">TOTAL TRABALHANDO</div>
                                 </div>
-
-                                <!-- Lista de setores com barras -->
-                                <div style="max-height: 200px; overflow-y: auto;">
+                                <div>
                                     {% set cores = ['#c59e4f', '#dc2828', '#8c8b8a', '#000000'] %}
                                     {% for setor, count in trabalho_setores.items() %}
                                     {% set percentual = (count / total_trabalho * 100)|round|int %}
                                     {% set cor = cores[loop.index0 % 4] %}
                                     <div style="margin-bottom: 1rem;">
-                                        <div
-                                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-                                            <div style="font-size: 0.875rem; font-weight: 600; color: #000000;">
-                                                {{ setor }}</div>
-                                            <div style="font-size: 0.875rem; font-weight: 700; color: {{ cor }};">
-                                                {{ count }} ({{ percentual }}%)</div>
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                                            <div style="font-size: 0.875rem; font-weight: 600; color: #000000;">{{ setor }}</div>
+                                            <div style="font-size: 0.875rem; font-weight: 700; color: {{ cor }};">{{ count }} ({{ percentual }}%)</div>
                                         </div>
-                                        <!-- Barra de progresso -->
-                                        <div
-                                            style="width: 100%; height: 8px; background: #f0f0f0; border-radius: 4px; overflow: hidden;">
-                                            <div
-                                                style="width: {{ percentual }}%; height: 100%; background: {{ cor }}; transition: width 0.3s ease;">
-                                            </div>
+                                        <div style="width: 100%; height: 8px; background: #f0f0f0; border-radius: 4px; overflow: hidden;">
+                                            <div style="width: {{ percentual }}%; height: 100%; background: {{ cor }}; transition: width 0.3s ease;"></div>
                                         </div>
                                     </div>
                                     {% endfor %}
                                 </div>
                                 {% else %}
-                                <div class="alert alert-info mb-0" role="alert">
-                                    <i class="bi bi-info-circle me-2"></i>
-                                    Nenhum dado de trabalho disponível.
-                                </div>
+                                <div class="alert alert-info mb-0"><i class="bi bi-info-circle me-2"></i>Nenhum dado de trabalho disponível.</div>
                                 {% endif %}
                             </div>
                         </div>
@@ -305,7 +326,7 @@
                 </div>
             </div>
 
-            <!-- Card 4: Visitantes (Largura Total) -->
+            <!-- Card Visitantes (Largura Total) -->
             <div class="row mb-4">
                 <div class="col-12">
                     <div class="card box-shadow" style="border: 1px solid #ccc; border-radius: 10px;">

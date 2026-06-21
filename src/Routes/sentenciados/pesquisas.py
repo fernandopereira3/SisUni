@@ -30,9 +30,9 @@ def lista_pesquisas():
             )
 
             documentos = list(
-                cpppac.sentenciados.find(
+                cpppac.visitas_dia.find(
                     {
-                        "visitas": {
+                        "data_visita": {
                             "$elemMatch": {"$gte": data_inicio, "$lte": data_fim}
                         }
                     },
@@ -42,16 +42,13 @@ def lista_pesquisas():
 
             for doc in documentos:
                 visitas_data = [
-                    v for v in doc.get("visitas", []) if data_inicio <= v <= data_fim
+                    v
+                    for v in doc.get("data_visita", [])
+                    if data_inicio <= v <= data_fim
                 ]
                 doc["data_visita"] = (
                     visitas_data[-1].strftime("%d/%m/%Y %H:%M") if visitas_data else ""
                 )
-                marcadores = doc.get("marcadores", [0, 0, 0, 0])
-                doc["garrafas"] = marcadores[0] if len(marcadores) > 0 else 0
-                doc["homens"] = marcadores[1] if len(marcadores) > 1 else 0
-                doc["mulheres"] = marcadores[2] if len(marcadores) > 2 else 0
-                doc["criancas"] = marcadores[3] if len(marcadores) > 3 else 0
 
             resumo = {
                 "data_atual": data_obj.strftime("%d/%m/%Y"),

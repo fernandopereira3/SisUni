@@ -17,6 +17,10 @@ from Funcoes.exportar_banco import sincronizar
 
 db = conexao()
 
+# Índices da coleção logs: TTL 60 dias + índice de tipo para filtros rápidos
+db.logs.create_index("timestamp", expireAfterSeconds=5_184_000)
+db.logs.create_index("tipo")
+
 
 app = Flask(
     __name__,

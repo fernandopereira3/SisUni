@@ -176,7 +176,6 @@ def construir_tabela_trabalho(
 
 def resumo_visitas():
     try:
-        # Definir o início e fim do dia de hoje
         hoje_inicio = datetime.datetime.now().replace(
             hour=0, minute=0, second=0, microsecond=0
         )
@@ -184,37 +183,28 @@ def resumo_visitas():
             hour=23, minute=59, second=59, microsecond=999999
         )
 
-        # Usar agregação do MongoDB para melhor performance
-        pipeline = [
-            {
-                "$match": {
-                    "visitas": {"$elemMatch": {"$gte": hoje_inicio, "$lte": hoje_fim}}
-                }
-            },
-            {"$project": {"matricula": 1, "marcadores": 1}},
-        ]
+        docs = list(
+            db.visitas_dia.find(
+                {
+                    "data_visita": {
+                        "$elemMatch": {"$gte": hoje_inicio, "$lte": hoje_fim}
+                    }
+                },
+                {"garrafas": 1, "homens": 1, "mulheres": 1, "criancas": 1},
+            )
+        )
 
-        documentos_hoje = list(db.sentenciados.aggregate(pipeline))
+        total_matriculas = len(docs)
+        total_garrafas = total_homens = total_mulheres = total_criancas = 0
 
-        # Calcular resumo
-        total_matriculas = len(documentos_hoje)
-        total_garrafas = 0
-        total_homens = 0
-        total_mulheres = 0
-        total_criancas = 0
-
-        for doc in documentos_hoje:
-            marcadores = doc.get("marcadores", [0, 0, 0, 0])
-
-            # Conversão otimizada
-            if marcadores and len(marcadores) >= 4:
-                try:
-                    total_garrafas += int(marcadores[0] or 0)
-                    total_homens += int(marcadores[1] or 0)
-                    total_mulheres += int(marcadores[2] or 0)
-                    total_criancas += int(marcadores[3] or 0)
-                except (ValueError, TypeError):
-                    continue
+        for doc in docs:
+            try:
+                total_garrafas += int(doc.get("garrafas") or 0)
+                total_homens += int(doc.get("homens") or 0)
+                total_mulheres += int(doc.get("mulheres") or 0)
+                total_criancas += int(doc.get("criancas") or 0)
+            except (ValueError, TypeError):
+                continue
 
         return {
             "matriculas": total_matriculas,

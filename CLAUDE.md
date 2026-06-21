@@ -39,7 +39,7 @@ src/
 │   └── exportar_banco.py        # Sync MySQL → MongoDB
 ├── Routes/
 │   ├── rotas.py                 # Core: login, index, entrada_saida, lista, download PDF
-│   ├── debug.py                 # Admin: stats, coleções, sync manual, status MongoDB/MySQL
+│   ├── debug.py                 # Admin: stats, coleções, sync manual, export/import ZIP
 │   ├── administrativo/
 │   │   └── rh.py                # CRUD de funcionários (setor: cpd/administrativo/rh)
 │   ├── seguranca/
@@ -80,12 +80,73 @@ cpppac = cpppac()  # reatribui a variável para o objeto db
 
 | Coleção | Conteúdo |
 |---|---|
-| `sentenciados` | Ficha completa — sincronizada do MySQL `siscar` |
+| `sentenciados` | Ficha completa — sincronizada do MySQL `siscar`. **Somente leitura no fluxo de visitas.** |
 | `excluidos` | Sentenciados transferidos ou liberados |
 | `usuarios` | Funcionários: login, setor, lvl, folgas[] |
 | `trab` | Alocação de trabalho dos sentenciados |
-| `visitas` | Histórico permanente de visitas (Jumbo) |
+| `visitas_dia` | Registro de visitas do dia (ver abaixo) |
+| `visitas` | Histórico permanente de visitas do Jumbo |
 | `aux` | Dados auxiliares |
+
+## Coleção `visitas_dia` — IMPORTANTE
+
+**Toda a lógica de visitas diárias usa `visitas_dia`, não `sentenciados`.**
+
+A coleção `sentenciados` não é modificada pelo fluxo de entrada/saída de visitas — ela só recebe dados do sync MySQL.
+
+**Um documento por matrícula por dia.** `data_visita` é um **array** de timestamps — cada vez que a mesma matrícula é adicionada no dia, um novo timestamp é `$push`ado ao array.
+
+Estrutura do documento em `visitas_dia`:
+```json
+{
+  "matricula": "12345",
+  "nome": "FULANO DE TAL",
+  "pavilhao": "1A",
+  "garrafas": 0,
+  "homens": 1,
+  "mulheres": 0,
+  "criancas": 0,
+  "data_visita": [ISODate("10:30"), ISODate("14:00")]
+}
+```
+
+Query para buscar visitas de um período usa `$elemMatch`:
+```python
+{"data_visita": {"$elemMatch": {"$gte": inicio, "$lte": fim}}}
+```
+
+Lógica de `adicionar_lista`: se já existe doc para essa matrícula hoje → `$push` no array + `$set` marcadores. Se não existe → `insert_one` com array `[datetime.now()]`.
+
+Mapeamento das rotas para `visitas_dia`:
+
+| Rota | Operação |
+|---|---|
+| `POST /adicionar/<matricula>` | find → update (`$push`) ou insert |
+| `DELETE /remover_visita_hoje/<matricula>` | `delete_one` com `$elemMatch` |
+| `PUT /editar_marcadores/<matricula>` | `update_one` com `$elemMatch` |
+| `GET /lista` | `find` com `$elemMatch` |
+| `GET /api/lista_dados` | `find` com `$elemMatch` |
+| `GET /download` (PDF) | `find` com `$elemMatch` |
+| `GET /pesquisas/dia-de-visita` | `find` com `$elemMatch` por data |
+| `resumo_visitas()` | `find` com `$elemMatch` |
+
+Helpers em `rotas.py`:
+```python
+def _hoje():                        # retorna (inicio, fim) do dia atual
+def _lista_visitas_dia(inicio, fim): # find + formata data_visita como última string
+```
+
+## `construir_tabela()` — parâmetro `modo`
+
+A função `construir_tabela` em `funcoes.py` tem o parâmetro `modo`:
+
+- `modo="detalhes"` (padrão) → botão **Detalhes** (abre modal com dados do sync)
+- `modo="adicionar"` → `<td>` vazio — o JS de `entrada_saida.js` adiciona o botão **Adicionar**
+
+Usar sempre `modo="adicionar"` quando chamar de `entrada_saida`:
+```python
+resultados = construir_tabela(query=query, incluir_acoes=True, modo="adicionar")
+```
 
 ## Sistema de usuários (`cpppac.usuarios`)
 
@@ -122,10 +183,16 @@ def verificar_acesso_simic():
 `Funcoes/exportar_banco.py` — função `sincronizar()`:
 - Conecta no MySQL `siscar` via `conexao_sql()`
 - Lê sentenciados, trabalho, excluídos etc.
-- Faz upsert no MongoDB preservando visitas e anotações locais
+- Faz upsert no MongoDB **somente nas coleções de cadastro** (sentenciados, trab, excluidos)
 - Roda automaticamente pelo scheduler (06h, 12h, 18h)
 - Pode ser chamada manualmente via `/debug/sincronizar`
 - O modal de detalhes em `pesquisa.html` mostra os campos sincronizados (artigo, pena, regime, tatuagens, família etc.)
+
+## Export/Import de banco (debug)
+
+`GET /debug/banco/export` → baixa `sisuni_backup_DD-MM-YYYY_HH-MM.zip` com todas as coleções como JSON.
+
+`GET /POST /debug/banco/import` → restaura a partir do ZIP (apaga e reimporta cada coleção).
 
 ## Modal de detalhes (pesquisa.html)
 
@@ -164,3 +231,4 @@ Imagem MongoDB: `fernandopereira3/sisuni_db:latest`
 - `funcionarios.py` foi dividido: RH → `administrativo/rh.py`, folgas → `seguranca/folgas.py`
 - `pesquisas.py` foi movido para `sentenciados/pesquisas.py`
 - A branch `dev` foi deletada — só existe `main`
+- **Não tocar em `sentenciados.visitas` nem `sentenciados.marcadores`** — esses campos existem como legado mas não são usados pelo sistema atual. Todo o fluxo de visitas usa `visitas_dia`.

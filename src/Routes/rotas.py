@@ -173,6 +173,7 @@ def login():
             cpppac.usuarios.update_one(
                 {"username": username}, {"$push": {"login_times": login_time}}
             )
+            novo_usuario = False
         else:
             # Usuário novo: criar
             cpppac.usuarios.insert_one(
@@ -184,12 +185,27 @@ def login():
                     "lvl": "1",
                 }
             )
+            novo_usuario = True
 
         # Finalizar login - buscar dados atualizados do usuário
         usuario_atualizado = cpppac.usuarios.find_one({"username": username})
         session["user"] = username
         session["lvl"] = usuario_atualizado.get("lvl")
         session["setor"] = usuario_atualizado.get("setor", "N/A")
+
+        # Registrar no log
+        cpppac.logs.insert_one(
+            {
+                "tipo": "login",
+                "username": username,
+                "nome_completo": usuario_atualizado.get("nome_completo", nome_completo),
+                "setor": usuario_atualizado.get("setor", "N/A"),
+                "lvl": usuario_atualizado.get("lvl", "1"),
+                "novo_usuario": novo_usuario,
+                "timestamp": login_time,
+            }
+        )
+
         return redirect(url_for("rotas.index"))
 
     return render_template("login.html")
@@ -287,146 +303,114 @@ def entrada_saida():
 
 
 # ADICIONA VISITA AO BANCO DE DADOS
+def _hoje():
+    inicio = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    fim = datetime.datetime.now().replace(
+        hour=23, minute=59, second=59, microsecond=999999
+    )
+    return inicio, fim
+
+
+def _lista_visitas_dia(inicio, fim):
+    docs = list(
+        cpppac.visitas_dia.find(
+            {"data_visita": {"$elemMatch": {"$gte": inicio, "$lte": fim}}},
+            {"_id": 0},
+        ).sort("nome", 1)
+    )
+    for doc in docs:
+        visitas_hoje = [v for v in doc.get("data_visita", []) if inicio <= v <= fim]
+        doc["data_visita"] = (
+            visitas_hoje[-1].strftime("%d/%m/%Y %H:%M") if visitas_hoje else ""
+        )
+    return docs
+
+
 @rotas_bp.route("/adicionar/<matricula>", methods=["POST"])
 def adicionar_lista(matricula):
     global df_lista_sentenciados
 
     sentenciado = cpppac.sentenciados.find_one({"matricula": matricula})
 
-    if sentenciado:
-        data = request.get_json()
+    if not sentenciado:
+        return jsonify({"status": "error", "message": "Matrícula não encontrada"})
 
-        # Verificar se existe na coleção trab
-        setor_trabalho = None
-        try:
-            trabalho = cpppac.trabalho.find_one({"matricula": matricula})
-            if not trabalho:
-                # Tentar buscar pelo nome se não encontrou pela matrícula
-                trabalho = cpppac.trabalho.find_one({"nome": sentenciado["nome"]})
+    data = request.get_json()
+    garrafas = data.get("garrafas", 0)
+    homens = data.get("homens", 0)
+    mulheres = data.get("mulheres", 0)
+    criancas = data.get("criancas", 0)
+    inicio, fim = _hoje()
 
-            if trabalho:
-                setor_trabalho = trabalho.get("setor", "Setor não especificado")
-        except Exception as e:
-            print(f"Erro ao verificar coleção trab: {str(e)}")
+    try:
+        existente = cpppac.visitas_dia.find_one(
+            {
+                "matricula": matricula,
+                "data_visita": {"$elemMatch": {"$gte": inicio, "$lte": fim}},
+            }
+        )
 
-        # Continuar com a adição normal
-        garrafas = data.get("garrafas", 0)
-        homens = data.get("homens", 0)
-        mulheres = data.get("mulheres", 0)
-        criancas = data.get("criancas", 0)
-
-        try:
-            cpppac.sentenciados.update_one(
-                {"matricula": matricula},
+        if existente:
+            cpppac.visitas_dia.update_one(
+                {"_id": existente["_id"]},
                 {
-                    "$push": {
-                        "visitas": datetime.datetime.now(),
+                    "$push": {"data_visita": datetime.datetime.now()},
+                    "$set": {
+                        "garrafas": garrafas,
+                        "homens": homens,
+                        "mulheres": mulheres,
+                        "criancas": criancas,
                     },
-                    "$set": {"marcadores": [garrafas, homens, mulheres, criancas]},
                 },
             )
-
-        except Exception as e:
-            print(f"Erro ao atualizar documento: {str(e)}")
-            return jsonify(
-                {"status": "error", "message": f"Erro ao atualizar: {str(e)}"}
+        else:
+            cpppac.visitas_dia.insert_one(
+                {
+                    "matricula": matricula,
+                    "nome": sentenciado.get("nome", ""),
+                    "pavilhao": sentenciado.get("pavilhao", ""),
+                    "garrafas": garrafas,
+                    "homens": homens,
+                    "mulheres": mulheres,
+                    "criancas": criancas,
+                    "data_visita": [datetime.datetime.now()],
+                }
             )
+    except Exception as e:
+        print(f"Erro em visitas_dia: {str(e)}")
+        return jsonify({"status": "error", "message": f"Erro ao registrar: {str(e)}"})
 
-        # Preparar a resposta
-        response = {"status": "success", "message": "Adicionado com sucesso"}
-        if setor_trabalho:
-            response["tem_trabalho"] = True
-            response["setor"] = setor_trabalho
+    setor_trabalho = None
+    try:
+        trabalho = cpppac.trabalho.find_one(
+            {"matricula": matricula}
+        ) or cpppac.trabalho.find_one({"nome": sentenciado["nome"]})
+        if trabalho:
+            setor_trabalho = trabalho.get("setor")
+    except Exception:
+        pass
 
-        return jsonify(response)
+    response = {"status": "success", "message": "Adicionado com sucesso"}
+    if setor_trabalho:
+        response["tem_trabalho"] = True
+        response["setor"] = setor_trabalho
 
-    else:
-        print(f"Sentenciado não encontrado para matrícula: {matricula}")
-        return jsonify({"status": "error", "message": "Matrícula não encontrada"})
+    return jsonify(response)
 
 
 # LISTA DE VISITAS
 @rotas_bp.route("/lista", methods=["GET"])
 def visualizar_lista():
-    # Definir o início e fim do dia de hoje
-    hoje_inicio = datetime.datetime.now().replace(
-        hour=0, minute=0, second=0, microsecond=0
-    )
-    hoje_fim = datetime.datetime.now().replace(
-        hour=23, minute=59, second=59, microsecond=999999
-    )
-
+    inicio, fim = _hoje()
     resumo = resumo_visitas()
-
-    # Buscar apenas documentos que têm visitas de hoje E ordenar por nome
-    documentos = list(
-        cpppac.sentenciados.find(
-            {"visitas": {"$elemMatch": {"$gte": hoje_inicio, "$lte": hoje_fim}}},
-            {"_id": 0},
-        ).sort("nome", 1)
-    )  # 1 = ordem crescente (A-Z)
-
-    # Processar documentos
-    for doc in documentos:
-        # Filtrar apenas as visitas de hoje
-        visitas_hoje = [
-            v for v in doc.get("visitas", []) if hoje_inicio <= v <= hoje_fim
-        ]
-
-        # Pegar a última visita de hoje
-        if visitas_hoje:
-            doc["data_visita"] = visitas_hoje[-1].strftime("%d/%m/%Y %H:%M")
-        else:
-            doc["data_visita"] = ""
-
-        # Separar marcadores
-        marcadores = doc.get("marcadores", [0, 0, 0, 0])
-        doc["garrafas"] = marcadores[0] if len(marcadores) > 0 else 0
-        doc["homens"] = marcadores[1] if len(marcadores) > 1 else 0
-        doc["mulheres"] = marcadores[2] if len(marcadores) > 2 else 0
-        doc["criancas"] = marcadores[3] if len(marcadores) > 3 else 0
-
+    documentos = _lista_visitas_dia(inicio, fim)
     return render_template("lista.html", documentos=documentos, resumo=resumo)
 
 
 @rotas_bp.route("/api/lista_dados", methods=["GET"])
 def api_lista_dados():
-    # Definir o início e fim do dia de hoje
-    hoje_inicio = datetime.datetime.now().replace(
-        hour=0, minute=0, second=0, microsecond=0
-    )
-    hoje_fim = datetime.datetime.now().replace(
-        hour=23, minute=59, second=59, microsecond=999999
-    )
-
-    # Buscar apenas documentos que têm visitas de hoje E ordenar por nome
-    documentos = list(
-        cpppac.sentenciados.find(
-            {"visitas": {"$elemMatch": {"$gte": hoje_inicio, "$lte": hoje_fim}}},
-            {"_id": 0},
-        ).sort("nome", 1)
-    )
-
-    # Processar documentos
-    for doc in documentos:
-        # Filtrar apenas as visitas de hoje
-        visitas_hoje = [
-            v for v in doc.get("visitas", []) if hoje_inicio <= v <= hoje_fim
-        ]
-
-        # Pegar a última visita de hoje
-        if visitas_hoje:
-            doc["data_visita"] = visitas_hoje[-1].strftime("%d/%m/%Y %H:%M")
-        else:
-            doc["data_visita"] = ""
-
-        # Separar marcadores
-        marcadores = doc.get("marcadores", [0, 0, 0, 0])
-        doc["garrafas"] = marcadores[0] if len(marcadores) > 0 else 0
-        doc["homens"] = marcadores[1] if len(marcadores) > 1 else 0
-        doc["mulheres"] = marcadores[2] if len(marcadores) > 2 else 0
-        doc["criancas"] = marcadores[3] if len(marcadores) > 3 else 0
-
+    inicio, fim = _hoje()
+    documentos = _lista_visitas_dia(inicio, fim)
     return jsonify({"status": "success", "documentos": documentos})
 
 
@@ -439,10 +423,20 @@ def editar_marcadores(matricula):
         mulheres = int(data.get("mulheres", 0))
         criancas = int(data.get("criancas", 0))
 
-        # Atualizar os marcadores no banco
-        resultado = cpppac.sentenciados.update_one(
-            {"matricula": matricula},
-            {"$set": {"marcadores": [garrafas, homens, mulheres, criancas]}},
+        inicio, fim = _hoje()
+        resultado = cpppac.visitas_dia.update_one(
+            {
+                "matricula": matricula,
+                "data_visita": {"$elemMatch": {"$gte": inicio, "$lte": fim}},
+            },
+            {
+                "$set": {
+                    "garrafas": garrafas,
+                    "homens": homens,
+                    "mulheres": mulheres,
+                    "criancas": criancas,
+                }
+            },
         )
 
         if resultado.modified_count > 0:
@@ -459,20 +453,16 @@ def editar_marcadores(matricula):
                     },
                 }
             )
-        else:
-            return jsonify(
-                {
-                    "status": "error",
-                    "message": "Matrícula não encontrada ou nenhuma alteração feita",
-                }
-            )
-
-    except Exception as e:
         return jsonify(
             {
                 "status": "error",
-                "message": f"Erro ao editar marcadores: {str(e)}",
+                "message": "Visita de hoje não encontrada para esta matrícula",
             }
+        )
+
+    except Exception as e:
+        return jsonify(
+            {"status": "error", "message": f"Erro ao editar marcadores: {str(e)}"}
         )
 
 
@@ -480,34 +470,24 @@ def editar_marcadores(matricula):
 @rotas_bp.route("/remover_visita_hoje/<matricula>", methods=["DELETE"])
 def remover_visita_hoje(matricula):
     try:
-        # Definir hoje
-        hoje_inicio = datetime.datetime.now().replace(
-            hour=0, minute=0, second=0, microsecond=0
-        )
-        hoje_fim = datetime.datetime.now().replace(
-            hour=23, minute=59, second=59, microsecond=999999
-        )
-
-        # Remover apenas as visitas de hoje
-        resultado = cpppac.sentenciados.update_one(
-            {"matricula": matricula},
-            {"$pull": {"visitas": {"$gte": hoje_inicio, "$lte": hoje_fim}}},
+        inicio, fim = _hoje()
+        resultado = cpppac.visitas_dia.delete_one(
+            {
+                "matricula": matricula,
+                "data_visita": {"$elemMatch": {"$gte": inicio, "$lte": fim}},
+            }
         )
 
-        if resultado.modified_count > 0:
+        if resultado.deleted_count > 0:
             return jsonify(
-                {
-                    "status": "success",
-                    "message": "Visita removida com sucesso",
-                }
+                {"status": "success", "message": "Visita removida com sucesso"}
             )
-        else:
-            return jsonify(
-                {
-                    "status": "error",
-                    "message": "Nenhuma visita de hoje encontrada para esta matrícula",
-                }
-            )
+        return jsonify(
+            {
+                "status": "error",
+                "message": "Nenhuma visita de hoje encontrada para esta matrícula",
+            }
+        )
 
     except Exception as e:
         return jsonify(
@@ -518,41 +498,8 @@ def remover_visita_hoje(matricula):
 # BAIXA LISTA ROTA DOWNLOADS
 @rotas_bp.route("/download", methods=["GET"])
 def download_pdf():
-    # Definir o início e fim do dia de hoje
-    hoje_inicio = datetime.datetime.now().replace(
-        hour=0, minute=0, second=0, microsecond=0
-    )
-    hoje_fim = datetime.datetime.now().replace(
-        hour=23, minute=59, second=59, microsecond=999999
-    )
-
-    # Buscar apenas documentos que têm visitas de hoje E ordenar por nome
-    documentos = list(
-        cpppac.sentenciados.find(
-            {"visitas": {"$elemMatch": {"$gte": hoje_inicio, "$lte": hoje_fim}}},
-            {"_id": 0},
-        ).sort("nome", 1)
-    )  # 1 = ordem crescente (A-Z)
-
-    # Processar documentos
-    for doc in documentos:
-        # Filtrar apenas as visitas de hoje
-        visitas_hoje = [
-            v for v in doc.get("visitas", []) if hoje_inicio <= v <= hoje_fim
-        ]
-
-        # Pegar a última visita de hoje
-        if visitas_hoje:
-            doc["data_visita"] = visitas_hoje[-1].strftime("%d/%m/%Y %H:%M")
-        else:
-            doc["data_visita"] = ""
-
-        # Separar marcadores
-        marcadores = doc.get("marcadores", [0, 0, 0, 0])
-        doc["garrafas"] = marcadores[0] if len(marcadores) > 0 else 0
-        doc["homens"] = marcadores[1] if len(marcadores) > 1 else 0
-        doc["mulheres"] = marcadores[2] if len(marcadores) > 2 else 0
-        doc["criancas"] = marcadores[3] if len(marcadores) > 3 else 0
+    inicio, fim = _hoje()
+    documentos = _lista_visitas_dia(inicio, fim)
 
     # Converter para DataFrame
     if not documentos:

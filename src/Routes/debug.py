@@ -1028,3 +1028,67 @@ def import_excluidos():
             </div>
         """,
         )
+
+
+@debug_bp.route("/debug/logs", methods=["GET"])
+def logs():
+    verificar_acesso_debug()
+
+    tipo = request.args.get("tipo", "todos")
+    limite = int(request.args.get("limite", 100))
+
+    filtro = {} if tipo == "todos" else {"tipo": tipo}
+    registros = list(cpppac.logs.find(filtro).sort("timestamp", -1).limit(limite))
+
+    linhas = ""
+    for r in registros:
+        ts = r.get("timestamp")
+        ts_str = ts.strftime("%d/%m/%Y %H:%M:%S") if ts else "—"
+        novo = r.get("novo_usuario", False)
+        badge_novo = (
+            '<span class="badge" style="background:#c59e4f;color:#000;">NOVO</span>'
+            if novo
+            else ""
+        )
+        lvl = r.get("lvl", "—")
+        setor = r.get("setor", "—")
+        nome = r.get("nome_completo", r.get("username", "—"))
+        tipo_log = r.get("tipo", "—")
+        badge_tipo = f'<span class="badge bg-secondary">{tipo_log}</span>'
+
+        linhas += f"""
+        <tr>
+            <td class="text-muted small">{ts_str}</td>
+            <td><strong>{nome}</strong><br><small class="text-muted">{r.get("username", "")}</small></td>
+            <td><span class="badge" style="background:#8c8b8a;">{setor}</span></td>
+            <td><span class="badge" style="background:#dc2828;">lvl {lvl}</span></td>
+            <td>{badge_tipo} {badge_novo}</td>
+        </tr>"""
+
+    filtros_html = f"""
+    <div class="d-flex gap-2 mb-3 flex-wrap">
+        <a href="/debug/logs?tipo=todos&limite={limite}" class="btn btn-sm {"btn-dark" if tipo == "todos" else "btn-outline-dark"}">Todos</a>
+        <a href="/debug/logs?tipo=login&limite={limite}" class="btn btn-sm {"btn-dark" if tipo == "login" else "btn-outline-dark"}">Login</a>
+        <span class="ms-auto text-muted small align-self-center">{len(registros)} registros</span>
+    </div>"""
+
+    tabela = f"""
+    {filtros_html}
+    <div class="table-responsive">
+        <table class="table table-hover table-sm mb-0">
+            <thead style="background: linear-gradient(135deg,#1a1a2e,#0f3460); color:white;">
+                <tr>
+                    <th>Data / Hora</th>
+                    <th>Usuário</th>
+                    <th>Setor</th>
+                    <th>Nível</th>
+                    <th>Evento</th>
+                </tr>
+            </thead>
+            <tbody>
+                {'<tr><td colspan="5" class="text-center text-muted py-4">Nenhum registro encontrado.</td></tr>' if not registros else linhas}
+            </tbody>
+        </table>
+    </div>"""
+
+    return render_template("debug.html", debug_content=tabela)
