@@ -9,7 +9,7 @@ from Routes.funcionarios import funcionarios_bp as BPfuncionarios
 from Tests.test import bp_test
 from Data.conexao import conexao_mongo as conexao
 from apscheduler.schedulers.background import BackgroundScheduler
-from Data.sincronizar import sincronizar
+from Funcoes.exportar_banco import sincronizar
 
 
 db = conexao()

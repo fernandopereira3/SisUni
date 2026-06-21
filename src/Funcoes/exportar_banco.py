@@ -1,6 +1,6 @@
 import pandas as pd
 from datetime import datetime
-from Data.conexao import conexao_sql, conexao_mongo
+from Data.conexao import conexao_mongo, conexao_sql
 
 
 def sincronizar():
@@ -70,20 +70,16 @@ def sincronizar():
         df = pd.read_sql(query, con=engine)
         df = df.where(pd.notnull(df), None)
 
-        # converter colunas de data para string
-        for col in df.select_dtypes(include=["datetime64[ns]", "object"]).columns:
-            pass
         for col in df.columns:
             if hasattr(df[col], "dt"):
                 df[col] = df[col].astype(str).where(df[col].notna(), None)
 
         documentos = df.to_dict(orient="records")
 
-        db_mongo = conexao_mongo()
-        collection = db_mongo["sentenciados"]
+        db = conexao_mongo()
+        db["sentenciados"].drop()
+        db["sentenciados"].insert_many(documentos)
 
-        collection.drop()
-        collection.insert_many(documentos)
         print(
             f"[{datetime.now().strftime('%d/%m/%Y %H:%M:%S')}] ✓ {len(documentos)} registros sincronizados."
         )
@@ -92,3 +88,7 @@ def sincronizar():
         print(
             f"[{datetime.now().strftime('%d/%m/%Y %H:%M:%S')}] ✗ Erro na sincronização: {e}"
         )
+
+
+if __name__ == "__main__":
+    sincronizar()

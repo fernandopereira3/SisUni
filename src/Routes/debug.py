@@ -10,7 +10,7 @@ from flask import (
 import json
 import time
 from Data.conexao import conexao_mongo as conexao
-from Data.sincronizar import sincronizar
+from Funcoes.exportar_banco import sincronizar
 
 db = conexao()
 
