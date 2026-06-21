@@ -1,13 +1,14 @@
 from flask import Flask, render_template
 from flask_wtf.csrf import CSRFProtect
-from Routes.jumbo import jumbo_bp as BPjumbo
 from Routes.rotas import rotas_bp as BProtas
 from Routes.debug import debug_bp as BPdebug
+from Routes.administrativo.rh import rh_bp as BPrh
+from Routes.seguranca.folgas import folgas_bp as BPfolgas
+from Routes.sentenciados.pesquisas import pesquisas_bp as BPpesquisas
+from Routes.sentenciados.visitas import visitas_bp as BPvisitas
 from Routes.producao.trabalho import trabalho_bp as BPtrabalho
 from Routes.producao.freguencia import frequencia_bp as BPfrequencia
 from Routes.simic.simic import simic_bp as BPsimic
-from Routes.pesquisas import pesquisas_bp as BPpesquisas
-from Routes.funcionarios import funcionarios_bp as BPfuncionarios
 from Tests.test import bp_test
 from Data.conexao import conexao_mongo as conexao
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -31,15 +32,16 @@ csrf = CSRFProtect(app)
 
 csrf.exempt(BPdebug)
 
-app.register_blueprint(BPjumbo)
 app.register_blueprint(BProtas)
 app.register_blueprint(BPdebug)
-app.register_blueprint(BPtrabalho)
+app.register_blueprint(BPrh)
+app.register_blueprint(BPfolgas)
 app.register_blueprint(BPpesquisas)
-app.register_blueprint(BPfuncionarios)
-app.register_blueprint(bp_test)
+app.register_blueprint(BPvisitas)
+app.register_blueprint(BPtrabalho)
 app.register_blueprint(BPfrequencia)
 app.register_blueprint(BPsimic)
+app.register_blueprint(bp_test)
 
 
 @app.errorhandler(401)
