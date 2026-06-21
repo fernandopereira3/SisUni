@@ -1,4 +1,13 @@
-from flask import render_template, Blueprint, request, jsonify, session, abort, redirect, url_for
+from flask import (
+    render_template,
+    Blueprint,
+    request,
+    jsonify,
+    session,
+    abort,
+    redirect,
+    url_for,
+)
 from Data.conexao import cpppac
 import datetime
 
@@ -38,13 +47,28 @@ def cadastrar():
     nome = str(dados.get("nome", "")).strip()
 
     if not matricula or not nome:
-        return jsonify({"status": "error", "message": "Matrícula e Nome são obrigatórios"}), 400
+        return jsonify(
+            {"status": "error", "message": "Matrícula e Nome são obrigatórios"}
+        ), 400
 
     if cpppac.sentenciados.find_one({"matricula": matricula}):
-        return jsonify({"status": "error", "message": f"Matrícula {matricula} já cadastrada"}), 409
+        return jsonify(
+            {"status": "error", "message": f"Matrícula {matricula} já cadastrada"}
+        ), 409
 
-    campos_int = ("anos_de_prisao", "meses_de_prisao", "dias_de_prisao", "numero_de_filhos", "hediondo")
-    doc = {"matricula": matricula, "nome": nome, "cadastrado_em": datetime.datetime.now(), "cadastrado_por": session.get("user")}
+    campos_int = (
+        "anos_de_prisao",
+        "meses_de_prisao",
+        "dias_de_prisao",
+        "numero_de_filhos",
+        "hediondo",
+    )
+    doc = {
+        "matricula": matricula,
+        "nome": nome,
+        "cadastrado_em": datetime.datetime.now(),
+        "cadastrado_por": session.get("user"),
+    }
 
     for campo, valor in dados.items():
         if campo in ("matricula", "nome"):
@@ -59,11 +83,20 @@ def cadastrar():
 
     cpppac.sentenciados.insert_one(doc)
 
-    return jsonify({"status": "success", "message": f"Sentenciado {nome} cadastrado com sucesso", "matricula": matricula})
+    return jsonify(
+        {
+            "status": "success",
+            "message": f"Sentenciado {nome} cadastrado com sucesso",
+            "matricula": matricula,
+        }
+    )
 
 
 @simic_bp.route("/simic/verificar/<matricula>", methods=["GET"])
 def verificar_matricula(matricula):
     verificar_acesso_simic()
-    existe = cpppac.sentenciados.find_one({"matricula": matricula}, {"_id": 0, "nome": 1}) is not None
+    existe = (
+        cpppac.sentenciados.find_one({"matricula": matricula}, {"_id": 0, "nome": 1})
+        is not None
+    )
     return jsonify({"existe": existe})

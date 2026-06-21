@@ -5,14 +5,10 @@ from flask import (
     render_template,
     Blueprint,
     session,
-    redirect,
-    url_for,
     abort,
 )
 import json
-import time
 from Data.conexao import cpppac, conexao_sql, MONGO_URI, MONGO_DB, MYSQL_URI
-from Funcoes.exportar_banco import sincronizar
 
 cpppac = cpppac()
 

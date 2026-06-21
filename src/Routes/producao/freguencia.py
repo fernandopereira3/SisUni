@@ -1,5 +1,4 @@
 from flask import render_template, Blueprint
-import datetime
 from Data.conexao import cpppac
 
 cpppac = cpppac()
