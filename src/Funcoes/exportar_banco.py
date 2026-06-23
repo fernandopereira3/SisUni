@@ -63,8 +63,7 @@ def sincronizar():
         FROM sen s
         LEFT JOIN pav p ON s.codigo_pavilhao = p.codigo_pavilhao
         WHERE s.excluido = 0
-        AND s.codigo_pavilhao BETWEEN 10 AND 19
-        ORDER BY s.nome;
+        AND s.codigo_pavilhao BETWEEN 10 AND 19;
         """
 
         df = pd.read_sql(query, con=engine)

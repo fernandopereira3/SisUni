@@ -97,6 +97,42 @@ def debug_trabalho():
         )
 
 
+######### Sincronizar SQL → MongoDB manualmente ############
+@debug_bp.route("/debug/sincronizar", methods=["GET"])
+def debug_sincronizar():
+    """Dispara a sincronização SQL → MongoDB manualmente."""
+    verificar_acesso_debug()
+    from Funcoes.exportar_banco import sincronizar
+
+    try:
+        sincronizar()
+        resultado_html = """
+        <div class="alert alert-success">
+            <h4><i class="fas fa-check-circle me-2"></i>Sincronização Concluída!</h4>
+            <p>Os dados foram sincronizados do SQL para o MongoDB com sucesso.</p>
+            <div class="mt-3">
+                <a href="/debug" class="btn btn-primary">
+                    <i class="fas fa-arrow-left me-1"></i> Voltar ao Debug
+                </a>
+            </div>
+        </div>
+        """
+    except Exception as e:
+        resultado_html = f"""
+        <div class="alert alert-danger">
+            <h4><i class="fas fa-exclamation-circle me-2"></i>Erro na Sincronização</h4>
+            <p><strong>Detalhe:</strong> {str(e)}</p>
+            <div class="mt-3">
+                <a href="/debug" class="btn btn-primary">
+                    <i class="fas fa-arrow-left me-1"></i> Voltar ao Debug
+                </a>
+            </div>
+        </div>
+        """
+
+    return render_template("debug.html", debug_content=resultado_html)
+
+
 ######### Estatistica das colecoes ############
 @debug_bp.route("/debug/sentenciados/db", methods=["GET"])
 def debug_sentenciados_db():
