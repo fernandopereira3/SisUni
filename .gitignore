@@ -170,6 +170,9 @@ cython_debug/
 # Local database
 db.csv
 
+# Fotos extraídas do MySQL
+fotos/
+
 .DS_Store
 *.json
 .vercel
