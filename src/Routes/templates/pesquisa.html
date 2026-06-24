@@ -253,15 +253,14 @@
                     <div class="row g-0 pt-3 px-3 pb-2 align-items-start">
                         <!-- Coluna da foto -->
                         <div class="col-auto me-4 text-center">
-                            ${s.foto
-                                ? `<img src="data:image/jpeg;base64,${s.foto}"
-                                        style="width:130px;height:170px;object-fit:cover;border-radius:6px;border:2px solid #dee2e6;"
-                                        alt="Foto">`
-                                : `<div style="width:130px;height:170px;border-radius:6px;border:2px dashed #ced4da;background:#f8f9fa;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#adb5bd;">
-                                       <i class="bi bi-person-bounding-box" style="font-size:3rem;"></i>
-                                       <small style="font-size:0.7rem;margin-top:6px;">Sem foto</small>
-                                   </div>`
-                            }
+                            <img src="/foto/${s.matricula}"
+                                 style="width:130px;height:170px;object-fit:cover;border-radius:6px;border:2px solid #dee2e6;"
+                                 alt="Foto"
+                                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                            <div style="display:none;width:130px;height:170px;border-radius:6px;border:2px dashed #ced4da;background:#f8f9fa;flex-direction:column;align-items:center;justify-content:center;color:#adb5bd;">
+                                <i class="bi bi-person-bounding-box" style="font-size:3rem;"></i>
+                                <small style="font-size:0.7rem;margin-top:6px;">Sem foto</small>
+                            </div>
                         </div>
                         <!-- Campos de identificação ao lado da foto -->
                         <div class="col">

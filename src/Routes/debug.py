@@ -1066,6 +1066,41 @@ def import_excluidos():
         )
 
 
+@debug_bp.route("/debug/fotos/extrair", methods=["GET"])
+def debug_extrair_fotos():
+    verificar_acesso_debug()
+    from Funcoes.extrair_fotos import extrair
+
+    try:
+        ok, erros, pasta = extrair()
+        resultado_html = f"""
+        <div class="alert alert-success">
+            <h4><i class="fas fa-check-circle me-2"></i>Extração Concluída!</h4>
+            <p><strong>{ok}</strong> fotos extraídas para <code>{pasta}</code></p>
+            {f'<p class="mb-0 text-danger">{erros} erro(s) durante a extração.</p>' if erros else ""}
+            <div class="mt-3">
+                <a href="/debug" class="btn btn-primary">
+                    <i class="fas fa-arrow-left me-1"></i> Voltar ao Debug
+                </a>
+            </div>
+        </div>
+        """
+    except Exception as e:
+        resultado_html = f"""
+        <div class="alert alert-danger">
+            <h4><i class="fas fa-exclamation-circle me-2"></i>Erro na Extração</h4>
+            <p><strong>Detalhe:</strong> {str(e)}</p>
+            <div class="mt-3">
+                <a href="/debug" class="btn btn-primary">
+                    <i class="fas fa-arrow-left me-1"></i> Voltar ao Debug
+                </a>
+            </div>
+        </div>
+        """
+
+    return render_template("debug.html", debug_content=resultado_html)
+
+
 @debug_bp.route("/debug/logs", methods=["GET"])
 def logs():
     verificar_acesso_debug()

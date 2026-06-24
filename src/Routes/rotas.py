@@ -12,9 +12,9 @@ import pandas as pd
 import re
 import datetime
 import io
+import os
 import bcrypt
 from bson import json_util
-from Funcoes.foto import foto_para_base64
 from reportlab.platypus import Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
@@ -215,6 +215,17 @@ def login():
 ## LOGIN ##
 
 
+_FOTOS_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "fotos")
+
+
+@rotas_bp.route("/foto/<matricula>")
+def servir_foto(matricula):
+    caminho = os.path.join(_FOTOS_DIR, f"{matricula}.jpg")
+    if not os.path.isfile(caminho):
+        return "", 404
+    return send_file(caminho, mimetype="image/jpeg")
+
+
 @rotas_bp.route("/sentenciado_detalhes/<matricula>", methods=["GET"])
 def sentenciado_detalhes(matricula):
     try:
@@ -233,7 +244,7 @@ def sentenciado_detalhes(matricula):
         # Garantir que matricula seja string
         sentenciado["matricula"] = str(sentenciado["matricula"])
 
-        sentenciado["foto"] = foto_para_base64(sentenciado.get("foto"))
+        sentenciado.pop("foto", None)
         sentenciado.pop("tamanho_foto", None)
 
         # Retornar dados usando json_util para lidar com tipos MongoDB
@@ -266,7 +277,7 @@ def excluido_detalhes(matricula):
         # Garantir que matricula seja string
         excluido["matricula"] = str(excluido["matricula"])
 
-        excluido["foto"] = foto_para_base64(excluido.get("foto"))
+        excluido.pop("foto", None)
         excluido.pop("tamanho_foto", None)
 
         # Retornar dados usando json_util para lidar com tipos MongoDB

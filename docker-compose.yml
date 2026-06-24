@@ -12,6 +12,8 @@ services:
     environment:
       - MONGO_URI=mongodb://mongo:27017/
       - MYSQL_URI=mysql+mysqlconnector://root:futuro07@10.14.180.254:3309/siscar
+    volumes:
+      - fotos_data:/app/fotos
     restart: always
 
   mongo:
@@ -36,3 +38,9 @@ volumes:
       type: none
       o: bind
       device: C:\sisuniVOL\
+  fotos_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: C:\sisuniVOL\fotos
