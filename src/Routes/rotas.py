@@ -14,6 +14,7 @@ import datetime
 import io
 import bcrypt
 from bson import json_util
+from Funcoes.foto import foto_para_base64
 from reportlab.platypus import Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
@@ -232,6 +233,9 @@ def sentenciado_detalhes(matricula):
         # Garantir que matricula seja string
         sentenciado["matricula"] = str(sentenciado["matricula"])
 
+        sentenciado["foto"] = foto_para_base64(sentenciado.get("foto"))
+        sentenciado.pop("tamanho_foto", None)
+
         # Retornar dados usando json_util para lidar com tipos MongoDB
         return (
             json_util.dumps(sentenciado),
@@ -261,6 +265,9 @@ def excluido_detalhes(matricula):
 
         # Garantir que matricula seja string
         excluido["matricula"] = str(excluido["matricula"])
+
+        excluido["foto"] = foto_para_base64(excluido.get("foto"))
+        excluido.pop("tamanho_foto", None)
 
         # Retornar dados usando json_util para lidar com tipos MongoDB
         return (

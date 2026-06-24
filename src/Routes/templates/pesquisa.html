@@ -250,18 +250,35 @@
             <div class="tab-content px-2 py-3">
 
                 <div class="tab-pane fade show active" id="tab-pessoal">
-                    <div class="tab-section-title px-3">Identificação</div>
-                    <div class="row g-0">
-                        ${c('Matrícula', `<code>${v('matricula')}</code>`, 3)}
-                        ${c('Vulgo', v('vulgo'), 4)}
-                        ${c('Sexo', v('sexo'), 2)}
-                        ${c('SAP / Controle', v('controle_interno'), 3)}
-                        ${c('Nome Completo', `<strong>${v('nome')}</strong>`, 12)}
-                        ${c('Nascimento', v('nascimento'), 3)}
-                        ${c('Naturalidade', v('naturalidade') + ' — ' + v('uf'), 4)}
-                        ${c('Nacionalidade', v('nacionalidade'), 3)}
-                        ${c('RG', v('rg'), 3)}
-                        ${c('CPF', v('cpf'), 3)}
+                    <div class="row g-0 pt-3 px-3 pb-2 align-items-start">
+                        <!-- Coluna da foto -->
+                        <div class="col-auto me-4 text-center">
+                            ${s.foto
+                                ? `<img src="data:image/jpeg;base64,${s.foto}"
+                                        style="width:130px;height:170px;object-fit:cover;border-radius:6px;border:2px solid #dee2e6;"
+                                        alt="Foto">`
+                                : `<div style="width:130px;height:170px;border-radius:6px;border:2px dashed #ced4da;background:#f8f9fa;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#adb5bd;">
+                                       <i class="bi bi-person-bounding-box" style="font-size:3rem;"></i>
+                                       <small style="font-size:0.7rem;margin-top:6px;">Sem foto</small>
+                                   </div>`
+                            }
+                        </div>
+                        <!-- Campos de identificação ao lado da foto -->
+                        <div class="col">
+                            <div class="tab-section-title" style="margin-top:0;">Identificação</div>
+                            <div class="row g-0">
+                                ${c('Matrícula', `<code>${v('matricula')}</code>`, 4)}
+                                ${c('Sexo', v('sexo'), 3)}
+                                ${c('SAP / Controle', v('controle_interno'), 5)}
+                                ${c('Nome Completo', `<strong>${v('nome')}</strong>`, 12)}
+                                ${c('Vulgo', v('vulgo'), 6)}
+                                ${c('Nascimento', v('nascimento'), 6)}
+                                ${c('Naturalidade', v('naturalidade') + ' — ' + v('uf'), 8)}
+                                ${c('Nacionalidade', v('nacionalidade'), 4)}
+                                ${c('RG', v('rg'), 6)}
+                                ${c('CPF', v('cpf'), 6)}
+                            </div>
+                        </div>
                     </div>
                     <div class="tab-section-title px-3">Situação Atual</div>
                     <div class="row g-0">

@@ -1,6 +1,7 @@
 import pandas as pd
 import datetime as dt
 from Data.conexao import conexao_mongo, conexao_sql
+from Funcoes.foto import foto_para_base64
 
 
 def sincronizar():
@@ -12,58 +13,10 @@ def sincronizar():
         engine = conexao_sql()
 
         query = """
-        SELECT
-            s.matricula,
-            s.nome,
-            s.vulgo,
-            s.codigo_pavilhao,
-            p.pavilhao,
-            s.cela,
-            s.regime,
-            s.artigo,
-            s.deecrim,
-            s.anos_de_prisao,
-            s.meses_de_prisao,
-            s.dias_de_prisao,
-            s.prisao,
-            s.inclusao,
-            s.procedencia,
-            s.reincidente,
-            s.hediondo,
-            s.situacao_criminal,
-            s.rg,
-            s.cpf,
-            s.nascimento,
-            s.naturalidade,
-            s.uf,
-            s.nacionalidade,
-            s.sexo,
-            s.estado_civil,
-            s.numero_de_filhos,
-            s.pai,
-            s.mae,
-            s.esposa,
-            s.profissao,
-            s.grau_escolaridade,
-            s.cutis,
-            s.cabelos,
-            s.olhos,
-            s.estatura,
-            s.peso,
-            s.sinais_tatuagens,
-            s.sinais_cicatrizes,
-            s.endereco_familiar,
-            s.bairro_familiar,
-            s.cidade_familiar,
-            s.uf_familiar,
-            s.cep_familiar,
-            s.contato,
-            s.controle_interno,
-            s.observacoes
+        SELECT *
         FROM sen s
         LEFT JOIN pav p ON s.codigo_pavilhao = p.codigo_pavilhao
-        WHERE s.excluido = 0
-        AND s.codigo_pavilhao BETWEEN 10 AND 19;
+        WHERE s.excluido = 0;
         """
 
         df = pd.read_sql(query, con=engine)
@@ -83,6 +36,10 @@ def sincronizar():
                 df[col] = df[col].dt.strftime("%d/%m/%Y").where(df[col].notna(), None)
 
         documentos = df.to_dict(orient="records")
+
+        for doc in documentos:
+            doc["foto"] = foto_para_base64(doc.get("foto"))
+            doc.pop("tamanho_foto", None)
 
         db = conexao_mongo()
         collection = db["sentenciados"]
